@@ -15,7 +15,7 @@ import {
 } from "react-icons/fa";
 
 import "./App.css";
-import api from "../Api/axio";
+import api from "../api/axio";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 
