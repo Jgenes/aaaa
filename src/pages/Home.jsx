@@ -10,7 +10,7 @@ import PromoCards from "../components/PromoCards";
 import Footer from "../components/Footer";
 import HeroBanner from "../components/HeroBanner";
 import TrendingCourses from "../components/TrendingCourses";
-import "../app.css";
+import "../App.css";
 
 export default function Home() {
   return (
