@@ -1,7 +1,7 @@
 import React from "react";
 import bannerImg from "../assets/banner2.jpg";
 // you can also split images later if needed
-import "../app.css";
+import "../App.css";
 function HeroBanner() {
   return (
     <div className="container my-5 banner5">
