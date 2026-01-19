@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "../../../dashboard.css";
-import "../../../app.css";
+import "../../../App.css";
 
 export default function ProviderDashboardLayout({ title, children }) {
   const [user, setUser] = useState(null);
