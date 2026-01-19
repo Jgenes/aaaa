@@ -14,7 +14,7 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 
-import "../app.css";
+import "../App.css";
 import api from "../api/axio";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
