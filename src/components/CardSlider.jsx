@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Career from "../assets/carrer.png";
 import PDPC from "../assets/pdpc.png";
-import Nacte from "../assets/nacte.png";
+import Nacte from "../assets/NACTE.png";
 import TCU from "../assets/tcu.png";
 import TTCII from "../assets/ttcii.png";
 import UDSM from "../assets/udsm.jpg";
