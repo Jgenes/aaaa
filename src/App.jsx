@@ -19,7 +19,7 @@ import CreateCohort from "./pages/provider/createCohort.jsx";
 import CohortList from "./pages/provider/cohortList.jsx";
 import Training from "./pages/trainings.jsx";
 import Learning from "./pages/Learning.jsx";
-import CourseLearning from "./pages/courseLearning.jsx";
+import CourseLearning from "./pages/CourseLearning.jsx";
 // import MyLearning from "./pages/My
 function App() {
   return (
