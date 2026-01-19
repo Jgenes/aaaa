@@ -1,6 +1,6 @@
 import React from "react";
 import { FaStar, FaInfoCircle } from "react-icons/fa";
-import "../app.css";
+import "../App.css";
 
 const CourseMetaBar = () => {
   return (
