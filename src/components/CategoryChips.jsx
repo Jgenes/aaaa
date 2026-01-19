@@ -1,5 +1,5 @@
 import { Badge } from "react-bootstrap";
-import "../app.css";
+import "../App.css";
 const categories = [
   "Business",
   "Artificial Intelligence",
