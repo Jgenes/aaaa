@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import Career from "../assets/carrer.png";
 import PDPC from "../assets/pdpc.png";
 import Nacte from "../assets/NACTE.png";
-import TCU from "../assets/tcu.png";
-import TTCII from "../assets/ttcii.png";
+import TCU from "../assets/TCU.png";
+import TTCII from "../assets/TTCII.png";
 import UDSM from "../assets/udsm.jpg";
-import VETA from "../assets/veta.png";
-import OSHA from "../assets/osha.png";
+import VETA from "../assets/VETA.png";
+import OSHA from "../assets/OSHA.png";
 const data = [
   { title: "Personal Data Protection Committee", img: PDPC },
   { title: "National Council for Technical Education", img: Nacte },
