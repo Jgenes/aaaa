@@ -1,5 +1,5 @@
 import React from "react";
-import bannerImg from "../assets/banner1.jpeg";
+import bannerImg from "../assets/banner6.jpg";
 // you can also split images later if needed
 import "../App.css";
 function HeroBanner() {

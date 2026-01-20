@@ -1,5 +1,5 @@
 import NavBar from "../components/NavBar";
-import Banner1 from "../assets/t1.jpeg";
+import Banner1 from "../assets/ict-pic (1).jpg";
 import Career from "../assets/carrer.png";
 import Skills from "../assets/skills.png";
 import GraduationCap from "../assets/GraduationCap.png";
@@ -17,7 +17,12 @@ export default function Home() {
     <>
       <NavBar />
       <div className="banner1">
-        <img src={Banner1} alt="Banner 1" className="img-fluid w-100" />
+        <img
+          src={Banner1}
+          alt="Banner 1"
+          style={{ height: "500px", width: "100%" }}
+          className="img-fluid w-100"
+        />
         <div className="card1">
           <h3>A big year starts with big savings</h3>
           <p>
