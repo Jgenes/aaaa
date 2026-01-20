@@ -95,18 +95,26 @@ const TrendingCourses = () => {
               <span className="arrow">→</span>
             </div>
 
-            {section.items.map((item, i) => (
-              <div className="course-card" key={i}>
-                <img src={item.image} alt={item.title} />
-                <div className="course-info">
-                  <small className="provider">{item.provider}</small>
-                  <h6 style={{ fontSize: "13px" }}>{item.title}</h6>
-                  <small className="meta">
-                    {item.type} • ⭐ {item.rating}
-                  </small>
+            <div className="cards-wrapper">
+              {section.items.map((item, i) => (
+                <div className="course-card" key={i}>
+                  <img
+                    className="course-img"
+                    src={item.image}
+                    alt={item.title}
+                  />
+                  <div className="course-info">
+                    <small className="provider">{item.provider}</small>
+                    <h6 style={{ fontSize: "12px" }} className="course-title">
+                      {item.title}
+                    </h6>
+                    <small className="meta">
+                      {item.type} • ⭐ {item.rating}
+                    </small>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         ))}
       </div>

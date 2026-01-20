@@ -673,3 +673,294 @@ label{
 select option{
   font-size: 13px;
 }
+.trending-container {
+  width: 100%;
+  padding: 20px 10px;
+}
+
+.trending-grid {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.trending-column {
+  background: #eef6ff;
+  border-radius: 10px;
+  padding: 15px;
+  width: 32%;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #0c385f;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.column-header .arrow {
+  opacity: 0.6;
+}
+
+.cards-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.course-card {
+  display: flex;
+  background: white;
+  border-radius: 8px;
+  padding: 8px;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #e4e7eb;
+}
+
+.course-card:hover {
+  border-color: #b4d4ff;
+  cursor: pointer;
+}
+
+.course-img {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.course-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.provider {
+  font-size: 11px;
+  color: #5f6c7b;
+}
+
+.course-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0c385f;
+}
+
+.meta {
+  font-size: 11px;
+  color: #5f6c7b;
+}
+@media (max-width: 992px) {
+  .trending-column {
+    width: 48%;
+  }
+}
+
+@media (max-width: 600px) {
+  .trending-column {
+    width: 100%;
+  }
+}
+/* Page Background */
+.learning-page {
+    background-color: #f7f9fa;
+    min-height: 100vh;
+}
+
+/* Header */
+.learning-header {
+    background-color: #2d2f31;
+    color: white;
+    padding-top: 30px;
+}
+
+.main-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.learning-tabs {
+    display: flex;
+    gap: 20px;
+}
+
+.learning-tabs span {
+    padding-bottom: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border-bottom: 6px solid transparent;
+}
+
+.learning-tabs span.active {
+    border-bottom-color: white;
+}
+
+/* Streak Card */
+.streak-card {
+    background: white;
+    border: 1px solid #d1d7dc;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+}
+
+.streak-metrics {
+    display: flex;
+    gap: 40px;
+}
+
+.metric-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.metric-info strong { font-size: 20px; }
+.metric-info small { display: block; color: #6a6f73; }
+
+.dot {
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+.orange { background-color: #b4690e; }
+.green { background-color: #1e8e3e; }
+
+/* Course Cards */
+.course-card {
+    background: transparent;
+    border: none;
+    transition: transform 0.2s;
+}
+
+.course-img-container {
+    position: relative;
+    border: 1px solid #d1d7dc;
+}
+
+.course-img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+}
+
+.dots-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+}
+
+.course-content {
+    padding-top: 10px;
+}
+
+.course-title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+    height: 36px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.instructor {
+    font-size: 12px;
+    color: #6a6f73;
+    margin-bottom: 8px;
+}
+
+.progress-container {
+    height: 4px;
+    background: #d1d7dc;
+    margin-bottom: 4px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #5624d0; /* Udemy Purple */
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6a6f73;
+}
+
+.start-link {
+    font-size: 13px;
+    font-weight: 700;
+    color: #5624d0;
+    text-decoration: none;
+}
+.learning-page { background: #fff; font-family: 'Open Sans', sans-serif; }
+
+/* Dark Header Style */
+.learning-header { background: #2d2f31; color: #fff; padding: 32px 0 0 0; }
+.main-title { font-size: 32px; font-weight: 700; margin-bottom: 24px; }
+.learning-tabs { display: flex; gap: 24px; }
+.learning-tabs span { 
+    font-weight: 700; font-size: 14px; padding-bottom: 8px; 
+    cursor: pointer; border-bottom: 5px solid transparent; opacity: 0.8;
+}
+.learning-tabs span.active { border-bottom-color: #fff; opacity: 1; }
+
+/* Streak Card UI */
+.streak-card-udemy {
+    border: 1px solid #d1d7dc; padding: 24px; border-radius: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.streak-stats { display: flex; gap: 40px; align-items: center; }
+.stat-group, .stat-circle-group { display: flex; align-items: center; gap: 15px; }
+.stat-label p { margin: 0; font-size: 13px; color: #6a6f73; }
+.date-range { font-size: 11px !important; }
+
+/* Custom Grid */
+.course-grid-custom {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+/* The Course Card */
+.course-item { cursor: pointer; }
+.img-wrapper { position: relative; border: 1px solid #d1d7dc; }
+.img-wrapper img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+.options-btn { 
+    position: absolute; top: 8px; right: 8px; background: #fff; border: none; 
+    width: 32px; height: 32px; font-weight: bold; border-radius: 2px;
+}
+
+.course-info { padding: 8px 0; }
+.title-text { font-size: 15px; font-weight: 700; color: #2d2f31; margin-bottom: 4px; line-height: 1.2; }
+.instructor-text { font-size: 12px; color: #6a6f73; margin-bottom: 12px; }
+
+/* Progress Bar */
+.bar-bg { height: 4px; background: #d1d7dc; width: 100%; margin-bottom: 4px; }
+.bar-fill { height: 100%; background: #5624d0; } /* Purple color */
+.progress-meta { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; }
+.stars { color: #b4690e; font-size: 14px; }
+.your-rating { font-size: 11px; text-align: right; color: #6a6f73; }
+
+/* Footer Link style */
+.divider { height: 1px; background: #d1d7dc; margin: 12px 0; }
+.start-link { font-size: 13px; font-weight: 700; color: #2d2f31; text-decoration: none; }
