@@ -1,7 +1,7 @@
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import "../App.css";
-
+import "../index.css";
 export default function Learning() {
   const courses = [
     {
@@ -43,7 +43,10 @@ export default function Learning() {
       <NavBar />
 
       {/* ===== DARK HEADER ===== */}
-      <section className="learning-header">
+      <section
+        className="learning-header"
+        style={{ backgroundColor: "#eef6ff" }}
+      >
         <div className="container">
           <h1 className="main-title">My learning</h1>
           <div className="learning-tabs">

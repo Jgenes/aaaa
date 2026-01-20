@@ -1,5 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
-
+import LOGO from "../assets/logo1.png";
 export default function NavBar() {
   const navigate = useNavigate();
 
@@ -20,7 +20,7 @@ export default function NavBar() {
       <div className="container-fluid px-4">
         {/* Brand (simple link, no button) */}
         <Link className=" fw-bold me-4 text-primary" to="/">
-          TrainingHub
+          <img src={LOGO} alt="TrainingHub Logo" style={{ height: "50px" }} />
         </Link>
 
         {/* Explore Link */}

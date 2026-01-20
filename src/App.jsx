@@ -20,7 +20,8 @@ import CohortList from "./pages/provider/cohortList.jsx";
 import Training from "./pages/trainings.jsx";
 import Learning from "./pages/Learning.jsx";
 import CourseLearning from "./pages/CourseLearning.jsx";
-// import MyLearning from "./pages/My
+// import MyLearning from "./pages/MyLearning.jsx";
+
 function App() {
   return (
     <Router>

@@ -1,7 +1,7 @@
 import React from "react";
 import IBMLogo from "../assets/pdpc.png";
 import SATA from "../assets/sata.jfif"; // provider logo
-import "../App.css";
+import "../app.css";
 
 const CourseHero = () => {
   return (
