@@ -1,5 +1,5 @@
 import NavBar from "../components/NavBar";
-import Banner1 from "../assets/t1.jpg";
+import Banner1 from "../assets/t1.jpeg";
 import Career from "../assets/carrer.png";
 import Skills from "../assets/skills.png";
 import GraduationCap from "../assets/GraduationCap.png";
