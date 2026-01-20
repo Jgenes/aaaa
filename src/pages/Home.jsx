@@ -23,7 +23,7 @@ export default function Home() {
           style={{ height: "500px", width: "100%" }}
           className="img-fluid w-100"
         />
-        <div className="card1">
+        <div className="card1" style={{ position: "relative", top: "-350px" }}>
           <h3>A big year starts with big savings</h3>
           <p>
             vMake your plans for 2026. Get courses from $9.99 to help you get
