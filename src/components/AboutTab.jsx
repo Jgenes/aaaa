@@ -1,101 +1,43 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import api from "../api/axio";
 import "../App.css";
-import CourseDescription from "./CourseDescription";
 
-export default function ProgramTabs() {
+export default function ProgramTabs({ courseId, cohortId }) {
+  const [course, setCourse] = useState(null);
   const [previewVideo, setPreviewVideo] = useState(null);
 
-  const curriculum = [
-    {
-      sectionTitle: "Course Introduction",
-      lectures: 5,
-      duration: "17min",
-      unlocked: true,
-      lessons: [
-        {
-          title: "Introduction",
-          time: "2:03",
-          video: "/videos/intro.mp4",
-          preview: true,
-        },
-        {
-          title: "Course Overview Don't Skip this Lecture!",
-          time: "8:00",
-          preview: true,
-        },
-        {
-          title: "FAQ - Frequently Asked Questions",
-          time: "0:26",
-          preview: true,
-        },
-        {
-          title: "Course Set-Up and Installation",
-          time: "5:42",
-          preview: true,
-        },
-        {
-          title: "Notes on Updates Versions of Django",
-          time: "1:17",
-          preview: true,
-        },
-      ],
-    },
-    {
-      sectionTitle: "Front-End Introduction",
-      lectures: 1,
-      duration: "7min",
-      unlocked: true,
-      lessons: [
-        {
-          title: "What is the Web?",
-          time: "6:43",
-          preview: true,
-          video: "/videos/web.mp4",
-        },
-      ],
-    },
-    {
-      sectionTitle: "HTML Level One - Basics",
-      lectures: 8,
-      duration: "50min",
-      unlocked: false,
-      lessons: [
-        { title: "HTML Introduction", time: "6:10" },
-        { title: "HTML Tags", time: "7:20" },
-      ],
-    },
-    {
-      sectionTitle: "HTML Level Two - Advanced",
-      lectures: 9,
-      duration: "1hr 9min",
-      unlocked: false,
-      lessons: [
-        { title: "Forms & Inputs", time: "9:15" },
-        { title: "Semantic HTML", time: "8:30" },
-      ],
-    },
-    {
-      sectionTitle: "CSS Level One - Basics",
-      lectures: 9,
-      duration: "1hr 3min",
-      unlocked: false,
-      lessons: [
-        { title: "CSS Syntax", time: "7:00" },
-        { title: "Selectors & Colors", time: "8:40" },
-      ],
-    },
-  ];
+  useEffect(() => {
+    fetchCourseContent();
+  }, [courseId, cohortId]);
+
+  const fetchCourseContent = async () => {
+    try {
+      const res = await api.get(`/training/${courseId}`);
+      const courseData = res.data;
+      const cohort = courseData.cohorts.find(
+        (c) => c.id === parseInt(cohortId),
+      );
+      setCourse({ ...courseData, selectedCohort: cohort });
+    } catch (error) {
+      console.error("Failed to fetch course content", error);
+    }
+  };
+
+  if (!course)
+    return <p className="text-center py-5">Loading course content...</p>;
+
+  const { selectedCohort, curriculum, requirements, description } = course;
 
   return (
     <div className="container mt-5">
       {/* COURSE CONTENT */}
       <h5>Course content</h5>
       <div className="accordion mt-3" id="curriculumAccordion">
-        {curriculum.map((section, index) => (
+        {curriculum?.map((section, index) => (
           <div className="accordion-item mb-2" key={index}>
             <h2 className="accordion-header">
               <button
-                className="accordion-button collapsed d-flex justify-content-between"
+                className={`accordion-button collapsed d-flex justify-content-between`}
                 type="button"
                 data-bs-toggle={section.unlocked ? "collapse" : ""}
                 data-bs-target={section.unlocked ? `#section${index}` : ""}
@@ -156,16 +98,16 @@ export default function ProgramTabs() {
       <div className="mt-5">
         <h5 style={{ fontSize: "15px" }}>Requirements</h5>
         <ul style={{ fontSize: "13px" }}>
-          <li>Basic programming knowledge</li>
-          <li>Familiarity with JavaScript</li>
-          <li>Willingness to learn AI concepts</li>
+          {requirements?.map((req, i) => (
+            <li key={i}>{req}</li>
+          ))}
         </ul>
       </div>
 
       {/* DESCRIPTION */}
       <div className="mt-5">
         <h5 style={{ fontSize: "15px" }}>Description</h5>
-        <CourseDescription />
+        <p style={{ fontSize: "13px" }}>{description}</p>
       </div>
 
       {/* VIDEO PREVIEW MODAL */}

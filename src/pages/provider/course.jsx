@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // 1. Tumeongeza useNavigate
+import { useNavigate } from "react-router-dom";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
 import { FaEye, FaEdit, FaTrash, FaCogs, FaPlus } from "react-icons/fa";
 import api from "../../api/axio";
+import { MdAddCircleOutline } from "react-icons/md";
 
 export default function ProviderDashboard() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterText, setFilterText] = useState("");
 
-  const navigate = useNavigate(); // 2. Tunatengeneza 'dereva' wa kukupeleka page zingine
+  const navigate = useNavigate();
 
-  // Kuvuta data kutoka Laravel
   useEffect(() => {
     fetchCourses();
   }, []);
@@ -29,28 +29,26 @@ export default function ProviderDashboard() {
     }
   };
 
-  // Filter data kulingana na search
   const filteredData = courses.filter(
     (item) =>
       item.title?.toLowerCase().includes(filterText.toLowerCase()) ||
       item.category?.toLowerCase().includes(filterText.toLowerCase()),
   );
 
-  // --- HAPA NDIPO MAREKEBISHO YAKO YALIPO ---
-
-  // Kuelekea kwenye View Course Page
   const handleView = (course) => {
     navigate(`/provider/viewCourse/${course.id}`);
   };
 
-  // Kuelekea kwenye Manage Cohorts Page
   const handleManage = (course) => {
     navigate(`/provider/cohortlist/${course.id}`);
   };
 
-  // Kuelekea kwenye Edit Page
   const handleEdit = (course) => {
     navigate(`/provider/editCourse/${course.id}`);
+  };
+
+  const handleExtras = (course) => {
+    navigate(`/provider/courses/${course.id}/manage`);
   };
 
   const handleDelete = async (course) => {
@@ -65,7 +63,6 @@ export default function ProviderDashboard() {
     }
   };
 
-  // Columns
   const columns = [
     { name: "ID", selector: (row) => row.id, sortable: true, width: "70px" },
     { name: "Course Name", selector: (row) => row.title, sortable: true },
@@ -76,6 +73,15 @@ export default function ProviderDashboard() {
       name: "Actions",
       cell: (row) => (
         <div className="d-flex gap-2">
+          {/* EXTRAS BUTTON */}
+          <button
+            className="btn btn-sm btn-secondary d-flex align-items-center gap-1"
+            onClick={() => handleExtras(row)}
+            title="Enrollments"
+          >
+            <MdAddCircleOutline style={{ color: "white" }} size={18} />
+          </button>
+
           {/* VIEW BUTTON */}
           <button
             className="btn btn-sm btn-info"

@@ -53,7 +53,7 @@ function Register() {
 
     try {
       // ✅ POST to tenant-register route
-      const response = await api.post("/tenant-register", {
+      const response = await api.post("/register", {
         name: fullname,
         email,
         phone,
@@ -63,7 +63,7 @@ function Register() {
 
       toast.success(
         response.data.message ||
-          "Tenant registered successfully! Check your email to activate your account."
+          "Tenant registered successfully! Check your email to activate your account.",
       );
 
       // Redirect to login after 2 seconds

@@ -173,6 +173,18 @@ body {
   border-color: #0a2e67;
   font-size: 12px;
 }
+.btnVerifyOtp {
+  font-size: 13px;
+  background-color: #0a2e67;
+  border-color: #0a2e67;
+}
+.btnVerifyOtp:hover {
+  background-color: #0a2e67;
+  color: white;
+  border-color: #0a2e67;
+  box-shadow: 1px 1px 5px 1px #0a2e67;
+}
+
 .enrollmentButton:hover {
   background-color: #0a2e67;
   color: white;
@@ -182,6 +194,9 @@ body {
 .container2 {
   position: relative;
   top: -150px;
+}
+a {
+  text-decoration: none;
 }
 .container2 h3 {
   font-size: 18px;
@@ -235,7 +250,7 @@ body {
   color: #0052cc;
   text-decoration: none;
 }
-.bnm{
+.bnm {
   font-size: 13px;
 }
 
@@ -249,7 +264,7 @@ body {
   background-color: #0a2e67;
   border-color: #0a2e67;
   box-shadow: 1px 1px 5px 1px #0a2e67;
-} 
+}
 .enroll-btn small {
   font-weight: 400;
 }
@@ -473,13 +488,49 @@ body {
   border-color: #0a2e67;
   box-shadow: 1px 1px 5px 1px #0a2e67;
 }
+.verifyBtn1 {
+  font-size: 13px;
+  background-color: #0a2e67;
+  border-color: #0a2e67;
+}
+.verifyBtn1:hover {
+  background-color: #0a2e67;
+  color: white;
+  border-color: #0a2e67;
+  box-shadow: 1px 1px 5px 1px #0a2e67;
+}
+.checkOutBtn {
+  font-size: 13px;
+  background-color: #0a2e67;
+  border-color: #0a2e67;
+}
+.checkOutBtn:hover {
+  background-color: #0a2e67;
+  color: white;
+  border-color: #0a2e67;
+  box-shadow: 1px 1px 5px 1px #0a2e67;
+}
+.btnEnroll {
+  font-size: 13px;
+  background-color: #0a2e67;
+  border-color: #0a2e67;
+}
+.btnEnroll:hover {
+  background-color: #0a2e67;
+  color: white;
+  border-color: #0a2e67;
+  box-shadow: 1px 1px 5px 1px #0a2e67;
+}
 .t1 {
   font-size: 20px;
   color: #111827;
-7}
+}
 .t2 {
   font-size: 13px;
   color: #111827;
+}
+label {
+  font-size: 13px;
 }
 .t3 {
   font-size: 20px;
@@ -518,6 +569,37 @@ body {
   padding: 7px;
   font-size: 13px;
   border-color: #0a2e67;
+}
+/* Rangi yako maalum kwa ajili ya Button iliyochaguliwa (Active) */
+.btnPrimary1 {
+  background-color: #0a2e67 !important;
+  color: white !important;
+  border-color: #0a2e67 !important;
+  font-size: 13px;
+}
+
+/* Rangi ya button ambayo haijachaguliwa (Outline) */
+.btn-outline-custom {
+  color: #0a2e67;
+  font-size: 13px;
+
+  border-color: #0a2e67;
+}
+
+.btnz {
+  background-color: #0a2e67 !important;
+  color: white !important;
+  border-color: #0a2e67 !important;
+  font-size: 13px;
+}
+.leftB {
+  left-border-color: #0a2e67 !important;
+}
+.btn-outline-custom:hover {
+  font-size: 13px;
+
+  background-color: #0a2e67;
+  color: white;
 }
 .btnCV {
   background-color: #0a2e67;
@@ -598,37 +680,40 @@ body {
   border-color: #0a2e67;
   box-shadow: 1px 1px 5px 1px #0a2e67;
 }
-.btn-outline-darks{
+.btn-outline-darks {
   background-color: white;
   color: #0a2e67;
   font-size: 13px;
   border-color: #0a2e67;
 }
-.btn-outline-darks:hover{
+.btn-outline-darks:hover {
   background-color: #0a2e67;
   color: white;
   border-color: #0a2e67;
   box-shadow: 1px 1px 5px 1px #0a2e67;
-} 
-.navbar-nav .nav-link {
-    transition: color 0.2s, border-bottom 0.2s;
-  }
-
-  .navbar-nav .nav-link:hover {
-    color: #0a2e67; /* bootstrap primary color */
-    border-bottom: 2px solid #0a2e67; /* small underline on hover */
 }
-.downLoad-btn{
+.navbar-nav .nav-link {
+  transition:
+    color 0.2s,
+    border-bottom 0.2s;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #0a2e67; /* bootstrap primary color */
+  border-bottom: 2px solid #0a2e67; /* small underline on hover */
+}
+.downLoad-btn {
   background-color: #0a2e67;
   color: white;
   font-size: 13px;
   border-color: #0a2e67;
 }
-.downLoad-btn:hover{
+.downLoad-btn:hover {
   background-color: #0a2e67;
   color: white;
   border-color: #0a2e67;
-  box-shadow: 1px 1px 5px 1px #0a2e67;}
+  box-shadow: 1px 1px 5px 1px #0a2e67;
+}
 .trainBtn:hover {
   background-color: #0a2e67;
   color: white;
@@ -663,17 +748,15 @@ a {
   text-decoration: none;
 }
 
-.hFilter{
+.hFilter {
   font-size: 15px;
 }
-label{
-
+label {
   font-size: 13px;
 }
-select option{
+select option {
   font-size: 13px;
 }
-
 
 .trending-container {
   padding: 40px 0;

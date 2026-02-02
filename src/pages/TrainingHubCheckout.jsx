@@ -1,32 +1,162 @@
-import React, { useState } from "react";
-import "../App.css";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
+import api from "../api/axio";
+import "../App.css";
 
-const TrainingHubCheckout = () => {
-  const [paymentMethod, setPaymentMethod] = useState("");
+export default function TrainingHubCheckout() {
+  const { courseId, cohortId } = useParams();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [course, setCourse] = useState(null);
+  const [cohort, setCohort] = useState(null);
+
+  const [userInfo, setUserInfo] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    organizationName: "",
+    position: "",
+    street: "",
+    city: "",
+    region: "",
+    country: "Tanzania",
+    postalCode: "",
+  });
+
+  const tzData = {
+    Arusha: ["Arusha City", "Arumeru", "Karatu", "Monduli", "Ngorongoro"],
+    "Dar es Salaam": ["Ilala", "Kinondoni", "Temeke", "Kigamboni", "Ubungo"],
+    Dodoma: ["Dodoma City", "Bahi", "Chamwino", "Kondoa", "Mpwapwa"],
+    Mwanza: ["Ilemela", "Nyamagana", "Magu", "Sengerema"],
+    Tanga: ["Tanga City", "Handeni", "Korogwe", "Lushoto", "Muheza", "Pangani"],
+    // Unaweza kuongeza mikoa mingine hapa...
+  };
+
+  const formatTzPhone = (number) => {
+    if (!number) return "";
+    let cleaned = number.toString().replace(/\D/g, "");
+    if (cleaned.startsWith("0")) return "255" + cleaned.substring(1);
+    if (cleaned.startsWith("7") || cleaned.startsWith("6"))
+      return "255" + cleaned;
+    return cleaned;
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const cohortRes = await api.get(
+          `/courses/${courseId}/cohorts/${cohortId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+
+        const cohortData = cohortRes.data.data || cohortRes.data;
+        setCohort(cohortData);
+        setCourse(cohortData.course || null);
+
+        const userRes = await api.get("/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const user = userRes.data;
+        setUserInfo((prev) => ({
+          ...prev,
+          name: user.name || "",
+          email: user.email || "",
+          phone: formatTzPhone(user.phone || ""),
+        }));
+      } catch (err) {
+        console.error("Fetch Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [courseId, cohortId, navigate]);
+
+  const handlePayNow = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Session expired. Please login again.");
+        return navigate("/login");
+      }
+
+      // Mapping data kwa usahihi kwenda Laravel
+      const paymentData = {
+        course_id: courseId,
+        cohort_id: cohortId,
+        amount: cohort?.price,
+        name: userInfo.name,
+        email: userInfo.email,
+        phone: userInfo.phone,
+        organization: userInfo.organization,
+        position: userInfo.position,
+        street: userInfo.street,
+        region: userInfo.region,
+        city: userInfo.city,
+        postal: userInfo.postal,
+      };
+
+      console.log("Sending data to backend:", paymentData);
+
+      const res = await api.post("/payment/initiate", paymentData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.data.success && res.data.redirect_url) {
+        window.location.href = res.data.redirect_url;
+      } else {
+        alert("Backend Error: " + (res.data.message || "Unknown error"));
+      }
+    } catch (error) {
+      // Hii itakuambia kwanini imefeli haswa
+      const errorMsg = error.response?.data?.message || error.message;
+      console.error("Detailed Error:", error.response?.data);
+      alert("Payment Failed: " + errorMsg);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="text-center py-5 mt-5">
+        <div className="spinner-border text-primary"></div>
+        <p>Loading checkout...</p>
+      </div>
+    );
 
   return (
     <>
       <NavBar />
-
       <div className="container my-5">
         <div className="row g-4">
-          {/* ================= LEFT SIDE ================= */}
           <div className="col-md-7">
             <div className="card shadow-sm border-0">
               <div className="card-body p-4">
-                <h4 className="mb-4 fw-semibold">
-                  Billing & Contact Information
+                <h4
+                  className="mb-4"
+                  style={{ fontColor: "#111827", fontSize: "15px" }}
+                >
+                  Billing Information
                 </h4>
 
-                {/* USER INFO */}
+                {/* 1. Personal Info */}
                 <div className="mb-3">
                   <label className="form-label fw-medium">Full Name</label>
                   <input
                     type="text"
-                    className="form-control"
-                    placeholder="Ngutu Joseph"
+                    className="form-control bg-light"
+                    value={userInfo.name}
+                    readOnly
                   />
                 </div>
 
@@ -37,196 +167,221 @@ const TrainingHubCheckout = () => {
                     </label>
                     <input
                       type="email"
-                      className="form-control"
-                      placeholder="joseph@email.com"
+                      className="form-control bg-light"
+                      value={userInfo.email}
+                      readOnly
                     />
                   </div>
-
                   <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">Phone Number</label>
+                    <label className="form-label fw-medium">
+                      Phone (255...)
+                    </label>
                     <input
                       type="tel"
                       className="form-control"
-                      placeholder="+255 7XX XXX XXX"
+                      value={userInfo.phone}
+                      onChange={(e) =>
+                        setUserInfo({ ...userInfo, phone: e.target.value })
+                      }
                     />
                   </div>
                 </div>
 
-                {/* ADDRESS */}
-                <h6 className="mt-4 mb-3 fw-semibold">Billing Address</h6>
+                {/* 2. Organization Details (Optional) */}
+                <h6
+                  style={{ fontColor: "#111827", fontSize: "15px" }}
+                  className="mt-4 mb-3 border-bottom pb-2"
+                >
+                  Work Details (Optional)
+                </h6>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-medium">
+                      Organization Name
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={userInfo.organizationName}
+                      onChange={(e) =>
+                        setUserInfo({
+                          ...userInfo,
+                          organizationName: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. Google"
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-medium">
+                      Your Position
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={userInfo.position}
+                      onChange={(e) =>
+                        setUserInfo({ ...userInfo, position: e.target.value })
+                      }
+                      placeholder="e.g. Manager"
+                    />
+                  </div>
+                </div>
 
+                {/* 3. Full Address Information */}
+                <h6
+                  style={{ fontColor: "#111827", fontSize: "15px" }}
+                  className="mt-4 mb-3 border-bottom pb-2"
+                >
+                  Address Information
+                </h6>
                 <div className="mb-3">
                   <label className="form-label fw-medium">Street Address</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Plot 123, Sam Nujoma Road"
+                    value={userInfo.street}
+                    onChange={(e) =>
+                      setUserInfo({ ...userInfo, street: e.target.value })
+                    }
+                    placeholder="Mwai Kibaki Road, House No. 5"
                   />
                 </div>
 
                 <div className="row">
                   <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">City</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Dar es Salaam"
-                    />
+                    <label className="form-label fw-medium">Region</label>
+                    <select
+                      className="form-select"
+                      value={userInfo.region}
+                      onChange={(e) =>
+                        setUserInfo({
+                          ...userInfo,
+                          region: e.target.value,
+                          city: "",
+                        })
+                      }
+                    >
+                      <option value="">Select Region</option>
+                      {Object.keys(tzData)
+                        .sort()
+                        .map((reg) => (
+                          <option key={reg} value={reg}>
+                            {reg}
+                          </option>
+                        ))}
+                    </select>
                   </div>
-
                   <div className="col-md-6 mb-3">
                     <label className="form-label fw-medium">
-                      Region / State
+                      City / District
                     </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Kinondoni"
-                    />
+                    <select
+                      className="form-select"
+                      value={userInfo.city}
+                      disabled={!userInfo.region}
+                      onChange={(e) =>
+                        setUserInfo({ ...userInfo, city: e.target.value })
+                      }
+                    >
+                      <option value="">Select City</option>
+                      {userInfo.region &&
+                        tzData[userInfo.region].map((city) => (
+                          <option key={city} value={city}>
+                            {city}
+                          </option>
+                        ))}
+                    </select>
                   </div>
                 </div>
 
                 <div className="row">
                   <div className="col-md-6 mb-3">
                     <label className="form-label fw-medium">Country</label>
-                    <select className="form-select">
-                      <option value="">Select country</option>
-                      <option>Tanzania</option>
-                      <option>Kenya</option>
-                      <option>Rwanda</option>
-                    </select>
+                    <input
+                      className="form-control bg-light"
+                      value="Tanzania"
+                      readOnly
+                    />
                   </div>
-
                   <div className="col-md-6 mb-3">
                     <label className="form-label fw-medium">Postal Code</label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="00255"
+                      value={userInfo.postalCode}
+                      onChange={(e) =>
+                        setUserInfo({ ...userInfo, postalCode: e.target.value })
+                      }
+                      placeholder="e.g. 11101"
                     />
                   </div>
-                </div>
-
-                {/* OPTIONAL BUSINESS INFO */}
-                <div className="mb-3">
-                  <label className="form-label fw-medium">
-                    Company / Organization{" "}
-                    <span className="text-muted">(Optional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="ABC Technologies Ltd"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="form-label fw-medium">
-                    Tax Identification Number (TIN)
-                    <span className="text-muted"> (Optional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="TIN12345678"
-                  />
-                </div>
-
-                <hr className="my-4" />
-
-                {/* PAYMENT METHOD */}
-                <h5 className="mb-3 fw-semibold">Payment Method</h5>
-
-                {[
-                  "M-Pesa (Vodacom)",
-                  "Airtel Money",
-                  "Tigo Pesa",
-                  "Bank Transfer",
-                ].map((method) => (
-                  <div
-                    key={method}
-                    className={`border rounded p-3 mb-2 d-flex align-items-center ${
-                      paymentMethod === method ? "border-primary" : ""
-                    }`}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => setPaymentMethod(method)}
-                  >
-                    <input
-                      type="radio"
-                      className="form-check-input"
-                      checked={paymentMethod === method}
-                      readOnly
-                    />
-                    <span className="ms-3">{method}</span>
-                  </div>
-                ))}
-
-                <div className="form-check mt-4">
-                  <input className="form-check-input" type="checkbox" />
-                  <label className="form-check-label small">
-                    I agree to the Terms & Conditions
-                  </label>
                 </div>
 
                 <button
-                  className="btn btn-primary w-100 mt-4 py-2"
-                  disabled={!paymentMethod}
+                  className="btn btn-primary w-100 mt-4 shadow-sm checkOutBtn"
+                  onClick={handlePayNow}
                 >
-                  Complete Payment
+                  Pay
                 </button>
               </div>
             </div>
           </div>
 
-          {/* ================= RIGHT SIDE ================= */}
+          {/* RIGHT SIDE: SUMMARY */}
           <div className="col-md-5">
-            <div className="card shadow-sm border-0">
+            <div className="card shadow-sm border-0 bg-light">
               <div className="card-body p-4">
-                <h5 className="fw-semibold">Order Summary</h5>
-
-                <div className="border rounded p-3 mb-3">
-                  <h6 className="mb-1">Personal Data Protection Training</h6>
+                <h5
+                  className=" mb-3 border-bottom pb-2"
+                  style={{ fontSize: "15px", color: "#111827" }}
+                >
+                  Order Summary
+                </h5>
+                <div className="mb-4">
+                  <h6
+                    className="mb-1"
+                    style={{
+                      fontSize: "15px",
+                      color: "#111827",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {course?.title || "Course"}
+                  </h6>
                   <p className="small text-muted mb-0">
-                    Provider: IBM Skills Network
-                  </p>
-                  <p className="small text-muted mb-0">
-                    Mode: Online • Duration: 8 Weeks
-                  </p>
-                  <p className="small text-muted mb-0">
-                    Start Date: 15 Feb 2026
+                    Cohort: {cohort?.name || "Loading..."}
                   </p>
                 </div>
 
                 <div className="d-flex justify-content-between mb-2">
-                  <span>Course Fee</span>
-                  <strong>$20 USD</strong>
+                  <span>Price</span>
+                  <strong>{cohort?.price?.toLocaleString()} TZS</strong>
                 </div>
-
                 <div className="d-flex justify-content-between mb-2">
-                  <span>Tax</span>
-                  <strong>$0</strong>
+                  <span>Tax (0%)</span>
+                  <strong>0 TZS</strong>
                 </div>
-
                 <hr />
-
                 <div className="d-flex justify-content-between">
-                  <span className="fw-semibold">Total</span>
-                  <span className="fw-semibold">$20 USD</span>
+                  <span
+                    style={{ fontSize: "15px", color: "#111827" }}
+                    className="fw-bold"
+                  >
+                    Total
+                  </span>
+                  <span className="fw-bold fs-5 text-primary">
+                    <span style={{ fontSize: "13px", color: "#111827" }}>
+                      {cohort?.price?.toLocaleString()} TZS
+                    </span>
+                  </span>
                 </div>
-
-                <p className="text-muted small mt-3">
-                  Secure checkout. Payment confirmation will be sent to your
-                  email and phone number.
-                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
-
       <Footer />
     </>
   );
-};
-
-export default TrainingHubCheckout;
+}

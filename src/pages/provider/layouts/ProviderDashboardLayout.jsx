@@ -12,7 +12,7 @@ export default function ProviderDashboardLayout({ title, children }) {
     window.location.href = "/login";
   };
 
-  // ✅ CHUKUA DATA KUTOKA LOCALSTORAGE (BILA KUTUMIA API ROUTE)
+  // ✅ CHUKUA DATA KUTOKA LOCALSTORAGE
   useEffect(() => {
     const token = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
@@ -37,10 +37,13 @@ export default function ProviderDashboardLayout({ title, children }) {
     <>
       {/* TOP NAVBAR */}
       <header
-        className="navbar sticky-top bg-white flex-md-nowrap p-0 shadow"
-        style={{ backgroundColor: "#111827" }}
+        className="navbar sticky-top flex-md-nowrap p-0 shadow"
+        style={{ backgroundColor: "#111827" }} // Rangi yako ya asili
       >
-        <a className="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="#">
+        <a
+          className="navbar-brand col-md-3 col-lg-2 me-0 px-3 text-white fw-bold"
+          href="#"
+        >
           TrainingHub
         </a>
 
@@ -49,24 +52,30 @@ export default function ProviderDashboardLayout({ title, children }) {
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#sidebarMenu"
+          aria-controls="sidebarMenu"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon"></span>
         </button>
 
         <input
-          className="form-control form-control-dark w-100"
+          className="form-control form-control-dark w-100 d-none d-md-block"
           type="text"
           placeholder="Search"
+          style={{ backgroundColor: "#1f2937", border: "none", color: "white" }}
         />
 
-        {/* USER INFO SECTION */}
+        {/* ✅ USER INFO SECTION (TOP BAR) */}
         <div className="navbar-nav">
-          <div className="nav-item d-flex align-items-center gap-3 px-3 text-white">
-            {/* Hapa ndipo jina lako linatokea kutoka kwenye LocalStorage */}
-            <span className="small text-white" style={{ color: "#111827" }}>
-              <i className="bi bi-person-circle me-1"></i>
-              {user ? user.name : "Mgeni"}
-            </span>
+          <div className="nav-item d-flex align-items-center gap-3 px-3">
+            {/* JINA LA USER LINATOKEA HAPA LIKIWA NYEUPE */}
+            <div className="d-flex align-items-center text-white">
+              <i className="bi bi-person-circle me-2 fs-5"></i>
+              <span className="small fw-bold">
+                {user ? user.name : "Loading..."}
+              </span>
+            </div>
 
             <button
               type="button"
@@ -74,7 +83,7 @@ export default function ProviderDashboardLayout({ title, children }) {
               onClick={logout}
             >
               <i className="bi bi-box-arrow-right"></i>
-              Logout
+              <span className="d-none d-sm-inline">Logout</span>
             </button>
           </div>
         </div>
@@ -108,16 +117,9 @@ export default function ProviderDashboardLayout({ title, children }) {
                 </li>
 
                 <li className="nav-item">
-                  <a className="nav-link d-flex gap-2" href="/provider/cohorts">
-                    <i className="bi bi-calendar-event"></i>
-                    Cohorts / Intakes
-                  </a>
-                </li>
-
-                <li className="nav-item">
                   <a
                     className="nav-link d-flex gap-2"
-                    href="/tenant/enrollments"
+                    href="/provider/enrollments"
                   >
                     <i className="bi bi-people"></i>
                     Enrollments
@@ -127,22 +129,25 @@ export default function ProviderDashboardLayout({ title, children }) {
                 <li className="nav-item">
                   <a
                     className="nav-link d-flex gap-2"
-                    href="/tenant/enrollments"
+                    href="/provider/invoices"
                   >
-                    <i className="bi bi-people"></i>
+                    <i className="bi bi-receipt"></i>
                     Invoices & Receipts
                   </a>
                 </li>
 
                 <li className="nav-item">
-                  <a className="nav-link d-flex gap-2" href="/tenant/profile">
+                  <a className="nav-link d-flex gap-2" href="/provider/profile">
                     <i className="bi bi-person"></i>
                     Profile
                   </a>
                 </li>
 
                 <li className="nav-item">
-                  <a className="nav-link d-flex gap-2" href="/tenant/settings">
+                  <a
+                    className="nav-link d-flex gap-2"
+                    href="/provider/settings"
+                  >
                     <i className="bi bi-gear"></i>
                     Settings
                   </a>
@@ -182,7 +187,9 @@ export default function ProviderDashboardLayout({ title, children }) {
           {/* PAGE CONTENT */}
           <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div className="pt-3 pb-2 mb-3 border-bottom">
-              <h1 className="h2 h2i">{title}</h1>
+              <h1 className="h2 h2i" style={{ fontWeight: "700" }}>
+                {title}
+              </h1>
             </div>
 
             {/* Hapa ndipo page content yako inatokea */}

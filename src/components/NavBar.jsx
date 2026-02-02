@@ -54,11 +54,6 @@ export default function NavBar() {
                 Trainings
               </Link>
             </li>
-            <li className="nav-item" style={{ fontSize: "13px" }}>
-              <Link className="nav-link text-dark" to="/learning">
-                My Learning
-              </Link>
-            </li>
 
             {token ? (
               <>
@@ -66,12 +61,20 @@ export default function NavBar() {
                 <li className="nav-item" style={{ fontSize: "13px" }}>
                   <Link
                     className="nav-link text-dark fw-semibold"
-                    to="/my-learning"
+                    to="/learning"
                   >
                     My Learning
                   </Link>
                 </li>
-
+                {/* Transactions */}
+                <li className="nav-item" style={{ fontSize: "13px" }}>
+                  <Link
+                    className="nav-link text-dark fw-semibold"
+                    to="/transactions"
+                  >
+                    Transactions
+                  </Link>
+                </li>
                 {/* Profile / Logout Dropdown */}
                 <li className="nav-item dropdown ms-lg-3">
                   <button

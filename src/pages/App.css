@@ -464,6 +464,16 @@ body {
   border-color: #0a2e67;
   box-shadow: 1px 1px 5px 1px #0a2e67;
 }
+.btnCreateCourse {
+  font-size: 13px;
+  background-color: #0a2e67;
+  border-color: #0a2e67 ;
+}
+.btnCreateCourse:hover {
+  background-color: #0a2e67;
+  border-color: #0a2e67;
+  box-shadow: 1px 1px 5px 1px #0a2e67;
+}
 .t1 {
   font-size: 20px;
   color: #111827;

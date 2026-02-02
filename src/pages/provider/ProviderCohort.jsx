@@ -12,20 +12,33 @@ export default function ProviderCohorts() {
   const [filterText, setFilterText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedCohort, setSelectedCohort] = useState(null);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([]); // Initialized as empty array
 
   useEffect(() => {
     api
       .get(`/courses/${courseId}/cohorts`)
       .then((res) => {
-        setData(res.data || []);
+        /**
+         * FIX: Laravel API often wraps the array in a 'data' key.
+         * We check if res.data is the array, or if res.data.data is the array.
+         */
+        const actualData = Array.isArray(res.data)
+          ? res.data
+          : res.data?.data || [];
+
+        setData(actualData);
       })
       .catch((err) => {
         console.error("Failed to load cohorts:", err);
+        setData([]); // Reset to empty array on error to prevent .filter crash
       });
   }, [courseId]);
 
-  const filteredData = data.filter(
+  /**
+   * FIX: Added a check (data || []) to ensure .filter
+   * never runs on a non-array value.
+   */
+  const filteredData = (Array.isArray(data) ? data : []).filter(
     (item) =>
       item.intakeName?.toLowerCase().includes(filterText.toLowerCase()) ||
       item.courseName?.toLowerCase().includes(filterText.toLowerCase()),
@@ -52,7 +65,7 @@ export default function ProviderCohorts() {
     { name: "Seats", selector: (row) => row.capacity },
     {
       name: "Remaining",
-      selector: (row) => row.capacity - row.enrolled,
+      selector: (row) => (row.capacity || 0) - (row.enrolled || 0),
       sortable: true,
     },
     { name: "Status", selector: (row) => row.status },
@@ -88,7 +101,6 @@ export default function ProviderCohorts() {
       <div className="container mt-4">
         <div className="d-flex justify-content-between mb-2">
           <h5>Cohorts List</h5>
-
           <div className="d-flex gap-2">
             <input
               type="text"
@@ -102,8 +114,7 @@ export default function ProviderCohorts() {
               onClick={() => navigate(`/provider/cohorts/create/${courseId}`)}
               className="btn btn-sm btn-success d-flex align-items-center gap-1 addCohortBtn"
             >
-              <FaPlus />
-              Add Cohort
+              <FaPlus /> Add Cohort
             </button>
           </div>
         </div>
@@ -114,6 +125,7 @@ export default function ProviderCohorts() {
           pagination
           highlightOnHover
           striped
+          noDataComponent="No cohorts found for this course."
         />
 
         {showModal && selectedCohort && (
@@ -130,7 +142,6 @@ export default function ProviderCohorts() {
                     onClick={() => setShowModal(false)}
                   />
                 </div>
-
                 <div className="modal-body">
                   <p>
                     <strong>Course:</strong> {selectedCohort.courseName}
@@ -163,21 +174,21 @@ export default function ProviderCohorts() {
                       </a>
                     </p>
                   )}
-
                   <hr />
                   <p>
                     <strong>Seats:</strong> {selectedCohort.capacity}
                   </p>
                   <p>
                     <strong>Remaining Seats:</strong>{" "}
-                    {selectedCohort.capacity - selectedCohort.enrolled}
+                    {(selectedCohort.capacity || 0) -
+                      (selectedCohort.enrolled || 0)}
                   </p>
                   <p>
                     <strong>Price:</strong> TZS{" "}
                     {selectedCohort.price?.toLocaleString()}
                   </p>
                   <p>
-                    <strong>Registration Deadline:</strong>{" "}
+                    <strong>Deadline:</strong>{" "}
                     {selectedCohort.registrationDeadline}
                   </p>
                   <p>
@@ -191,7 +202,6 @@ export default function ProviderCohorts() {
                     <strong>Description:</strong> {selectedCohort.description}
                   </p>
                 </div>
-
                 <div className="modal-footer">
                   <button
                     className="btn btn-secondary"

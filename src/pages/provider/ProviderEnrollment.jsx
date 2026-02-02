@@ -1,191 +1,220 @@
-import "../../dashboard.css";
-import "../../App.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../../api/axio";
+import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
+import DataTable from "react-data-table-component";
 
 export default function ProviderEnrollments() {
-  // SAMPLE enrollment data
-  const [enrollments] = useState([
+  const [enrollments, setEnrollments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterText, setFilterText] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  useEffect(() => {
+    fetchEnrollments();
+  }, []);
+
+  const fetchEnrollments = async () => {
+    try {
+      const res = await api.get("/provider/enrollments");
+      setEnrollments(Array.isArray(res.data) ? res.data : []);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error:", err);
+      setLoading(false);
+    }
+  };
+
+  const totalStudents = enrollments.length;
+  const totalEarnings = enrollments.reduce((acc, curr) => {
+    return curr.status === "PAID" || curr.status === "COMPLETED"
+      ? acc + Number(curr.amount)
+      : acc;
+  }, 0);
+
+  const columns = [
     {
-      id: 1,
-      student: "John Doe",
-      course: "Fullstack Web Development",
-      cohort: "Jan 2026",
-      date: "2026-01-05",
-      status: "Active",
+      name: "Student",
+      selector: (row) => row.user?.name,
+      sortable: true,
+      cell: (row) => (
+        <div className="py-2">
+          <div className="fw-bold text-dark">{row.user?.name || "Unknown"}</div>
+          <small className="text-muted" style={{ fontSize: "11px" }}>
+            {row.user?.email || row.email}
+          </small>
+        </div>
+      ),
     },
     {
-      id: 2,
-      student: "Anna Smith",
-      course: "UI/UX Design Fundamentals",
-      cohort: "Jan 2026",
-      date: "2026-01-06",
-      status: "Completed",
+      name: "Course & Cohort",
+      selector: (row) => row.course?.title,
+      cell: (row) => (
+        <div>
+          <div
+            className="text-wrap"
+            style={{ fontSize: "12px", lineHeight: "1.2" }}
+          >
+            {row.course?.title}
+          </div>
+          <span
+            className="badge bg-light text-dark border mt-1"
+            style={{ fontSize: "10px" }}
+          >
+            {row.cohort?.name}
+          </span>
+        </div>
+      ),
     },
     {
-      id: 3,
-      student: "Michael Brown",
-      course: "Fullstack Web Development",
-      cohort: "Oct 2025",
-      date: "2025-10-20",
-      status: "Pending",
+      name: "Status",
+      cell: (row) => (
+        <span
+          className={`badge rounded-pill ${row.status === "PAID" || row.status === "COMPLETED" ? "bg-success" : "bg-danger"}`}
+          style={{ fontSize: "10px" }}
+        >
+          {row.status === "PAID" || row.status === "COMPLETED"
+            ? "Active"
+            : "Pending"}
+        </span>
+      ),
     },
-  ]);
+    {
+      name: "Action",
+      button: true,
+      cell: (row) => (
+        <button
+          className="btn btn-sm btn-light border d-flex align-items-center"
+          data-bs-toggle="modal"
+          data-bs-target="#studentModal"
+          onClick={() => setSelectedStudent(row)}
+        >
+          <i className="bi bi-eye me-1"></i> Details
+        </button>
+      ),
+    },
+  ];
+
+  const filteredItems = enrollments.filter(
+    (item) =>
+      item.user?.name?.toLowerCase().includes(filterText.toLowerCase()) ||
+      item.course?.title?.toLowerCase().includes(filterText.toLowerCase()),
+  );
 
   return (
-    <>
-      {/* HEADER */}
-      <header className="navbar navbar-dark sticky-top bg-dark p-0 shadow">
-        <a className="navbar-brand px-3" href="#">
-          TrainingHub
-        </a>
-      </header>
-
-      <div className="container-fluid">
-        <div className="row">
-          {/* SIDEBAR */}
-          <nav
-            id="sidebarMenu"
-            className="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse"
-          >
-            <div className="position-sticky pt-3">
-              <ul className="nav flex-column">
-                <li className="nav-item">
-                  <a
-                    className="nav-link d-flex align-items-center gap-2"
-                    href="#"
-                  >
-                    <i className="bi bi-speedometer2"></i>
-                    Dashboard
-                  </a>
-                </li>
-
-                <li className="nav-item">
-                  <a
-                    className="nav-link d-flex align-items-center gap-2"
-                    href="#"
-                  >
-                    <i className="bi bi-journal-text"></i>
-                    Courses
-                  </a>
-                </li>
-
-                <li className="nav-item">
-                  <a
-                    className="nav-link d-flex align-items-center gap-2"
-                    href="#"
-                  >
-                    <i className="bi bi-calendar-event"></i>
-                    Cohorts
-                  </a>
-                </li>
-
-                <li className="nav-item">
-                  <a
-                    className="nav-link active d-flex align-items-center gap-2"
-                    href="#"
-                  >
-                    <i className="bi bi-people"></i>
-                    Enrollments
-                  </a>
-                </li>
-
-                <li className="nav-item">
-                  <a
-                    className="nav-link d-flex align-items-center gap-2"
-                    href="#"
-                  >
-                    <i className="bi bi-gear"></i>
-                    Settings
-                  </a>
-                </li>
-              </ul>
-
-              <hr className="my-3" />
-
-              <h6 className="sidebar-heading px-3 mb-2 text-muted text-uppercase small">
-                Reports
-              </h6>
-
-              <ul className="nav flex-column mb-2">
-                <li className="nav-item">
-                  <a
-                    className="nav-link d-flex align-items-center gap-2"
-                    href="#"
-                  >
-                    <i className="bi bi-file-earmark-text"></i>
-                    Course Reports
-                  </a>
-                </li>
-
-                <li className="nav-item">
-                  <a
-                    className="nav-link d-flex align-items-center gap-2"
-                    href="#"
-                  >
-                    <i className="bi bi-graph-up"></i>
-                    Engagement
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </nav>
-
-          {/* MAIN */}
-          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div className="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
-              <h3 className="h2">Enrollment Management</h3>
-            </div>
-
-            {/* TABLE */}
-            <div className="card">
-              <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Student</th>
-                      <th>Course</th>
-                      <th>Cohort</th>
-                      <th>Enrolled On</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {enrollments.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="text-center text-muted">
-                          No enrollments found
-                        </td>
-                      </tr>
-                    ) : (
-                      enrollments.map((e) => (
-                        <tr key={e.id}>
-                          <td>{e.student}</td>
-                          <td>{e.course}</td>
-                          <td>{e.cohort}</td>
-                          <td>{e.date}</td>
-                          <td>
-                            <span
-                              className={`badge ${
-                                e.status === "Active"
-                                  ? "bg-success"
-                                  : e.status === "Completed"
-                                  ? "bg-primary"
-                                  : "bg-warning text-dark"
-                              }`}
-                            >
-                              {e.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </main>
+    <ProviderDashboardLayout title="Enrollments">
+      <div className="row mb-4">
+        <div className="col-md-3 mb-2">
+          <div className="card border-0 shadow-sm p-3 border-start border-primary border-4">
+            <small className="text-muted fw-bold d-block text-uppercase">
+              Students
+            </small>
+            <h4 className="fw-bold mb-0">{totalStudents}</h4>
+          </div>
+        </div>
+        <div className="col-md-3 mb-2">
+          <div className="card border-0 shadow-sm p-3 border-start border-success border-4">
+            <small className="text-muted fw-bold d-block text-uppercase">
+              Earnings
+            </small>
+            <h4 className="fw-bold mb-0">
+              Tsh {new Intl.NumberFormat().format(totalEarnings)}
+            </h4>
+          </div>
         </div>
       </div>
-    </>
+
+      <div className="card border-0 shadow-sm">
+        <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+          <h5 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>
+            Registered
+          </h5>
+          {/* HAPA NDIPO PALEKEREBISHWA - Search bar sasa ni fupi (w-md-25) */}
+          <div style={{ maxWidth: "250px", width: "100%" }}>
+            <input
+              type="text"
+              className="form-control form-control-sm shadow-none"
+              placeholder="Search..."
+              onChange={(e) => setFilterText(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="p-2">
+          <DataTable
+            columns={columns}
+            data={filteredItems}
+            pagination
+            progressPending={loading}
+            highlightOnHover
+            responsive
+            customStyles={{
+              headCells: { style: { color: "#0a2e67", fontWeight: "bold" } },
+            }}
+          />
+        </div>
+      </div>
+
+      {/* --- MODAL --- */}
+      <div className="modal fade" id="studentModal" tabIndex="-1">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content border-0 shadow-lg">
+            <div className="modal-header border-0 bg-light">
+              <h6 className="modal-title fw-bold">Enrollment Info</h6>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div className="modal-body p-4">
+              {selectedStudent ? (
+                <div className="row g-3">
+                  <div className="col-12 bg-light p-2 rounded mb-2 text-center">
+                    <small className="text-muted d-block">Current Cohort</small>
+                    <span className="fw-bold text-primary">
+                      {selectedStudent.cohort?.name}
+                    </span>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted d-block text-uppercase">
+                      Organization
+                    </small>
+                    <span className="fw-bold small">
+                      {selectedStudent.organization || "N/A"}
+                    </span>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted d-block text-uppercase">
+                      Position
+                    </small>
+                    <span className="fw-bold small">
+                      {selectedStudent.position || "N/A"}
+                    </span>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted d-block text-uppercase">
+                      Region/City
+                    </small>
+                    <span className="small d-block">
+                      {selectedStudent.region}, {selectedStudent.city}
+                    </span>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted d-block text-uppercase">
+                      Street/Postal
+                    </small>
+                    <span className="small d-block">
+                      {selectedStudent.street} | {selectedStudent.postal_code}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">Loading...</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ProviderDashboardLayout>
   );
 }

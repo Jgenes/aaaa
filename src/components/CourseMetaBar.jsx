@@ -1,61 +1,73 @@
-import React from "react";
-import { FaStar, FaInfoCircle } from "react-icons/fa";
-import "../App.css";
+// src/components/CourseMetaBar.jsx
+import React, { useEffect, useState } from "react";
+import { FaInfoCircle } from "react-icons/fa";
+import api from "../api/axio";
 
-const CourseMetaBar = () => {
+const CourseMetaBar = ({ courseId, cohortId }) => {
+  const [cohort, setCohort] = useState(null);
+
+  useEffect(() => {
+    if (courseId && cohortId) {
+      fetchCohort();
+    }
+  }, [courseId, cohortId]);
+
+  const fetchCohort = async () => {
+    try {
+      const res = await api.get(`/training/${courseId}`);
+      const found = res.data?.cohorts?.find((c) => c.id === Number(cohortId));
+
+      if (!found) {
+        console.error("Cohort not found");
+        return;
+      }
+
+      setCohort(found);
+    } catch (err) {
+      console.error("Failed to load cohort", err);
+    }
+  };
+
+  if (!cohort) {
+    return <p className="text-center py-3">Loading course info...</p>;
+  }
+
   return (
     <div className="course-meta-wrapper">
       <div className="container">
         <div className="row text-center text-md-start">
-          {/* Course Series */}
+          {/* INTAKE */}
           <div className="col-md-3 meta-item">
-            <h6 className="meta-title" style={{ fontSize: "13px" }}>
-              8 course series
-            </h6>
-            <p className="meta-text " style={{ fontSize: "13px" }}>
-              Earn a career credential that demonstrates your expertise
-            </p>
+            <h6>Intake</h6>
+            <p>{cohort.intake_name}</p>
           </div>
 
-          {/* Rating */}
+          {/* MODE */}
           <div className="col-md-2 meta-item">
-            <h6 className="meta-title" style={{ fontSize: "13px" }}>
-              Mode
-            </h6>
-            <p className="meta-text" style={{ fontSize: "13px" }}>
-              Online
-            </p>
+            <h6>Mode</h6>
+            <p>{cohort.online_link ? "Online" : "Physical"}</p>
           </div>
 
-          {/* Level */}
+          {/* LOCATION */}
           <div className="col-md-2 meta-item">
-            <h6 className="meta-title" style={{ fontSize: "13px" }}>
-              Location
-              <FaInfoCircle className="info" />
+            <h6>
+              Location <FaInfoCircle />
             </h6>
-            <p className="meta-text" style={{ fontSize: "13px" }}>
-              Dar-es-salaam
+            <p>{cohort.venue}</p>
+          </div>
+
+          {/* DURATION */}
+          <div className="col-md-2 meta-item">
+            <h6>Duration</h6>
+            <p>
+              {cohort.start_date} - {cohort.end_date}
             </p>
           </div>
 
-          {/* Duration */}
-          <div className="col-md-2 meta-item" style={{ fontSize: "13px" }}>
-            <h6 className="meta-title" style={{ fontSize: "13px" }}>
-              Duration
-            </h6>
-            <p className="meta-text" style={{ fontSize: "13px" }}>
-              5 Weeks
-            </p>
-          </div>
-
-          {/* Schedule */}
+          {/* SCHEDULE */}
           <div className="col-md-3 meta-item">
-            <h6 className="meta-title" style={{ fontSize: "13px" }}>
-              Flexible schedule
-            </h6>
-            <p className="meta-text" style={{ fontSize: "13px" }}>
-              Learn at your own pace
-            </p>
+            <h6>Schedule</h6>
+            <p>{cohort.schedule_text}</p>
           </div>
         </div>
       </div>

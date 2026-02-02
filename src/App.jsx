@@ -20,6 +20,9 @@ import CohortList from "./pages/provider/cohortList.jsx";
 import Training from "./pages/trainings.jsx";
 import Learning from "./pages/Learning.jsx";
 import CourseLearning from "./pages/CourseLearning.jsx";
+import ManageCourseExtras from "./pages/provider/ManageCourseExra.jsx";
+import ProviderInvoices from "./pages/provider/transactions.jsx";
+import Transactions from "./pages/Transactions.jsx";
 // import MyLearning from "./pages/MyLearning.jsx";
 
 function App() {
@@ -30,9 +33,16 @@ function App() {
         <Route path="/tenant-register" element={<RegisterTenant />} />
         <Route path="/login" element={<Login />} />
         <Route path="/tenant/onboarding" element={<Onboarding />} />
-        <Route path="/course" element={<Course />} />
+        <Route path="/course/:courseId/cohort/:cohortId" element={<Course />} />
         <Route path="/" element={<Home />} />
-        <Route path="/checkout" element={<TrainingHubCheckout />} />
+        <Route
+          path="/checkout/:courseId/:cohortId"
+          element={<TrainingHubCheckout />}
+        />
+        <Route
+          path="/provider/courses/:courseId/manage"
+          element={<ManageCourseExtras />}
+        />
         <Route path="/provider/dashboard" element={<ProviderDashboard />} />
         <Route path="/provider/course" element={<ProviderCourse />} />
         <Route path="/provider/cohorts" element={<ProviderCohorts />} />
@@ -50,8 +60,8 @@ function App() {
           element={<ProviderCourseView />}
         />{" "}
         <Route
-          path="/provider/cohorts/:courseId"
-          element={<ProviderCohort />}
+          path="/provider/courses/:courseId/cohorts"
+          element={<CohortList />}
         />
         <Route
           path="/provider/cohorts/create/:courseId"
@@ -59,6 +69,8 @@ function App() {
         />
         <Route path="/provider/cohortlist/:courseId" element={<CohortList />} />{" "}
         <Route path="/trainings" element={<Training />} />
+        <Route path="/provider/invoices" element={<ProviderInvoices />} />
+        <Route path="/transactions" element={<Transactions />} />
       </Routes>
     </Router>
   );

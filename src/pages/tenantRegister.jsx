@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/bootstrap.css";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+
 import {
   FaUser,
   FaEnvelope,
@@ -14,12 +14,12 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 
-import "./App.css";
+import "../App.css";
 import api from "../api/axio";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 
-function RegisterTenant() {
+function Register() {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -53,8 +53,6 @@ function RegisterTenant() {
 
     try {
       // ✅ POST to tenant-register route
-      await axios.get(" http://127.0.0.1:8000/sanctum/csrf-cookie");
-
       const response = await api.post("/tenant-register", {
         name: fullname,
         email,
@@ -87,10 +85,10 @@ function RegisterTenant() {
             <div className="card shadow-sm border-0">
               <div className="card-body p-4">
                 <h3 className="text-left fw-bold mb-2 t1">
-                  Register as a Tenant
+                  Became course provider
                 </h3>
                 <p className="text-left t2">
-                  Create your tenant account to manage your Trainings
+                  Create your account & start your journey.
                 </p>
                 <form onSubmit={(e) => e.preventDefault()}>
                   {/* Full Name + Email */}
@@ -196,16 +194,16 @@ function RegisterTenant() {
                   >
                     {loading ? "Creating account..." : "Create Account"}
                   </button>
+                  <div className="mt-4">
+                    <a href="/login">
+                      <center>
+                        <p style={{ fontSize: "13px", color: "#111827" }}>
+                          Have an account login here...
+                        </p>
+                      </center>
+                    </a>
+                  </div>
                 </form>
-                <div className="mt-4">
-                  <a href="/login">
-                    <center>
-                      <p style={{ fontSize: "13px", color: "#111827" }}>
-                        Have an account login here...
-                      </p>
-                    </center>
-                  </a>
-                </div>
               </div>
             </div>
           </div>
@@ -216,4 +214,4 @@ function RegisterTenant() {
   );
 }
 
-export default RegisterTenant;
+export default Register;
