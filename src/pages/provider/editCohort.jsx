@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import api from "../../api/axio";
 
-export default function CreateCohort() {
+export default function EditCohort() {
   const navigate = useNavigate();
-  const { courseId } = useParams();
+  const { courseId, cohortId } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const [cohort, setCohort] = useState({
     intakeName: "",
@@ -24,6 +26,49 @@ export default function CreateCohort() {
     description: "",
   });
 
+  // Fetch cohort data on mount
+  useEffect(() => {
+    const fetchCohort = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(`/courses/${courseId}/cohorts/${cohortId}`);
+        const data = response.data;
+
+        // Format dates from API response
+        const formatDate = (dateString) => {
+          if (!dateString) return "";
+          const date = new Date(dateString);
+          return date.toISOString().split("T")[0];
+        };
+
+        setCohort({
+          intakeName: data.intake_name || "",
+          startDate: formatDate(data.start_date),
+          endDate: formatDate(data.end_date),
+          schedule: data.schedule_text || "",
+          mode: data.mode || "Online",
+          venue: data.venue || "",
+          onlineLink: data.online_link || "",
+          capacity: data.capacity || 0,
+          price: data.price || 0,
+          registrationDeadline: formatDate(data.registration_deadline),
+          status: data.status || "Open",
+          description: data.description || "",
+        });
+      } catch (err) {
+        console.error("Error fetching cohort:", err);
+        toast.error("Failed to load cohort data");
+        navigate(-1);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (courseId && cohortId) {
+      fetchCohort();
+    }
+  }, [courseId, cohortId, navigate]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCohort({ ...cohort, [name]: value });
@@ -31,6 +76,7 @@ export default function CreateCohort() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
 
     try {
       const payload = {
@@ -48,44 +94,65 @@ export default function CreateCohort() {
         description: cohort.description,
       };
 
-      console.log("Sending payload:", payload);
-      console.log("Course ID:", courseId);
+      console.log("Updating cohort with payload:", payload);
 
-      await api.post(`/courses/${courseId}/cohorts`, payload);
+      await api.put(`/courses/${courseId}/cohorts/${cohortId}`, payload);
 
-      toast.success("✓ Cohort created successfully!", {
+      toast.success("✓ Cohort updated successfully!", {
         position: "top-right",
         autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
       });
 
-      // ✅ FIXED NAVIGATION HERE
+      // Small delay before navigation
       setTimeout(() => {
-        navigate(`/provider/cohorts/${courseId}`);
+        navigate(`/provider/courses/${courseId}/cohorts`);
       }, 1000);
-
     } catch (err) {
       console.error("Submit Error:", err.response?.data || err);
 
-      const errorMessage =
-        err.response?.data?.message || "Failed to create cohort!";
-
+      const errorMessage = err.response?.data?.message || "Failed to update cohort!";
       toast.error(`✗ ${errorMessage}`, {
         position: "top-right",
         autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <ProviderDashboardLayout title="Loading...">
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "400px" }}
+        >
+          <div className="spinner-border text-primary"></div>
+        </div>
+      </ProviderDashboardLayout>
+    );
+  }
+
   return (
-    <ProviderDashboardLayout title="Create New Cohort">
+    <ProviderDashboardLayout title="Edit Cohort">
       <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
         pauseOnHover
         theme="light"
       />
-
       <div className="container mt-4">
         <button
           className="btn btn-sm btn-outline-secondary mb-3"
@@ -95,9 +162,9 @@ export default function CreateCohort() {
         </button>
 
         <div className="card p-4 shadow-sm">
-          <h5 className="mb-4">Add New Cohort</h5>
-
+          <h5 className="mb-4">Edit Cohort</h5>
           <form onSubmit={handleSubmit}>
+            {/* Intake Name */}
             <div className="mb-3">
               <label className="form-label">Intake Name</label>
               <input
@@ -110,6 +177,7 @@ export default function CreateCohort() {
               />
             </div>
 
+            {/* Dates */}
             <div className="row mb-3">
               <div className="col">
                 <label className="form-label">Start Date</label>
@@ -122,7 +190,6 @@ export default function CreateCohort() {
                   required
                 />
               </div>
-
               <div className="col">
                 <label className="form-label">End Date</label>
                 <input
@@ -136,6 +203,7 @@ export default function CreateCohort() {
               </div>
             </div>
 
+            {/* Schedule */}
             <div className="mb-3">
               <label className="form-label">Schedule</label>
               <input
@@ -149,6 +217,7 @@ export default function CreateCohort() {
               />
             </div>
 
+            {/* Mode */}
             <div className="mb-3">
               <label className="form-label">Mode</label>
               <select
@@ -172,6 +241,7 @@ export default function CreateCohort() {
                   name="venue"
                   value={cohort.venue}
                   onChange={handleChange}
+                  placeholder="Physical location"
                 />
               </div>
             )}
@@ -185,10 +255,12 @@ export default function CreateCohort() {
                   name="onlineLink"
                   value={cohort.onlineLink}
                   onChange={handleChange}
+                  placeholder="Zoom / Google Meet link"
                 />
               </div>
             )}
 
+            {/* Capacity & Price */}
             <div className="row mb-3">
               <div className="col">
                 <label className="form-label">Capacity (Seats)</label>
@@ -201,7 +273,6 @@ export default function CreateCohort() {
                   required
                 />
               </div>
-
               <div className="col">
                 <label className="form-label">Price (TZS)</label>
                 <input
@@ -215,6 +286,7 @@ export default function CreateCohort() {
               </div>
             </div>
 
+            {/* Deadline */}
             <div className="mb-3">
               <label className="form-label">Registration Deadline</label>
               <input
@@ -227,6 +299,7 @@ export default function CreateCohort() {
               />
             </div>
 
+            {/* Status */}
             <div className="mb-3">
               <label className="form-label">Status</label>
               <select
@@ -241,6 +314,7 @@ export default function CreateCohort() {
               </select>
             </div>
 
+            {/* Description */}
             <div className="mb-3">
               <label className="form-label">Description</label>
               <textarea
@@ -252,8 +326,12 @@ export default function CreateCohort() {
               />
             </div>
 
-            <button type="submit" className="btn btn-success btnCV">
-              Create Cohort
+            <button
+              type="submit"
+              className="btn btn-primary btnCV"
+              disabled={submitting}
+            >
+              {submitting ? "Updating..." : "Update Cohort"}
             </button>
           </form>
         </div>

@@ -38,8 +38,8 @@ const CourseHero = () => {
     : "https://ui-avatars.com/api/?name=Trainer&background=6c757d&color=fff";
 
   const courseBanner = banner
-    ? `http://localhost:8000/storage/${banner}`
-    : "https://via.placeholder.com/400x200";
+    ? `http://localhost:8000/${banner}`
+    : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Crect fill='%23ccc' width='400' height='200'/%3E%3Ctext x='50%25' y='50%25' fill='%23999' text-anchor='middle' dy='.3em' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
 
   return (
     <section className="course-hero">

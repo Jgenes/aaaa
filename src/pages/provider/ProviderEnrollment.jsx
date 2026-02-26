@@ -14,23 +14,33 @@ export default function ProviderEnrollments() {
   }, []);
 
   const fetchEnrollments = async () => {
+    setLoading(true);
     try {
-      const res = await api.get("/provider/enrollments");
-      setEnrollments(Array.isArray(res.data) ? res.data : []);
-      setLoading(false);
+      // Tunaita endpoint uliyothibitisha kwenye Postman
+      const res = await api.get(`/provider/enrollments-view`);
+      
+      console.log("API Response:", res.data);
+
+      // Tunahakikisha tunapata array ya enrollments (kama ulivyoona Postman)
+      const data = res.data?.enrollments || (Array.isArray(res.data) ? res.data : []);
+      setEnrollments(data);
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Error fetching enrollments:", err.response?.data || err.message);
+      setEnrollments([]);
+    } finally {
+      // Hii ndio itazima loading spinner hata kukiwa na error
       setLoading(false);
     }
   };
 
+  // Calculations
   const totalStudents = enrollments.length;
   const totalEarnings = enrollments.reduce((acc, curr) => {
-    return curr.status === "PAID" || curr.status === "COMPLETED"
-      ? acc + Number(curr.amount)
-      : acc;
+    const isPaid = ["PAID", "COMPLETED", "SUCCESS"].includes(curr.status?.toUpperCase());
+    return isPaid ? acc + Number(curr.amount || 0) : acc;
   }, 0);
 
+  // Column Definitions
   const columns = [
     {
       name: "Student",
@@ -38,9 +48,9 @@ export default function ProviderEnrollments() {
       sortable: true,
       cell: (row) => (
         <div className="py-2">
-          <div className="fw-bold text-dark">{row.user?.name || "Unknown"}</div>
+          <div className="fw-bold text-dark">{row.user?.name || row.user_name || "Unknown"}</div>
           <small className="text-muted" style={{ fontSize: "11px" }}>
-            {row.user?.email || row.email}
+            {row.user?.email || row.email || "No email"}
           </small>
         </div>
       ),
@@ -50,40 +60,36 @@ export default function ProviderEnrollments() {
       selector: (row) => row.course?.title,
       cell: (row) => (
         <div>
-          <div
-            className="text-wrap"
-            style={{ fontSize: "12px", lineHeight: "1.2" }}
-          >
-            {row.course?.title}
+          <div className="text-wrap" style={{ fontSize: "12px", lineHeight: "1.2", maxWidth: "200px" }}>
+            {row.course?.title || "N/A"}
           </div>
-          <span
-            className="badge bg-light text-dark border mt-1"
-            style={{ fontSize: "10px" }}
-          >
-            {row.cohort?.name}
+          <span className="badge bg-light text-dark border mt-1" style={{ fontSize: "10px" }}>
+            {row.cohort?.name || "N/A"}
           </span>
         </div>
       ),
     },
     {
       name: "Status",
-      cell: (row) => (
-        <span
-          className={`badge rounded-pill ${row.status === "PAID" || row.status === "COMPLETED" ? "bg-success" : "bg-danger"}`}
-          style={{ fontSize: "10px" }}
-        >
-          {row.status === "PAID" || row.status === "COMPLETED"
-            ? "Active"
-            : "Pending"}
-        </span>
-      ),
+      selector: (row) => row.status,
+      cell: (row) => {
+        const isActive = ["PAID", "COMPLETED", "SUCCESS"].includes(row.status?.toUpperCase());
+        return (
+          <span
+            className={`badge rounded-pill ${isActive ? "bg-success" : "bg-warning text-dark"}`}
+            style={{ fontSize: "10px" }}
+          >
+            {isActive ? "Active" : row.status || "Pending"}
+          </span>
+        );
+      },
     },
     {
       name: "Action",
       button: true,
       cell: (row) => (
         <button
-          className="btn btn-sm btn-light border d-flex align-items-center"
+          className="btn btn-sm btn-light border"
           data-bs-toggle="modal"
           data-bs-target="#studentModal"
           onClick={() => setSelectedStudent(row)}
@@ -94,46 +100,42 @@ export default function ProviderEnrollments() {
     },
   ];
 
+  // Search filter logic
   const filteredItems = enrollments.filter(
     (item) =>
-      item.user?.name?.toLowerCase().includes(filterText.toLowerCase()) ||
-      item.course?.title?.toLowerCase().includes(filterText.toLowerCase()),
+      (item.user?.name || "").toLowerCase().includes(filterText.toLowerCase()) ||
+      (item.course?.title || "").toLowerCase().includes(filterText.toLowerCase())
   );
 
   return (
-    <ProviderDashboardLayout title="Enrollments">
+    <ProviderDashboardLayout title="Enrollments - All Courses">
+      
+      {/* Stats Cards */}
       <div className="row mb-4">
         <div className="col-md-3 mb-2">
           <div className="card border-0 shadow-sm p-3 border-start border-primary border-4">
-            <small className="text-muted fw-bold d-block text-uppercase">
-              Students
-            </small>
+            <small className="text-muted fw-bold d-block text-uppercase">Total Students</small>
             <h4 className="fw-bold mb-0">{totalStudents}</h4>
           </div>
         </div>
         <div className="col-md-3 mb-2">
           <div className="card border-0 shadow-sm p-3 border-start border-success border-4">
-            <small className="text-muted fw-bold d-block text-uppercase">
-              Earnings
-            </small>
-            <h4 className="fw-bold mb-0">
-              Tsh {new Intl.NumberFormat().format(totalEarnings)}
-            </h4>
+            <small className="text-muted fw-bold d-block text-uppercase">Total Earnings</small>
+            <h4 className="fw-bold mb-0">Tsh {new Intl.NumberFormat().format(totalEarnings)}</h4>
           </div>
         </div>
       </div>
 
+      {/* Main Table Card */}
       <div className="card border-0 shadow-sm">
         <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-          <h5 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>
-            Registered
-          </h5>
-          {/* HAPA NDIPO PALEKEREBISHWA - Search bar sasa ni fupi (w-md-25) */}
+          <h5 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>Student Registry</h5>
           <div style={{ maxWidth: "250px", width: "100%" }}>
             <input
               type="text"
               className="form-control form-control-sm shadow-none"
-              placeholder="Search..."
+              placeholder="Search by name or course..."
+              value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
@@ -145,76 +147,66 @@ export default function ProviderEnrollments() {
             data={filteredItems}
             pagination
             progressPending={loading}
+            persistTableHead
+            noDataComponent={<div className="p-5 text-muted">Hakuna enrollment iliyopatikana.</div>}
             highlightOnHover
             responsive
             customStyles={{
-              headCells: { style: { color: "#0a2e67", fontWeight: "bold" } },
+              headCells: { style: { color: "#0a2e67", fontWeight: "bold", fontSize: "13px" } },
             }}
           />
         </div>
       </div>
 
-      {/* --- MODAL --- */}
-      <div className="modal fade" id="studentModal" tabIndex="-1">
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content border-0 shadow-lg">
-            <div className="modal-header border-0 bg-light">
-              <h6 className="modal-title fw-bold">Enrollment Info</h6>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
+      {/* Details Modal */}
+      <div className="modal fade" id="studentModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-content border-0 shadow">
+            <div className="modal-header border-0 pb-0">
+              <h5 className="modal-title fw-bold">Full Student Details</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div className="modal-body p-4">
               {selectedStudent ? (
                 <div className="row g-3">
-                  <div className="col-12 bg-light p-2 rounded mb-2 text-center">
-                    <small className="text-muted d-block">Current Cohort</small>
-                    <span className="fw-bold text-primary">
-                      {selectedStudent.cohort?.name}
-                    </span>
+                  <div className="col-12 bg-light p-3 rounded mb-2 text-center border">
+                    <small className="text-muted d-block">Enrolled Course</small>
+                    <div className="fw-bold text-dark fs-5">{selectedStudent.course?.title || "N/A"}</div>
+                    <div className="fw-bold text-primary">{selectedStudent.cohort?.name || "N/A"}</div>
                   </div>
                   <div className="col-6">
-                    <small className="text-muted d-block text-uppercase">
-                      Organization
-                    </small>
-                    <span className="fw-bold small">
-                      {selectedStudent.organization || "N/A"}
-                    </span>
+                    <small className="text-muted d-block text-uppercase" style={{ fontSize: '10px' }}>Full Name</small>
+                    <span className="fw-bold">{selectedStudent.user?.name || selectedStudent.user_name || "N/A"}</span>
                   </div>
                   <div className="col-6">
-                    <small className="text-muted d-block text-uppercase">
-                      Position
-                    </small>
-                    <span className="fw-bold small">
-                      {selectedStudent.position || "N/A"}
-                    </span>
+                    <small className="text-muted d-block text-uppercase" style={{ fontSize: '10px' }}>Organization</small>
+                    <span className="fw-bold text-primary">{selectedStudent.organization || "N/A"}</span>
                   </div>
                   <div className="col-6">
-                    <small className="text-muted d-block text-uppercase">
-                      Region/City
-                    </small>
-                    <span className="small d-block">
-                      {selectedStudent.region}, {selectedStudent.city}
-                    </span>
+                    <small className="text-muted d-block text-uppercase" style={{ fontSize: '10px' }}>Position</small>
+                    <span className="fw-bold">{selectedStudent.position || "N/A"}</span>
                   </div>
                   <div className="col-6">
-                    <small className="text-muted d-block text-uppercase">
-                      Street/Postal
-                    </small>
-                    <span className="small d-block">
-                      {selectedStudent.street} | {selectedStudent.postal_code}
+                    <small className="text-muted d-block text-uppercase" style={{ fontSize: '10px' }}>Contact Email</small>
+                    <span className="fw-bold">{selectedStudent.user?.email || selectedStudent.email || "N/A"}</span>
+                  </div>
+                  <div className="col-12 border-top pt-3 mt-2 d-flex justify-content-between align-items-center">
+                    <span className={`badge px-3 py-2 ${["PAID", "COMPLETED", "SUCCESS"].includes(selectedStudent.status?.toUpperCase()) ? 'bg-success' : 'bg-warning text-dark'}`}>
+                      STATUS: {selectedStudent.status}
                     </span>
+                    <h5 className="mb-0 fw-bold text-dark">
+                        Tsh {new Intl.NumberFormat().format(selectedStudent.amount || 0)}
+                    </h5>
                   </div>
                 </div>
               ) : (
-                <div className="text-center">Loading...</div>
+                <div className="text-center py-4 text-muted italic">Click details to view info...</div>
               )}
             </div>
           </div>
         </div>
       </div>
+
     </ProviderDashboardLayout>
   );
 }

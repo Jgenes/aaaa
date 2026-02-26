@@ -132,12 +132,9 @@ export default function Footer() {
 
         {/* BOTTOM ROW */}
         <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap text-white-50 small">
-          <img
-            src="https://via.placeholder.com/100x25/ffffff/000000?text=Logo"
-            alt="Logo"
-            style={{ maxHeight: "28px" }}
-            className="mb-2"
-          />
+          <div style={{ fontSize: "18px", fontWeight: "bold", color: "white" }} className="mb-2">
+            TrainingHub
+          </div>
           <span>© {new Date().getFullYear()} TrainingHub</span>
         </div>
       </div>

@@ -5,6 +5,8 @@ import DataTable from "react-data-table-component";
 import { FaEye, FaEdit, FaTrash, FaCogs, FaPlus } from "react-icons/fa";
 import api from "../../api/axio";
 import { MdAddCircleOutline } from "react-icons/md";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ProviderDashboard() {
   const [courses, setCourses] = useState([]);
@@ -32,7 +34,7 @@ export default function ProviderDashboard() {
   const filteredData = courses.filter(
     (item) =>
       item.title?.toLowerCase().includes(filterText.toLowerCase()) ||
-      item.category?.toLowerCase().includes(filterText.toLowerCase()),
+      item.category?.toLowerCase().includes(filterText.toLowerCase())
   );
 
   const handleView = (course) => {
@@ -40,7 +42,8 @@ export default function ProviderDashboard() {
   };
 
   const handleManage = (course) => {
-    navigate(`/provider/cohortlist/${course.id}`);
+    // FIXED ROUTE HERE
+    navigate(`/provider/cohorts/${course.id}`);
   };
 
   const handleEdit = (course) => {
@@ -48,7 +51,7 @@ export default function ProviderDashboard() {
   };
 
   const handleExtras = (course) => {
-    navigate(`/provider/courses/${course.id}/manage`);
+    navigate(`/provider/course/${course.id}/enrollments`);
   };
 
   const handleDelete = async (course) => {
@@ -56,16 +59,16 @@ export default function ProviderDashboard() {
       try {
         await api.delete(`/courses/${course.id}`);
         fetchCourses();
-        alert("Deleted successfully!");
+        toast.success("Course deleted successfully.");
       } catch (error) {
-        alert("Failed to delete course.");
+        toast.error("Failed to delete course. Please try again.");
       }
     }
   };
 
   const columns = [
     { name: "ID", selector: (row) => row.id, sortable: true, width: "70px" },
-    { name: "Course Name", selector: (row) => row.title, sortable: true },
+    { name: "Training Name", selector: (row) => row.title, sortable: true },
     { name: "Category", selector: (row) => row.category, sortable: true },
     { name: "Mode", selector: (row) => row.mode, sortable: true },
     { name: "Status", selector: (row) => row.status, sortable: true },
@@ -104,7 +107,7 @@ export default function ProviderDashboard() {
           <button
             className="btn btn-sm btn-primary"
             onClick={() => handleEdit(row)}
-            title="Edit Course"
+            title="Edit Training"
           >
             <FaEdit style={{ color: "white" }} />
           </button>
@@ -113,7 +116,7 @@ export default function ProviderDashboard() {
           <button
             className="btn btn-sm btn-danger"
             onClick={() => handleDelete(row)}
-            title="Delete Course"
+            title="Delete Delete"
           >
             <FaTrash style={{ color: "white" }} />
           </button>
@@ -123,13 +126,13 @@ export default function ProviderDashboard() {
   ];
 
   return (
-    <ProviderDashboardLayout title="Courses">
+    <ProviderDashboardLayout title="Trainings">
+      <ToastContainer position="top-right" autoClose={3000} />
+
       <div className="container mt-4">
         <div className="row justify-content-center">
           <div className="col-md-12">
             <div className="d-flex justify-content-between align-items-center mb-2">
-              <h5 className="mb-0">My Courses</h5>
-
               <div className="d-flex gap-2">
                 <input
                   type="text"
@@ -141,11 +144,11 @@ export default function ProviderDashboard() {
                 />
 
                 <button
-                  className="btn btn-sm btn-success d-flex align-items-center gap-1"
+                  className="btn btn-sm btn-success d-flex align-items-center gap-1 vvb"
                   onClick={() => navigate("/provider/createCourse")}
                 >
                   <FaPlus />
-                  Create Course
+                  Create Training
                 </button>
               </div>
             </div>
@@ -158,7 +161,7 @@ export default function ProviderDashboard() {
               striped
               responsive
               progressPending={loading}
-              noDataComponent="No courses found. Create your first course!"
+              noDataComponent="No trainings found. Create your first training!"
             />
           </div>
         </div>

@@ -2,6 +2,9 @@ import React from "react";
 import "../App.css";
 
 const TrendingCourses = () => {
+  // Helper function to generate avatar from provider name
+  const getAvatarUrl = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=48&background=0366d6&color=fff`;
+
   const sections = [
     {
       title: "Most popular",
@@ -11,21 +14,21 @@ const TrendingCourses = () => {
           title: "Google Data Analytics",
           type: "Professional Certificate",
           rating: 4.8,
-          image: "https://via.placeholder.com/48",
+          image: getAvatarUrl("Google"),
         },
         {
           provider: "DeepLearning.AI",
           title: "AI For Everyone",
           type: "Course",
           rating: 4.8,
-          image: "https://via.placeholder.com/48",
+          image: getAvatarUrl("DeepLearning"),
         },
         {
           provider: "Google",
           title: "Crash Course on Python",
           type: "Course",
           rating: 4.8,
-          image: "https://via.placeholder.com/48",
+          image: getAvatarUrl("Google"),
         },
       ],
     },
@@ -37,21 +40,21 @@ const TrendingCourses = () => {
           title: "Financial Management",
           type: "Specialization",
           rating: 4.8,
-          image: "https://via.placeholder.com/48",
+          image: getAvatarUrl("Duke"),
         },
         {
           provider: "ADP",
           title: "ADP Entry-Level Payroll Specialist",
           type: "Professional Certificate",
           rating: 4.7,
-          image: "https://via.placeholder.com/48",
+          image: getAvatarUrl("ADP"),
         },
         {
           provider: "University of Illinois",
           title: "Financial Analysis - Skills for Success",
           type: "Specialization",
           rating: 4.7,
-          image: "https://via.placeholder.com/48",
+          image: getAvatarUrl("UofI"),
         },
       ],
     },
@@ -63,21 +66,21 @@ const TrendingCourses = () => {
           title: "Generative AI for Growth Marketing",
           type: "Specialization",
           rating: 4.7,
-          image: "https://via.placeholder.com/48",
+          image: getAvatarUrl("AI"),
         },
         {
           provider: "Vanderbilt University",
           title: "Generative AI Software Engineering",
           type: "Specialization",
           rating: 4.8,
-          image: "https://via.placeholder.com/48",
+          image: getAvatarUrl("Vanderbilt"),
         },
         {
           provider: "Google Cloud",
           title: "Generative AI Leader",
           type: "Professional Certificate",
           rating: 4.7,
-          image: "https://via.placeholder.com/48",
+          image: getAvatarUrl("GCP"),
         },
       ],
     },

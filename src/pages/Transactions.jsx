@@ -17,8 +17,11 @@ export default function Transactions() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        setPayments(res.data);
-        setFilteredPayments(res.data);
+        console.log("My payments response:", res.data);
+        const data = res.data?.data || res.data;
+        const list = Array.isArray(data) ? data : [];
+        setPayments(list);
+        setFilteredPayments(list);
         setLoading(false);
       })
       .catch((err) => {
@@ -37,11 +40,12 @@ export default function Transactions() {
       result = result.filter((p) => p.status === "PENDING");
     }
     if (searchTerm) {
-      result = result.filter(
-        (p) =>
-          p.course?.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.reference.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
+      const q = searchTerm.toLowerCase();
+      result = result.filter((p) => {
+        const title = (p.course?.title || p.course?.name || "").toString().toLowerCase();
+        const ref = (p.reference || "").toString().toLowerCase();
+        return title.includes(q) || ref.includes(q);
+      });
     }
     setFilteredPayments(result);
   }, [searchTerm, activeTab, payments]);
@@ -128,10 +132,10 @@ export default function Transactions() {
                         </small>
                       </div>
                       <h5 className="card-title fw-bold mb-1">
-                        {payment.course?.title}
+                       Training: {payment.course?.title || payment.course?.name || payment.course?.course_title || "N/A"}
                       </h5>
                       <p className="card-text text-muted mb-0 small">
-                        Cohort: {payment.cohort?.name}
+                        Cohort: {payment.cohort?.intake_name || payment.cohort?.name || payment.cohort?.intake?.name || "N/A"}
                       </p>
                     </div>
 

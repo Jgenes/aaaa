@@ -2,21 +2,19 @@ import React from "react";
 
 export default function PromoCards() {
   return (
-    <div style={styles.container}>
-      <div style={styles.grid}>
+    <div className="promo-container">
+      <div className="promo-grid">
         {/* LEFT CARD: TEAMS */}
         <div
+          className="promo-card left"
           style={{
-            ...styles.card,
             background: "linear-gradient(90deg, #0a2e67 0%, #0048b3 100%)",
           }}
         >
           <div style={styles.textContent}>
             <div style={styles.brand}>
               <strong style={{ fontSize: "20px" }}>TrainingHub</strong>{" "}
-              <span style={{ fontWeight: "200", fontSize: "18px" }}>
-                for teams
-              </span>
+              <span style={{ fontWeight: "200", fontSize: "18px" }}>for teams</span>
             </div>
             <h2 style={styles.heading}>
               Train your team in top skills and join 3,700+ teams worldwide
@@ -31,21 +29,15 @@ export default function PromoCards() {
               style={styles.cardImage}
             />
             <div style={styles.badge}>
-              <div style={{ fontSize: "16px", fontWeight: "bold" }}>
-                50% off
-              </div>
+              <div style={{ fontSize: "16px", fontWeight: "bold" }}>50% off</div>
               <div style={{ fontSize: "10px" }}>team training</div>
-              <div style={{ fontSize: "8px", opacity: 0.8 }}>
-                *Up to 125 licenses
-              </div>
+              <div style={{ fontSize: "8px", opacity: 0.8 }}>*Up to 125 licenses</div>
             </div>
           </div>
         </div>
 
-        {/* RIGHT CARD: INDIVIDUAL (Updated) */}
-        <div
-          style={{ ...styles.card, background: "#FFF8EE", color: "#1f1f1f" }}
-        >
+        {/* RIGHT CARD: INDIVIDUAL */}
+        <div className="promo-card right" style={{ background: "#FFF8EE", color: "#1f1f1f" }}>
           <div style={styles.textContent}>
             <h2
               style={{
@@ -57,47 +49,66 @@ export default function PromoCards() {
             >
               Start, switch, or advance your career
             </h2>
-            <p style={styles.subtext}>
-              Grow with 10,000+ courses from top organizations
-            </p>
+            <p style={styles.subtext}>Grow with 10,000+ courses from top organizations</p>
             <button style={styles.btnBlue}>Join for Free &rarr;</button>
           </div>
 
           <div style={styles.rightImageWrapper}>
-            {/* The Pink Circle Backdrop */}
             <div style={styles.pinkShape}></div>
-            {/* The Blue Circle Backdrop */}
-            {/* <div style={styles.blueCircleBackdrop}></div> */}
-            {/* The Image */}
-            <img src="" alt="Individual" style={styles.individualImage} />
+            <img
+              src="https://www.freeiconspng.com/uploads/student-png-30.png"
+              alt="Individual"
+              style={styles.individualImage}
+            />
           </div>
         </div>
       </div>
+
+      {/* MEDIA QUERIES FOR RESPONSIVENESS */}
+      <style jsx>{`
+        .promo-container {
+          padding: 40px 10px;
+          max-width: 1200px;
+          margin: 0 auto;
+          position: relative;
+          top: -40px;
+          font-family: "Source Sans Pro", Arial, sans-serif;
+        }
+
+        .promo-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 24px;
+        }
+
+        .promo-card {
+          display: flex;
+          flex-direction: row;
+          border-radius: 20px;
+          overflow: hidden;
+          min-height: 340px;
+        }
+
+        @media (max-width: 992px) {
+          .promo-card {
+            flex-direction: column;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .promo-card {
+            min-height: auto;
+          }
+          .promo-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
 const styles = {
-  container: {
-    padding: "40px 10px",
-    maxWidth: "1200px",
-    margin: "0 auto",
-    position: "relative",
-    top: "-140px",
-    fontFamily: '"Source Sans Pro", Arial, sans-serif',
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
-    gap: "24px",
-  },
-  card: {
-    position: "relative",
-    borderRadius: "20px", // Smoother rounding like the image
-    display: "flex",
-    overflow: "hidden",
-    minHeight: "340px",
-  },
   textContent: {
     flex: 1.2,
     padding: "40px",
@@ -146,51 +157,40 @@ const styles = {
     position: "relative",
     flex: 0.8,
     overflow: "hidden",
+    display: "flex",
+    alignItems: "flex-end",
   },
   cardImage: {
     height: "100%",
     width: "100%",
     objectFit: "cover",
-    clipPath: "polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%)", // The slanted edge
+    clipPath: "polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%)",
   },
-
-  /* RIGHT CARD SPECIFIC STYLES */
   rightImageWrapper: {
     position: "relative",
     flex: 1,
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-end",
+    overflow: "hidden",
   },
   pinkShape: {
     position: "absolute",
     width: "350px",
     height: "350px",
-    background: "#FCDDEC", // Light pink from banner
+    background: "#FCDDEC",
     borderRadius: "50%",
     top: "-50px",
     right: "-50px",
     zIndex: 1,
   },
-  blueCircleBackdrop: {
-    position: "absolute",
-    width: "280px",
-    height: "280px",
-    background: "#0a2e67",
-    borderRadius: "50%",
-    zIndex: 2,
-    right: "10px",
-    // Creating the "C" shape cut-out look
-    clipPath:
-      "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 70%, 20% 50%, 0% 30%)",
-  },
   individualImage: {
     height: "100%",
-    position: "absolute",
-    bottom: 0,
-    right: "20px",
+    width: "auto",
+    position: "relative",
     zIndex: 3,
     objectFit: "contain",
+    display: "block",
   },
   badge: {
     position: "absolute",

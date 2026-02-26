@@ -19,7 +19,14 @@ export default function CreateCourse() {
     skills: [""],
     requirements: [""],
     contents: [
-      { title: "", description: "", video: null, handouts: null, link: "" },
+      {
+        title: "",
+        description: "",
+        video: null,
+        handouts: [], // Changed to array for multiple PDFs
+        video_links: [""], // Changed to array for multiple Links
+        notes_text: "",
+      },
     ],
     banner: null,
   });
@@ -54,12 +61,31 @@ export default function CreateCourse() {
     setCourse({ ...course, contents: updated });
   };
 
+  const addVideoLink = (sectionIndex) => {
+    const updated = [...course.contents];
+    updated[sectionIndex].video_links.push("");
+    setCourse({ ...course, contents: updated });
+  };
+
+  const handleVideoLinkChange = (sectionIndex, linkIndex, value) => {
+    const updated = [...course.contents];
+    updated[sectionIndex].video_links[linkIndex] = value;
+    setCourse({ ...course, contents: updated });
+  };
+
   const addContent = () => {
     setCourse({
       ...course,
       contents: [
         ...course.contents,
-        { title: "", description: "", video: null, handouts: null, link: "" },
+        {
+          title: "",
+          description: "",
+          video: null,
+          handouts: [],
+          video_links: [""],
+          notes_text: "",
+        },
       ],
     });
   };
@@ -78,7 +104,6 @@ export default function CreateCourse() {
     try {
       const formData = new FormData();
 
-      // 1. Basic Fields (Mapping camelCase to snake_case for Laravel)
       formData.append("title", course.title);
       formData.append("category", course.category);
       formData.append("mode", course.mode);
@@ -86,7 +111,6 @@ export default function CreateCourse() {
       formData.append("long_description", course.longDescription);
       formData.append("status", "Draft");
 
-      // 2. Handle Simple Arrays (Individually appended with brackets [])
       course.learningOutcomes.forEach((item, idx) => {
         if (item) formData.append(`learning_outcomes[${idx}]`, item);
       });
@@ -97,34 +121,54 @@ export default function CreateCourse() {
         if (item) formData.append(`requirements[${idx}]`, item);
       });
 
-      // 3. Handle Nested Content Array & Files
+      // Handle Nested Content with Multiple Files & Links
       course.contents.forEach((content, idx) => {
         formData.append(`contents[${idx}][title]`, content.title);
-        formData.append(`contents[${idx}][description]`, content.description);
-        formData.append(`contents[${idx}][link]`, content.link || "");
+        formData.append(
+          `contents[${idx}][description]`,
+          content.description || "",
+        );
+        formData.append(
+          `contents[${idx}][notes_text]`,
+          content.notes_text || "",
+        );
 
+        // Main Video File
         if (content.video instanceof File) {
           formData.append(`contents[${idx}][video]`, content.video);
         }
-        if (content.handouts instanceof File) {
-          formData.append(`contents[${idx}][handouts]`, content.handouts);
+
+        // Multiple Video Links
+        content.video_links.forEach((link, lIdx) => {
+          if (link)
+            formData.append(`contents[${idx}][video_links][${lIdx}]`, link);
+        });
+
+        // Multiple Handout Files (PDFs)
+        if (content.handouts && content.handouts.length > 0) {
+          Array.from(content.handouts).forEach((file, fIdx) => {
+            formData.append(`contents[${idx}][handouts][${fIdx}]`, file);
+          });
         }
       });
 
-      // 4. Main Banner
       if (course.banner instanceof File) {
         formData.append("banner", course.banner);
       }
+
+      // Ndani ya handleSubmit yako, badilisha sehemu ya response iwe hivi:
 
       const response = await api.post("/courses", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      toast.success("Course created successfully!");
-      // Redirecting to cohorts page as per your instruction
-      navigate(`/provider/cohorts/${response.data.course.id}`);
+      // Hapa ndipo panapogoma! Hakikisha unatumia response.data.course.id
+      if (response.data && response.data.course) {
+        toast.success("Course created successfully!");
+        const newCourseId = response.data.course.id;
+        navigate(`/provider/cohorts/${newCourseId}`); // Hakikisha route hii ipo kwenye App.js
+      }
     } catch (err) {
-      console.error("Submission Error:", err.response?.data);
       const errorMsg =
         err.response?.data?.message || "Check your form for errors.";
       toast.error(errorMsg);
@@ -134,7 +178,7 @@ export default function CreateCourse() {
   };
 
   return (
-    <ProviderDashboardLayout title="Create Course">
+    <ProviderDashboardLayout title="Create Training">
       <ToastContainer position="top-right" />
       <div className="container mt-4 mb-5">
         <button
@@ -148,11 +192,11 @@ export default function CreateCourse() {
           onSubmit={handleSubmit}
           className="shadow-sm p-4 bg-white rounded"
         >
-          <h2 className="mb-4 h4 border-bottom pb-2">Course Details</h2>
+          <h2 className="mb-4 h4 border-bottom pb-2">Trainging Details</h2>
 
           <div className="row mb-3">
             <div className="col-md-6">
-              <label className="form-label fw-bold">Course Title</label>
+              <label className="form-label fw-bold">Training Title</label>
               <input
                 type="text"
                 className="form-control"
@@ -253,85 +297,118 @@ export default function CreateCourse() {
           </div>
 
           <hr />
-
           <h3 className="h5 mb-3">Course Contents (Curriculum)</h3>
+
           {course.contents.map((content, idx) => (
-            <div key={idx} className="card mb-3 bg-light border-0 shadow-sm">
+            <div key={idx} className="card mb-4 border-primary shadow-sm">
+              <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span>Section {idx + 1}: Lesson Content</span>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-light"
+                  onClick={() => removeContent(idx)}
+                >
+                  ×
+                </button>
+              </div>
               <div className="card-body">
-                <div className="d-flex justify-content-between">
-                  <h6 className="fw-bold">Section {idx + 1}</h6>
-                  {course.contents.length > 1 && (
+                <div className="row g-3">
+                  <div className="col-12">
+                    <label className="fw-bold small">Lesson Title</label>
+                    <input
+                      type="text"
+                      className="form-control mb-2"
+                      value={content.title}
+                      onChange={(e) =>
+                        handleContentChange(idx, "title", e.target.value)
+                      }
+                      required
+                    />
+                    <label className="fw-bold small">Overview</label>
+                    <textarea
+                      className="form-control mb-2"
+                      rows="2"
+                      value={content.description}
+                      onChange={(e) =>
+                        handleContentChange(idx, "description", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="fw-bold small">Upload Main Video</label>
+                    <input
+                      type="file"
+                      className="form-control"
+                      accept="video/*"
+                      onChange={(e) =>
+                        handleContentChange(idx, "video", e.target.files[0])
+                      }
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="fw-bold small">
+                      Additional Video Links
+                    </label>
+                    {content.video_links.map((vLink, lIdx) => (
+                      <input
+                        key={lIdx}
+                        type="url"
+                        className="form-control mb-1 form-control-sm"
+                        placeholder="https://youtube.com/..."
+                        value={vLink}
+                        onChange={(e) =>
+                          handleVideoLinkChange(idx, lIdx, e.target.value)
+                        }
+                      />
+                    ))}
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => removeContent(idx)}
+                      className="btn btn-sm btn-link p-0"
+                      onClick={() => addVideoLink(idx)}
                     >
-                      Remove Section
+                      + Add Link
                     </button>
-                  )}
-                </div>
-                <div className="mb-3 mt-2">
-                  <input
-                    type="text"
-                    placeholder="Section Title"
-                    className="form-control mb-2"
-                    value={content.title}
-                    onChange={(e) =>
-                      handleContentChange(idx, "title", e.target.value)
-                    }
-                    required
-                  />
-                  <textarea
-                    placeholder="Section Description"
-                    className="form-control mb-2"
-                    rows={2}
-                    value={content.description}
-                    onChange={(e) =>
-                      handleContentChange(idx, "description", e.target.value)
-                    }
-                    required
-                  />
-                  <div className="row">
-                    <div className="col-md-6">
-                      <label className="small fw-bold">Video (MP4/WebM)</label>
-                      <input
-                        type="file"
-                        className="form-control form-control-sm"
-                        accept="video/*"
-                        onChange={(e) =>
-                          handleContentChange(idx, "video", e.target.files[0])
-                        }
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="small fw-bold">Handouts (PDF)</label>
-                      <input
-                        type="file"
-                        className="form-control form-control-sm"
-                        accept=".pdf"
-                        onChange={(e) =>
-                          handleContentChange(
-                            idx,
-                            "handouts",
-                            e.target.files[0],
-                          )
-                        }
-                      />
-                    </div>
                   </div>
-                  <input
-                    type="url"
-                    placeholder="External Link (Optional)"
-                    className="form-control form-control-sm mt-2"
-                    value={content.link}
-                    onChange={(e) =>
-                      handleContentChange(idx, "link", e.target.value)
-                    }
-                  />
+
+                  <div className="col-md-6">
+                    <label className="fw-bold small">
+                      Handouts / Resources (Multiple PDFs)
+                    </label>
+                    <input
+                      type="file"
+                      className="form-control"
+                      accept=".pdf"
+                      multiple
+                      onChange={(e) =>
+                        handleContentChange(idx, "handouts", e.target.files)
+                      }
+                    />
+                    <small className="text-muted">
+                      You can select multiple files
+                    </small>
+                  </div>
+
+                  <div className="col-12">
+                    <label className="fw-bold small">
+                      Detailed Lesson Notes
+                    </label>
+                    <textarea
+                      className="form-control"
+                      rows="4"
+                      placeholder="Write full lesson notes here..."
+                      value={content.notes_text}
+                      onChange={(e) =>
+                        handleContentChange(idx, "notes_text", e.target.value)
+                      }
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           ))}
+
           <button
             type="button"
             className="btn btn-outline-primary mb-4"
@@ -358,9 +435,9 @@ export default function CreateCourse() {
               className="btn btn-primary btn-lg"
               disabled={loading}
             >
-              {loading ? (
+              {loading && (
                 <span className="spinner-border spinner-border-sm me-2"></span>
-              ) : null}
+              )}
               {loading ? "Creating Course..." : "Publish Course Draft"}
             </button>
           </div>

@@ -112,16 +112,21 @@ export default function ProviderDashboardLayout({ title, children }) {
                 <li className="nav-item">
                   <a className="nav-link d-flex gap-2" href="/provider/course">
                     <i className="bi bi-journal-text"></i>
-                    Courses
+                    Trainings
                   </a>
                 </li>
-
+<li className="nav-item">
+                  <a className="nav-link d-flex gap-2" href="/provider/all-cohorts">
+                    <i className="bi bi-people"></i>
+                    Cohorts
+                  </a>
+                </li>
                 <li className="nav-item">
                   <a
                     className="nav-link d-flex gap-2"
-                    href="/provider/enrollments"
+                    href="/provider/all-enrollments"
                   >
-                    <i className="bi bi-people"></i>
+                    <i className="bi bi-person-lines-fill"></i>
                     Enrollments
                   </a>
                 </li>
@@ -162,19 +167,22 @@ export default function ProviderDashboardLayout({ title, children }) {
 
               <ul className="nav flex-column mb-2">
                 <li className="nav-item">
-                  <a
-                    className="nav-link d-flex gap-2"
-                    href="/tenant/reports/courses"
-                  >
+                  <a className="nav-link d-flex gap-2" href="/provider/reports">
                     <i className="bi bi-file-earmark-text"></i>
-                    Course Reports
+                    Reports
+                  </a>
+                </li>
+
+                 <li className="nav-item">
+                  <a className="nav-link d-flex gap-2" href="/provider/review">
+<i className="bi bi-star"></i>                    Reviews
                   </a>
                 </li>
 
                 <li className="nav-item">
                   <a
                     className="nav-link d-flex gap-2"
-                    href="/tenant/reports/engagement"
+                    href="/provider/social-engagement"
                   >
                     <i className="bi bi-graph-up"></i>
                     Engagement

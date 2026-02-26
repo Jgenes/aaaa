@@ -488,6 +488,17 @@ a {
   border-color: #0a2e67;
   box-shadow: 1px 1px 5px 1px #0a2e67;
 }
+.vvb{
+  font-size: 13px;
+  background-color: #0a2e67;
+  border-color: #0a2e67;
+}
+.vvb:hover {
+  background-color: #0a2e67;
+  color: white;
+  border-color: #0a2e67;
+  box-shadow: 1px 1px 5px 1px #0a2e67;
+} 
 .verifyBtn1 {
   font-size: 13px;
   background-color: #0a2e67;
@@ -692,6 +703,9 @@ label {
   border-color: #0a2e67;
   box-shadow: 1px 1px 5px 1px #0a2e67;
 }
+.navbar {
+  background-color: red;
+}
 .navbar-nav .nav-link {
   transition:
     color 0.2s,
@@ -859,4 +873,74 @@ select option {
   .trending-grid {
     grid-template-columns: 1fr;
   }
+}
+/* DESKTOP: Ikae vile unavyotaka */
+.carousel-item img {
+  height: 500px;
+  object-fit: cover;
+}
+
+.slider-card {
+  position: absolute;
+  top: -420px; /* Hii inafanya kadi ikae juu ya picha Desktop */
+  left: 20px;
+  background: white;
+  padding: 25px;
+  width: 400px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+/* MOBILE: Hapa ndipo tunatibu tatizo la Height */
+@media (max-width: 768px) {
+  /* 1. Ruhusu carousel item iwe na urefu kulingana na maudhui */
+  .carousel-item {
+    height: auto !important;
+  }
+
+  /* 2. Punguza picha iwe fupi kidogo ili kadi ionekane haraka */
+  .carousel-item img {
+    height: 300px !important;
+  }
+
+  /* 3. Rudisha kadi kwenye mpangilio wa kawaida (static) */
+  .slider-card {
+    position: relative !important;
+    top: 0 !important; /* Inafuta lile gapi la -420px */
+    left: 0 !important;
+    width: 100% !important;
+    box-shadow: none;
+    padding: 20px;
+    margin-top: 10px; /* Inatenganisha picha na kadi kidogo */
+  }
+
+  /* 4. Muhimu: Container ya carousel isifiche vitu vinavyozidi urefu */
+  .carousel-inner {
+    overflow: visible !important;
+    height: auto !important;
+  }
+}
+
+.f{
+  background: white;
+  color: #0a2e67;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 14px;
+  border: none;
+  transition: 0.2s;
+}
+
+.f:hover {
+  opacity: 0.9;
+}
+.btnAA{
+  font-size: 13px;
+}
+.viewall{
+font-size:13px
+}
+.viewall:hover{
+      text-decoration:none;
+      color:#0a2e67
 }

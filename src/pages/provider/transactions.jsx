@@ -7,6 +7,7 @@ export default function ProviderInvoices() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterText, setFilterText] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
     fetchProviderPayments();
@@ -15,18 +16,47 @@ export default function ProviderInvoices() {
   const fetchProviderPayments = async () => {
     try {
       const res = await api.get("/provider/payments");
-      setPayments(res.data);
+      const normalized = (res.data || []).map((p) => {
+        const cohortObj = p.cohort || null;
+        const cohortName =
+          cohortObj?.name || cohortObj?.intake_name || cohortObj?.intakeName ||
+          (p.cohort_id ? `Cohort #${p.cohort_id}` : null);
+
+        return {
+          ...p,
+          cohort: cohortObj
+            ? { ...cohortObj, displayName: cohortName }
+            : cohortName ? { displayName: cohortName } : null,
+        };
+      });
+      setPayments(normalized);
       setLoading(false);
     } catch (err) {
-      console.error("Error fetching provider payments:", err);
+      console.error("Error fetching payments:", err);
       setLoading(false);
     }
   };
 
   const handleDownload = (reference) => {
     const baseUrl = "http://localhost:8000/api";
-    const finalUrl = `${baseUrl}/download-document/${reference}`;
-    window.open(finalUrl, "_blank");
+    window.open(`${baseUrl}/download-document/${reference}`, "_blank");
+  };
+
+  const handleToggleStatus = async (payment) => {
+    const newStatus = payment.status === "PENDING" ? "COMPLETED" : "PENDING";
+    setUpdatingId(payment.id);
+    try {
+      // HAPA NDIPO PAMEBADILIKA: Tumetumia .post badala ya .put
+await api.post(`/provider/payments/${payment.id}/status`, { status: newStatus });      
+      setPayments(payments.map((p) =>
+        p.id === payment.id ? { ...p, status: newStatus } : p
+      ));
+    } catch (err) {
+      console.error("Update Error:", err);
+      alert("Failed: " + (err.response?.data?.message || err.message));
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const columns = [
@@ -42,16 +72,23 @@ export default function ProviderInvoices() {
       ),
     },
     {
-      name: "Course & Cohort",
+      name: "Course",
       selector: (row) => row.course?.title,
       sortable: true,
       cell: (row) => (
+        <div className="text-truncate" style={{ maxWidth: "200px" }}>
+          {row.course?.title || "—"}
+        </div>
+      ),
+    },
+    {
+      name: "Cohort",
+      selector: (row) => row.cohort?.displayName,
+      sortable: true,
+      cell: (row) => (
         <div>
-          <div className="text-truncate" style={{ maxWidth: "150px" }}>
-            {row.course?.title}
-          </div>
           <span className="badge bg-light text-dark border-0">
-            {row.cohort?.name}
+            {row.cohort?.displayName || "—"}
           </span>
         </div>
       ),
@@ -67,9 +104,7 @@ export default function ProviderInvoices() {
       selector: (row) => row.status,
       sortable: true,
       cell: (row) => (
-        <span
-          className={`badge ${row.status === "PAID" || row.status === "COMPLETED" ? "bg-success" : "bg-warning text-dark"}`}
-        >
+        <span className={`badge ${row.status === "PAID" || row.status === "COMPLETED" ? "bg-success" : "bg-warning text-dark"}`}>
           {row.status}
         </span>
       ),
@@ -77,55 +112,59 @@ export default function ProviderInvoices() {
     {
       name: "Action",
       cell: (row) => {
-        // Logic ya kubadilisha maandishi kulingana na status
         const isPaid = row.status === "PAID" || row.status === "COMPLETED";
+        const isUpdating = updatingId === row.id;
         return (
-          <button
-            onClick={() => handleDownload(row.reference)}
-            className="btn btn-sm text-white d-flex align-items-center"
-            style={{ backgroundColor: "#0a2e67", gap: "5px", fontSize: "13px" }}
-          >
-            <i className="bi bi-download"></i>
-            {isPaid ? "Receipt" : "Invoice"}
-          </button>
+          <div className="d-flex gap-2 align-items-center">
+            <button
+              onClick={() => handleDownload(row.reference)}
+              className="btn btn-sm text-white d-flex align-items-center"
+              style={{ backgroundColor: "#0a2e67", gap: "5px", fontSize: "13px" }}
+            >
+              <i className="bi bi-download"></i>
+              {isPaid ? "Receipt" : "Invoice"}
+            </button>
+            {(row.status === "PENDING" || row.status === "COMPLETED") && (
+              <button
+                onClick={() => handleToggleStatus(row)}
+                className="btn btn-sm text-white d-flex align-items-center"
+                style={{ backgroundColor: row.status === "PENDING" ? "#28a745" : "#dc3545", gap: "5px", fontSize: "13px" }}
+                disabled={isUpdating}
+              >
+                <i className="bi bi-check-circle"></i>
+                {isUpdating ? "..." : row.status === "PENDING" ? "Mark Complete" : "Mark Pending"}
+              </button>
+            )}
+          </div>
         );
       },
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-      width: "130px", // Iongeze kidogo nafasi ili icon na maandishi vikae sawa
+      width: "280px",
     },
   ];
 
-  const filteredItems = payments.filter(
-    (item) =>
-      item.user?.name?.toLowerCase().includes(filterText.toLowerCase()) ||
-      item.course?.title?.toLowerCase().includes(filterText.toLowerCase()) ||
-      item.reference?.toLowerCase().includes(filterText.toLowerCase()),
+  const filteredItems = payments.filter((item) =>
+    item.user?.name?.toLowerCase().includes(filterText.toLowerCase()) ||
+    item.course?.title?.toLowerCase().includes(filterText.toLowerCase())
   );
 
   return (
     <ProviderDashboardLayout title="Invoices & Receipts">
       <div className="card border-0 shadow-sm p-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
-          <h5 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>
-            Transaction History
-          </h5>
           <input
             type="text"
             className="form-control form-control-sm w-25"
-            placeholder="Search student or course..."
+            placeholder="Search..."
             onChange={(e) => setFilterText(e.target.value)}
           />
+          
         </div>
-
         <DataTable
           columns={columns}
           data={filteredItems}
           pagination
           progressPending={loading}
           highlightOnHover
-          pointerOnHover
           responsive
           customStyles={{
             headCells: {

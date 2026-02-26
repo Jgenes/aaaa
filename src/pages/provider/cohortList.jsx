@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
-import { FaEye, FaPlus, FaArrowLeft, FaSync } from "react-icons/fa";
-import { getCohorts, refreshCohortStatuses } from "../../api/courseServices";
+import { FaEye, FaPlus, FaArrowLeft, FaSync, FaEdit, FaTrash } from "react-icons/fa";
+import { getCohorts, refreshCohortStatuses, deleteCohort } from "../../api/courseServices";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function CohortList() {
   const { courseId } = useParams(); // Inakamata ID kutoka kwenye URL mfano: /cohortlist/4
@@ -79,6 +81,7 @@ export default function CohortList() {
   );
 
   const handleView = (cohort) => {
+    console.log("Selected cohort data:", cohort);
     setSelectedCohort(cohort);
     setShowModal(true);
   };
@@ -98,6 +101,39 @@ export default function CohortList() {
       setLoading(false);
     }
   };
+
+    const handleDelete = async (cohort) => {
+      const cohortName = cohort.intake_name || cohort.intakeName || `Cohort #${cohort.id}`;
+    
+      if (!window.confirm(`Are you sure you want to delete "${cohortName}"? This action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        await deleteCohort(courseId, cohort.id);
+      
+        toast.success("✓ Cohort deleted successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+        });
+
+        // Refresh the cohorts list
+        await fetchCohorts();
+      } catch (error) {
+        console.error("Error deleting cohort:", error);
+        const errorMessage = error.response?.data?.message || "Failed to delete cohort!";
+        toast.error(`✗ ${errorMessage}`, {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+        });
+      }
+    };
 
   // Calculate remaining seats
   const calculateRemainingSeats = (cohort) => {
@@ -225,15 +261,43 @@ export default function CohortList() {
     {
       name: "Actions",
       cell: (row) => (
-        <button className="btn btn-sm btn-info" onClick={() => handleView(row)}>
-          <FaEye color="white" />
-        </button>
+        <div className="d-flex gap-2">
+          <button className="btn btn-sm btn-info" onClick={() => handleView(row)}>
+            <FaEye color="white" />
+          </button>
+          <button
+            className="btn btn-sm btn-warning"
+            onClick={() => navigate(`/provider/cohorts/${courseId}/${row.id}/edit`)}
+            title="Edit cohort"
+          >
+            <FaEdit color="white" />
+          </button>
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={() => handleDelete(row)}
+              title="Delete cohort"
+            >
+              <FaTrash color="white" />
+            </button>
+        </div>
       ),
     },
   ];
 
   return (
     <ProviderDashboardLayout title="Course Cohorts">
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       <div className="container mt-4">
         {/* Header Section */}
         <div className="d-flex justify-content-between align-items-center mb-4">
@@ -244,7 +308,7 @@ export default function CohortList() {
             >
               <FaArrowLeft /> Back
             </button>
-            <h5 className="mb-0">
+            <h5 className="mb-0" style={{fontSize:"16px"}}>
               Cohorts for:{" "}
               <span className="text-primary">
                 {courseName || `Course #${courseId}`}
@@ -260,7 +324,7 @@ export default function CohortList() {
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
-            <button
+            {/* <button
               className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
               onClick={handleRefreshStatuses}
               disabled={loading}
@@ -268,9 +332,9 @@ export default function CohortList() {
             >
               <FaSync className={loading ? "spinning" : ""} />
               Refresh Status
-            </button>
+            </button> */}
             <button
-              className="btn btn-sm btn-success d-flex align-items-center gap-1"
+              className="btn btn-sm btn-success d-flex align-items-center gap-1 vvb"
               onClick={() => navigate(`/provider/cohorts/create/${courseId}`)}
             >
               <FaPlus /> Add Cohort
@@ -379,9 +443,13 @@ export default function CohortList() {
                     </div>
                   </div>
                   <hr />
-                  <h6>Description</h6>
+                  <h6 className="fw-bold mb-2">Description</h6>
                   <p className="text-muted">
-                    {selectedCohort.description || "No description provided."}
+                    {selectedCohort.description || 
+                     selectedCohort.cohort_description ||
+                     selectedCohort.intake_description ||
+                     selectedCohort.notes ||
+                     "No description provided."}
                   </p>
                 </div>
                 <div className="modal-footer bg-light">
