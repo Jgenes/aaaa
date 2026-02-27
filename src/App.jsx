@@ -32,7 +32,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 
 // Imebadilishwa jina kuzuia mgongano
 import AdminProviderReview from "./pages/admin/ProviderReview.jsx"; 
-import AdminCourses from "./pages/admin/Admincourses.jsx";
+import AdminCourses from "./pages/admin/AdminCourses.jsx";
 import AdminTransactions from "./pages/admin/AdminTransactions.jsx";
 import AdminReports from "./pages/admin/Reports.jsx";
 import Penrollments from "./pages/provider/Enrollments.jsx";
