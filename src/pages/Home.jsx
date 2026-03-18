@@ -37,14 +37,13 @@ export default function Home() {
 
         if (courseRes.data) {
           const processed = courseRes.data.map(c => {
-            // HAPA NDIO LOGIC YA KU-CHECK ENROLLMENT STATUS
             const hasCompletedEnrollment = c.enrollments?.some(
               (enrol) => enrol.status?.toLowerCase() === "completed"
             );
 
             return {
               ...c,
-              isEnrolled: hasCompletedEnrollment, // Tunaongeza hii flag
+              isEnrolled: hasCompletedEnrollment,
               mainCohort: c.cohorts?.find(coh => coh.status?.toUpperCase() === "OPEN") || c.cohorts?.[0]
             };
           });
@@ -68,45 +67,44 @@ export default function Home() {
   }, []);
 
   const CourseItem = ({ course }) => {
-    const cohort = course.mainCohort;
-    const remainingSeats = cohort ? (parseInt(cohort.capacity) - parseInt(cohort.seats_taken || 0)) : 0;
     const finalImageUrl = course.banner ? `http://localhost:8000/${course.banner}` : Banner1;
-    
-    // Tunatumia flag tuliyotengeneza kwenye useEffect
     const isEnrolled = course.isEnrolled || false; 
 
     return (
       <div className="col-lg-3 col-md-4 col-sm-6 col-12">
-        <div className="card h-100 shadow-sm border-0" style={{ borderRadius: "15px", overflow: "hidden" }}>
+        <div className="card h-100 shadow-sm border-0 course-card-animated" style={{ borderRadius: "15px", overflow: "hidden" }}>
           <img src={finalImageUrl} className="card-img-top" style={{ height: "160px", objectFit: "cover" }} alt={course.title} onError={(e) => { e.target.src = Banner1; }} />
           <div className="card-body d-flex flex-column p-3">
-            <h6 className="fw-bold mb-2" style={{ fontSize: "15px", height: "40px", overflow: "hidden" }}>{course.title}</h6>
+            <h6 className="fw-bold mb-2" style={{ fontSize: "13px", height: "40px", overflow: "hidden" }}>{course.title}</h6>
             <div className="d-flex align-items-center mb-3">
               <div className="bg-light rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style={{ width: "30px", height: "30px", fontSize: "12px", border: "1px solid #ddd" }}>
                 {course.provider?.name?.charAt(0) || "T"}
               </div>
               <small className="text-muted text-truncate">{course.provider?.name || "Instructor"}</small>
             </div>
-            <div className="mb-3 small text-muted">
-              <div className="mb-1 text-truncate"><i className="bi bi-calendar-event me-2"></i>Starts: {cohort?.start_date ? new Date(cohort.start_date).toLocaleDateString() : "TBA"}</div>
-              <div className="mb-1 text-danger fw-bold text-truncate"><i className="bi bi-calendar-x me-2"></i>Deadline: {cohort?.registration_deadline ? new Date(cohort.registration_deadline).toLocaleDateString() : "TBA"}</div>
-              <div className="text-truncate"><i className="bi bi-people me-2"></i>Remaining: <span className="text-success fw-bold">{cohort ? remainingSeats : 0}</span></div>
-            </div>
+            
             <div className="mt-auto">
-              <p 
+              <button 
                 onClick={() => {
-                  // Ikiwa tayari ame-enroll (completed), mpeleke learning, vinginevyo mpeleke course detail
                   if (isEnrolled) {
                     navigate(`/learning/${course.id}`);
                   } else {
                     navigate(`/course/${course.id}`);
                   }
                 }} 
-                className="d-flex align-items-center cursor-pointer" 
-                style={{ color: "#0a2e67", fontSize: "13px", borderRadius: "8px", padding: "10px", fontWeight: 'bold', cursor: 'pointer', marginBottom: 0 }}
+                className="btn w-100 d-flex align-items-center justify-content-center custom-enroll-btn" 
+                style={{ 
+                  backgroundColor: "#f8f9fa", 
+                  color: "#000", 
+                  fontSize: "12px", 
+                  borderRadius: "8px", 
+                  padding: "10px", 
+                  border: "1px solid #ddd",
+                  transition: "all 0.3s ease" 
+                }}
               >
-                {isEnrolled ? "Continue learning" : "Enroll now"} <i className="bi bi-arrow-right ms-2"></i>
-              </p>
+                {isEnrolled ? "Continue learning" : "Enroll Now"} <i className="bi bi-arrow-right ms-2"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -117,9 +115,27 @@ export default function Home() {
   return (
     <>
       <style>{`
+        /* --- ANIMATION: HOVER LIFT EFFECT --- */
+        .course-card-animated {
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          cursor: pointer;
+        }
+        .course-card-animated:hover {
+          transform: translateY(-10px);
+          box-shadow: 0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.08) !important;
+        }
+
+        /* BUTTON HOVER LOGIC */
+        .custom-enroll-btn:hover {
+          background-color: #0a2e67 !important;
+          color: #ffffff !important;
+          border-color: #0a2e67 !important;
+        }
+
         .provider-carousel-wrapper { position: relative; overflow: hidden; padding: 10px 0; }
         .provider-carousel { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .provider-card { border-radius: 15px; overflow: hidden; position: relative; min-width: 250px; max-width: 300px; height: 220px; flex: 0 0 auto; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .provider-card { border-radius: 15px; overflow: hidden; position: relative; min-width: 250px; max-width: 300px; height: 220px; flex: 0 0 auto; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease; }
+        .provider-card:hover { transform: scale(1.02); }
         .provider-card img { width: 100%; height: 100%; object-fit: cover; }
         .provider-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: rgba(0,0,0,0.6); color: white; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         .provider-carousel::-webkit-scrollbar { display: none; }
@@ -151,7 +167,8 @@ export default function Home() {
         .nav-tabs-custom .nav-link.active { color: #2d2f31 !important; border-bottom: 2px solid #2d2f31 !important; }
         .trusted-section { background-color: #f8f9fa; padding: 60px 0; border-top: 1px solid #e8ebed; border-bottom: 1px solid #e8ebed; }
         
-        .testimonial-card { border: 1px solid #d1d7dc; padding: 24px; background: #fff; height: 100%; text-align: left; display: flex; flex-direction: column; overflow: hidden; }
+        .testimonial-card { border: 1px solid #d1d7dc; padding: 24px; background: #fff; height: 100%; text-align: left; display: flex; flex-direction: column; overflow: hidden; transition: transform 0.3s ease; }
+        .testimonial-card:hover { transform: scale(1.01); }
         .quote-icon { font-size: 44px; font-family: Georgia, serif; line-height: 1; margin-bottom: 10px; display: block; color: #000; }
         .user-info { display: flex; align-items: center; margin-top: auto; }
         .user-text-avatar { width: 44px; height: 44px; background: #2d2f31; color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; flex-shrink: 0; margin-right: 12px; }
@@ -180,8 +197,8 @@ export default function Home() {
               <h1 className="fw-bold mb-3 hero-title-text" style={{ lineHeight: "1.2" }}>Elevate Your Career with <br /> <span style={{ color: "#4cc9f0" }}>Industry-Standard</span> Training</h1>
               <p className="lead mb-4 opacity-90 hero-p-text" style={{ maxWidth: "550px", fontWeight: "400" }}>Join over 5,000+ professionals mastering new skills through expert-led courses and real-world projects.</p>
               <div className="d-flex flex-wrap gap-3 mb-5 justify-content-center justify-content-md-start">
-                <button className="btn btn-explore fw-bold" onClick={() => document.getElementById("courses-list")?.scrollIntoView({ behavior: "smooth" })}>Browse All Trainings</button>
-                <button className="btn btn-outline-light px-4 border-2" style={{ borderRadius: "8px" }}>View Schedule</button>
+                <button  style={{ fontSize: "12px" }} className="btn btn-explore fw-bold" onClick={() => document.getElementById("courses-list")?.scrollIntoView({ behavior: "smooth" })}>Browse All Trainings</button>
+                <button className="btn btn-outline-light px-4 border-2" style={{ borderRadius: "8px", fontSize:"13px" }}  onClick={() => document.getElementById("top-training")?.scrollIntoView({ behavior: "smooth" })}>Latest Trainings</button>
               </div>
               <div className="d-flex gap-2 gap-md-4">
                 <div className="stat-card flex-fill text-center text-md-start"><h4 className="fw-bold mb-0">150+</h4><small className="opacity-75">Expert Courses</small></div>
@@ -200,7 +217,7 @@ export default function Home() {
             <p className="text-muted mb-0" style={{fontSize:"14px"}}>Explore our wide range of technical and professional categories.</p>
           </div>
          <a href='/trainings'> 
-         <button className="btn btn-link text-decoration-none fw-bold text-dark p-0 text-start viewall">View all</button>
+          <button className="btn btn-link text-decoration-none fw-bold text-dark p-0 text-start viewall">View all</button>
          </a>
         </div>
         <ul className="nav nav-tabs nav-tabs-custom mb-4 border-0">
@@ -272,7 +289,7 @@ export default function Home() {
       </div>
 
       <div className="container mt-5 mb-5">
-        <h3 className="fw-bold mb-4" style={{fontSize:"16px"}}>Trending courses</h3>
+        <h3 className="fw-bold mb-4" id="top-training" style={{fontSize:"16px"}}>Latest Training</h3>
         <div className="row g-4">
           {!loading && courses.sort((a,b) => b.id - a.id).slice(0, 4).map(course => (
             <CourseItem key={`trend-${course.id}`} course={course} />

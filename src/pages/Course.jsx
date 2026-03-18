@@ -22,22 +22,15 @@ export default function Course() {
       setLoading(true);
       const res = await api.get(`/training/${courseId}`);
       const courseData = res.data;
-      
-      console.log("Course data:", courseData);
-      console.log("Cohorts available:", courseData.cohorts);
 
-      // Hapa tunatafuta cohort sahihi
       let cohort = null;
       if (cohortId && cohortId !== "undefined") {
         cohort = courseData.cohorts?.find((c) => c.id === parseInt(cohortId));
       }
-      
-      // Kinga: Kama hakuna cohortId kwenye URL, chukua cohort ya kwanza iliyopo
+
       if (!cohort && courseData.cohorts?.length > 0) {
         cohort = courseData.cohorts[0];
       }
-      
-      console.log("Selected cohort:", cohort);
 
       const robustParse = (data) => {
         if (!data) return [];
@@ -68,6 +61,30 @@ export default function Course() {
     }
   };
 
+  // LOGIC YA BUTTON STATUS
+  const getEnrollmentStatus = () => {
+    if (!course?.selectedCohort) return { disabled: true, text: "Enroll Now" };
+
+    const today = new Date();
+    const deadline = new Date(course.selectedCohort.registration_deadline);
+    const remainingSeats = parseInt(course.selectedCohort.remaining_seats) || 0;
+
+    // 1. Kama deadline imepita
+    if (today > deadline) {
+      return { disabled: true, text: "Enrollment Closed" };
+    }
+
+    // 2. Kama seats zimeisha
+    if (remainingSeats <= 0) {
+      return { disabled: true, text: "Cohort Full" };
+    }
+
+    // 3. Iko vizuri
+    return { disabled: false, text: "Enroll" };
+  };
+
+  const status = getEnrollmentStatus();
+
   if (loading) return <div className="text-center py-5"><div className="spinner-border text-primary"></div><p>Loading Course...</p></div>;
   if (error || !course) return <div className="text-center py-5"><h3>{error || "Training not found"}</h3><Link to="/">Go Home</Link></div>;
 
@@ -92,13 +109,14 @@ export default function Course() {
                     <i className="bi bi-info-circle me-2"></i> Cohort information is loading...
                   </div>
                 )}
-                {/* REWRITE: Link sasa inatumia ID ya cohort tuliyoipata juu */}
-                <Link
                 
-                  to={`/checkout/${courseId}/${course.selectedCohort?.id}`}
-                  className="btn btn-primary px-5 py-3 shadow btnEnroll"
+                {/* ENROLL BUTTON IKIWA NA LOGIC YA STATUS */}
+                <Link
+                  to={status.disabled ? "#" : `/checkout/${courseId}/${course.selectedCohort?.id}`}
+                  className={`btn btn-primary px-5 py-3 shadow btnEnroll ${status.disabled ? "disabled opacity-50" : ""}`}
+                  style={status.disabled ? { pointerEvents: "none", cursor: "not-allowed" } : {}}
                 >
-                  Enroll Now
+                  {status.text}
                 </Link>
               </div>
               <div className="col-md-4 text-center">
