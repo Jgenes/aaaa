@@ -35,9 +35,7 @@ export default function Training() {
     }
   };
 
-  // 1. Logic ya kuandaa data ya Kozi (Hapa ndipo tunahakikisha haziondoki)
   const courseList = courses.map((course) => {
-    // Tunachukua cohort iliyo OPEN, kama hakuna, tunachukua yoyote iliyopo (ya kwanza) ili kozi ionekane
     const activeCohort =
       course.cohorts?.find((c) => c.status?.toUpperCase() === "OPEN") || course.cohorts?.[0];
     
@@ -57,7 +55,7 @@ export default function Training() {
     return {
       ...course,
       mainCohort: activeCohort,
-      // Hii inatumika kule kwenye Button pekee
+      isEnrolled: course.is_enrolled || false,
       enrollmentOpen:
         activeCohort &&
         activeCohort.status?.toUpperCase() === "OPEN" &&
@@ -68,7 +66,6 @@ export default function Training() {
     };
   });
 
-  // 2. Filter Logic (Nimeondoa kizuizi cha 'isPublished' au 'enrollmentOpen' ili zisiondoke)
   const filteredCourses = courseList.filter((course) => {
     const nameMatch = (course.title || "")
       .toLowerCase()
@@ -83,7 +80,6 @@ export default function Training() {
       ? course.mainCohort?.start_date === filters.date
       : true;
     
-    // Hapa tunaruhusu zote zipite kulingana na filters za mtumiaji tu
     return nameMatch && categoryMatch && trainerMatch && dateMatch;
   });
 
@@ -94,8 +90,87 @@ export default function Training() {
     ...new Set(courseList.map((c) => c.provider?.name).filter(Boolean)),
   ];
 
+  // ================= COURSE ITEM COMPONENT (STYLE KAMA YA HOME) =================
+  const CourseItem = ({ course }) => {
+    const finalImageUrl = course.banner 
+      ? `http://localhost:8000/${course.banner}` 
+      : "https://via.placeholder.com/400x200?text=No+Image";
+    
+    const isEnrolled = course.isEnrolled;
+
+    return (
+      <div className="col-12 col-md-6 col-lg-4">
+        <div className="card h-100 shadow-sm border-0 course-card-animated" style={{ borderRadius: "15px", overflow: "hidden" }}>
+          <img 
+            src={finalImageUrl} 
+            className="card-img-top" 
+            style={{ height: "160px", objectFit: "cover" }} 
+            alt={course.title} 
+          />
+          <div className="card-body d-flex flex-column p-3">
+            <h6 className="fw-bold mb-2" style={{ fontSize: "14px", height: "40px", overflow: "hidden" }}>
+              {course.title}
+            </h6>
+            
+            <div className="d-flex align-items-center mb-3">
+              <div className="bg-light rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style={{ width: "30px", height: "30px", fontSize: "12px", border: "1px solid #ddd", overflow: "hidden" }}>
+                {course.provider?.logo ? (
+                  <img src={`http://localhost:8000/storage/uploads/${course.provider.logo}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="L" />
+                ) : (
+                  course.provider?.name?.charAt(0) || "T"
+                )}
+              </div>
+              <small className="text-muted text-truncate">{course.provider?.name || "Instructor"}</small>
+            </div>
+            
+            <div className="mt-auto">
+              <button 
+                onClick={() => {
+                  if (isEnrolled) {
+                    navigate(`/learning/${course.id}`);
+                  } else {
+                    navigate(`/course/${course.id}`);
+                  }
+                }} 
+                className="btn w-100 d-flex align-items-center justify-content-center custom-enroll-btn" 
+                style={{ 
+                  backgroundColor: "#f8f9fa", 
+                  color: "#000", 
+                  fontSize: "12px", 
+                  borderRadius: "8px", 
+                  padding: "10px", 
+                  border: "1px solid #ddd",
+                  transition: "all 0.3s ease",
+                  fontWeight: "bold"
+                }}
+              >
+                {isEnrolled ? "Continue learning" : "Enroll Now"} <i className="bi bi-arrow-right ms-2"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
+      <style>{`
+        .course-card-animated {
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          cursor: pointer;
+        }
+        .course-card-animated:hover {
+          transform: translateY(-10px);
+          box-shadow: 0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.08) !important;
+        }
+        .custom-enroll-btn:hover {
+          background-color: #0a2e67 !important;
+          color: #ffffff !important;
+          border-color: #0a2e67 !important;
+        }
+      `}</style>
+
       <NavBar />
       <div className="container py-5">
         <ToastContainer />
@@ -104,9 +179,9 @@ export default function Training() {
           <div className="col-md-3 mb-4">
             <div
               className="card p-3 shadow-sm border-0"
-              style={{ position: "sticky", top: "80px", borderRadius: "12px" }}
+              style={{ position: "sticky", top: "80px", borderRadius: "12px", background: "#fff" }}
             >
-              <h5 className="mb-3 fw-bold">Filter Courses</h5>
+              <h5 className="mb-3 fw-bold" style={{ fontSize: "18px" }}>Filter Courses</h5>
 
               <div className="mb-3">
                 <label className="form-label small fw-bold">Search Course</label>
@@ -115,9 +190,7 @@ export default function Training() {
                   className="form-control form-control-sm"
                   placeholder="Type name..."
                   value={filters.name}
-                  onChange={(e) =>
-                    setFilters({ ...filters, name: e.target.value })
-                  }
+                  onChange={(e) => setFilters({ ...filters, name: e.target.value })}
                 />
               </div>
 
@@ -126,15 +199,11 @@ export default function Training() {
                 <select
                   className="form-select form-select-sm"
                   value={filters.category}
-                  onChange={(e) =>
-                    setFilters({ ...filters, category: e.target.value })
-                  }
+                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
                 >
                   <option value="">All Categories</option>
                   {categories.map((cat, i) => (
-                    <option key={i} value={cat}>
-                      {cat}
-                    </option>
+                    <option key={i} value={cat}>{cat}</option>
                   ))}
                 </select>
               </div>
@@ -144,15 +213,11 @@ export default function Training() {
                 <select
                   className="form-select form-select-sm"
                   value={filters.trainer}
-                  onChange={(e) =>
-                    setFilters({ ...filters, trainer: e.target.value })
-                  }
+                  onChange={(e) => setFilters({ ...filters, trainer: e.target.value })}
                 >
                   <option value="">All Trainers</option>
                   {trainers.map((t, i) => (
-                    <option key={i} value={t}>
-                      {t}
-                    </option>
+                    <option key={i} value={t}>{t}</option>
                   ))}
                 </select>
               </div>
@@ -163,22 +228,14 @@ export default function Training() {
                   type="date"
                   className="form-control form-control-sm"
                   value={filters.date}
-                  onChange={(e) =>
-                    setFilters({ ...filters, date: e.target.value })
-                  }
+                  onChange={(e) => setFilters({ ...filters, date: e.target.value })}
                 />
               </div>
 
               <button
-                style={{
-                  backgroundColor: "#0a2e67",
-                  borderColor: "#0a2e67",
-                  color: "#fff",
-                }}
-                className="btn btn-sm w-100 mt-2"
-                onClick={() =>
-                  setFilters({ name: "", category: "", trainer: "", date: "" })
-                }
+                style={{ backgroundColor: "#0a2e67", borderColor: "#0a2e67", color: "#fff" }}
+                className="btn btn-sm w-100 mt-2 fw-bold"
+                onClick={() => setFilters({ name: "", category: "", trainer: "", date: "" })}
               >
                 <i className="bi bi-arrow-counterclockwise"></i> Reset Filters
               </button>
@@ -198,106 +255,7 @@ export default function Training() {
                 </div>
               ) : (
                 filteredCourses.map((course) => (
-                  <div className="col-12 col-md-6 col-lg-4" key={course.id}>
-                    <div
-                      className="card h-100 shadow-sm border-0"
-                      style={{ borderRadius: "15px", overflow: "hidden" }}
-                    >
-                      <img
-                        src={
-                          course.banner
-                            ? `http://localhost:8000/${course.banner}`
-                            : "https://via.placeholder.com/400x200?text=No+Image"
-                        }
-                        className="card-img-top"
-                        style={{ height: "160px", objectFit: "cover" }}
-                        alt={course.title}
-                      />
-                      <div className="card-body d-flex flex-column p-3">
-                        <h6 className="fw-bold mb-2">{course.title}</h6>
-
-                        <div className="d-flex align-items-center mb-3">
-                          <img
-                            src={
-                              course.provider?.logo
-                                ? `http://localhost:8000/storage/uploads/${course.provider.logo}`
-                                : "https://ui-avatars.com/api/?name=T"
-                            }
-                            style={{
-                              width: "24px",
-                              height: "24px",
-                              borderRadius: "50%",
-                              marginRight: "8px",
-                              objectFit: "cover",
-                            }}
-                            alt="logo"
-                          />
-                          <small className="text-muted">
-                            {course.provider?.name || "Provider"}
-                          </small>
-                        </div>
-
-                        <div className="mb-3 small text-muted">
-                          <div className="mb-1">
-                            <i className="bi bi-calendar-event me-2"></i>Starts:{" "}
-                            {course.mainCohort?.start_date || "TBA"}
-                          </div>
-                          <div className="mb-1 text-danger fw-bold">
-                            <i className="bi bi-calendar-x me-2"></i>Deadline:{" "}
-                            {course.mainCohort?.registration_deadline || "TBA"}
-                          </div>
-                          <div>
-                            <i className="bi bi-people me-2"></i>Remaining:
-                            <span
-                              className={
-                                (Number(course.mainCohort?.capacity || 0) - Number(course.mainCohort?.seats_taken || 0)) <= 0
-                                  ? "text-danger ms-1"
-                                  : "text-success ms-1"
-                              }
-                            >
-                              {Math.max(0, (Number(course.mainCohort?.capacity || 0) - Number(course.mainCohort?.seats_taken || 0)))}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="mt-auto">
-                          {course.is_enrolled ? (
-                            <button
-                              onClick={() => navigate(`/learning/${course.id}`)}
-                              className="btn btn-success w-100 fw-bold shadow-sm"
-                              style={{ fontSize: "13px", borderRadius: "8px" }}
-                            >
-                              <i className="bi bi-play-circle me-2"></i>
-                              Continue Learning
-                            </button>
-                          ) : (
-                            <>
-                              {course.enrollmentOpen ? (
-                                <button
-                                  onClick={() => navigate(`/course/${course.id}`)}
-                                  className="btn btn-primary w-100 fw-bold shadow-sm"
-                                  style={{
-                                    backgroundColor: "#0a2e67",
-                                    borderColor: "#0a2e67",
-                                    fontSize: "13px",
-                                    borderRadius: "8px",
-                                  }}
-                                >
-                                  Enroll Now
-                                </button>
-                              ) : (
-                                // Hapa: Kozi bado inaonekana lakini Button imefungwa
-                                <button className="btn btn-secondary w-100 fw-bold shadow-sm disabled" style={{ fontSize: "13px", borderRadius: "8px" }}>
-                                  <i className="bi bi-lock-fill me-2"></i>
-                                  {course.isFull ? "Cohort Full" : course.isPastDeadline ? "Deadline Passed" : "Enrollment Closed"}
-                                </button>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <CourseItem key={course.id} course={course} />
                 ))
               )}
             </div>

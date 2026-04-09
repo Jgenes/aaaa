@@ -1,24 +1,23 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
-import { FaEye, FaPlus, FaArrowLeft, FaSync, FaEdit, FaTrash } from "react-icons/fa";
-import { getCohorts, refreshCohortStatuses, deleteCohort } from "../../api/courseServices";
+import { FaEye, FaPlus, FaArrowLeft, FaEdit, FaTrash, FaSearch } from "react-icons/fa";
+import { getCohorts, deleteCohort } from "../../api/courseServices";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function CohortList() {
-  const { courseId } = useParams(); // Inakamata ID kutoka kwenye URL mfano: /cohortlist/4
+  const { courseId } = useParams();
   const navigate = useNavigate();
 
   const [cohorts, setCohorts] = useState([]);
-  const [courseName, setCourseName] = useState(""); // Kuhifadhi jina la kozi husika
+  const [courseName, setCourseName] = useState("");
   const [loading, setLoading] = useState(true);
   const [filterText, setFilterText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedCohort, setSelectedCohort] = useState(null);
 
-  // Kuvuta data pindi tu page inapofunguka
   useEffect(() => {
     fetchCohorts();
   }, [courseId]);
@@ -26,216 +25,134 @@ export default function CohortList() {
   const fetchCohorts = async () => {
     try {
       setLoading(true);
-      console.log("Fetching cohorts for courseId:", courseId);
-
-      // Use the API service instead of direct api call
       const response = await getCohorts(courseId);
-      console.log("API Response:", response);
-
-      // Handle different response structures
       let cohortsData = [];
+      
       if (response.data) {
-        // If response.data is an array, use it directly
-        if (Array.isArray(response.data)) {
-          cohortsData = response.data;
-        }
-        // If response.data has a data property (nested structure)
-        else if (response.data.data && Array.isArray(response.data.data)) {
-          cohortsData = response.data.data;
-        }
-        // If response.data has cohorts property
-        else if (
-          response.data.cohorts &&
-          Array.isArray(response.data.cohorts)
-        ) {
-          cohortsData = response.data.cohorts;
-        }
+        if (Array.isArray(response.data)) cohortsData = response.data;
+        else if (response.data.data && Array.isArray(response.data.data)) cohortsData = response.data.data;
+        else if (response.data.cohorts && Array.isArray(response.data.cohorts)) cohortsData = response.data.cohorts;
       }
 
-      console.log("Processed cohorts data:", cohortsData);
       setCohorts(cohortsData);
-
-      // Try to get course name from the first cohort or response
       if (cohortsData.length > 0) {
-        setCourseName(
-          cohortsData[0].course?.title ||
-            cohortsData[0].course_name ||
-            `Course #${courseId}`,
-        );
+        setCourseName(cohortsData[0].course?.title || cohortsData[0].course_name || `Course #${courseId}`);
       } else {
         setCourseName(`Course #${courseId}`);
       }
     } catch (error) {
-      console.error("Error fetching cohorts:", error);
-      console.error("Error response:", error.response?.data);
-      setCohorts([]); // Ensure cohorts is empty on error
+      toast.error("Failed to load cohorts");
+      setCohorts([]);
     } finally {
       setLoading(false);
     }
   };
 
   const filteredData = cohorts.filter((item) =>
-    (item.intake_name || item.intakeName || "")
-      .toLowerCase()
-      .includes(filterText.toLowerCase()),
+    (item.intake_name || item.intakeName || "").toLowerCase().includes(filterText.toLowerCase())
   );
 
-  const handleView = (cohort) => {
-    console.log("Selected cohort data:", cohort);
-    setSelectedCohort(cohort);
-    setShowModal(true);
-  };
+  const handleDelete = async (cohort) => {
+    const cohortName = cohort.intake_name || cohort.intakeName || `Cohort #${cohort.id}`;
+    if (!window.confirm(`Delete "${cohortName}"?`)) return;
 
-  // Refresh cohort statuses
-  const handleRefreshStatuses = async () => {
     try {
-      setLoading(true);
-      await refreshCohortStatuses(courseId);
-      // Refresh the cohorts data
-      await fetchCohorts();
-      alert("Cohort statuses updated successfully!");
+      await deleteCohort(courseId, cohort.id);
+      toast.success("Cohort deleted successfully");
+      fetchCohorts();
     } catch (error) {
-      console.error("Error refreshing cohort statuses:", error);
-      alert("Failed to refresh cohort statuses. Please try again.");
-    } finally {
-      setLoading(false);
+      toast.error(error.response?.data?.message || "Error deleting cohort");
     }
   };
 
-    const handleDelete = async (cohort) => {
-      const cohortName = cohort.intake_name || cohort.intakeName || `Cohort #${cohort.id}`;
-    
-      if (!window.confirm(`Are you sure you want to delete "${cohortName}"? This action cannot be undone.`)) {
-        return;
-      }
-
-      try {
-        await deleteCohort(courseId, cohort.id);
-      
-        toast.success("✓ Cohort deleted successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-        });
-
-        // Refresh the cohorts list
-        await fetchCohorts();
-      } catch (error) {
-        console.error("Error deleting cohort:", error);
-        const errorMessage = error.response?.data?.message || "Failed to delete cohort!";
-        toast.error(`✗ ${errorMessage}`, {
-          position: "top-right",
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-        });
-      }
-    };
-
-  // Calculate remaining seats
   const calculateRemainingSeats = (cohort) => {
     const enrolled = cohort.enrolled_students || cohort.enrolledStudents || 0;
     const capacity = cohort.capacity || 0;
     return Math.max(0, capacity - enrolled);
   };
 
-  // Get cohort status with automatic updates
-  const getCohortStatus = (cohort) => {
+  const getStatusBadge = (cohort) => {
     const now = new Date();
-    const deadline = new Date(
-      cohort.registration_deadline || cohort.registrationDeadline,
-    );
-    const endDate = new Date(cohort.end_date || cohort.endDate);
+    const deadline = new Date(cohort.registration_deadline || cohort.registrationDeadline);
     const enrolled = cohort.enrolled_students || cohort.enrolledStudents || 0;
     const capacity = cohort.capacity || 0;
 
-    // If end date has passed, mark as ended
-    if (now > endDate) {
-      return "ENDED";
-    }
-
-    // If enrollment deadline has passed, mark as closed
-    if (now > deadline) {
-      return "CLOSED";
-    }
-
-    // If at full capacity, mark as full
-    if (enrolled >= capacity) {
-      return "FULL";
-    }
-
-    // Otherwise, use the stored status or default to open
-    return cohort.status || "OPEN";
+    if (now > deadline) return { label: "CLOSED", class: "status-closed" };
+    if (enrolled >= capacity) return { label: "FULL", class: "status-full" };
+    return { label: "OPEN", class: "status-open" };
   };
 
-  // Get status badge styling
-  const getStatusBadge = (status) => {
-    switch (status.toUpperCase()) {
-      case "OPEN":
-        return "bg-success";
-      case "CLOSED":
-        return "bg-secondary";
-      case "FULL":
-        return "bg-warning text-dark";
-      case "ENDED":
-        return "bg-dark";
-      default:
-        return "bg-danger";
-    }
+  // Modern DataTable Styling
+  const customStyles = {
+    header: { style: { minHeight: '56px' } },
+    headRow: {
+      style: {
+        borderTopStyle: 'solid',
+        borderTopWidth: '1px',
+        borderTopColor: '#f1f5f9',
+        backgroundColor: '#f8fafc',
+      },
+    },
+    headCells: {
+      style: {
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        fontSize: '11px',
+        letterSpacing: '0.5px',
+        color: '#64748b',
+      },
+    },
+    cells: {
+      style: {
+        fontSize: '14px',
+        color: '#334155',
+        paddingTop: '12px',
+        paddingBottom: '12px',
+      },
+    },
   };
 
   const columns = [
-    { name: "ID", selector: (row) => row.id, width: "70px", sortable: true },
     {
-      name: "Intake Name",
-      selector: (row) => row.intake_name || row.intakeName,
+      name: "Intake Details",
+      selector: (row) => row.intake_name,
       sortable: true,
+      grow: 2,
+      cell: (row) => (
+        <div>
+          <div className="fw-bold text-dark">{row.intake_name || row.intakeName}</div>
+          <div className="text-muted small">ID: #{row.id}</div>
+        </div>
+      )
     },
     {
-      name: "Start Date",
-      selector: (row) => row.start_date || row.startDate,
-      sortable: true,
+      name: "Duration",
+      cell: (row) => (
+        <div className="small">
+          <div className="text-nowrap"><span className="text-muted">Start:</span> {row.start_date}</div>
+          <div className="text-nowrap"><span className="text-muted">End:</span> {row.end_date}</div>
+        </div>
+      )
     },
     {
-      name: "End Date",
-      selector: (row) => row.end_date || row.endDate,
-      sortable: true,
-    },
-    {
-      name: "Capacity",
-      selector: (row) => row.capacity,
-      sortable: true,
-    },
-    {
-      name: "Enrolled",
-      selector: (row) => row.enrolled_students || row.enrolledStudents || 0,
-      sortable: true,
-    },
-    {
-      name: "Remaining Seats",
-      selector: (row) => calculateRemainingSeats(row),
+      name: "Enrollment",
+      selector: (row) => row.enrolled_students,
       sortable: true,
       cell: (row) => {
         const remaining = calculateRemainingSeats(row);
         const capacity = row.capacity || 0;
-        const percentage =
-          capacity > 0 ? ((capacity - remaining) / capacity) * 100 : 0;
-
+        const enrolled = row.enrolled_students || 0;
+        const percentage = capacity > 0 ? (enrolled / capacity) * 100 : 0;
         return (
-          <div>
-            <span className={remaining === 0 ? "text-danger fw-bold" : ""}>
-              {remaining}
-            </span>
-            <div
-              className="progress mt-1"
-              style={{ height: "4px", width: "60px" }}
-            >
-              <div
-                className={`progress-bar ${percentage >= 100 ? "bg-danger" : percentage >= 80 ? "bg-warning" : "bg-success"}`}
-                style={{ width: `${Math.min(percentage, 100)}%` }}
+          <div className="w-100 pr-3">
+            <div className="d-flex justify-content-between mb-1 small">
+              <span>{enrolled}/{capacity}</span>
+              <span className={remaining < 5 ? "text-danger fw-bold" : "text-muted"}>{remaining} left</span>
+            </div>
+            <div className="progress" style={{ height: "6px", borderRadius: "10px" }}>
+              <div 
+                className={`progress-bar ${percentage >= 90 ? "bg-danger" : percentage >= 70 ? "bg-warning" : "bg-primary"}`} 
+                style={{ width: `${Math.min(percentage, 100)}%` }} 
               />
             </div>
           </div>
@@ -243,221 +160,147 @@ export default function CohortList() {
       },
     },
     {
-      name: "Price",
-      selector: (row) => `TZS ${(row.price || 0).toLocaleString()}`,
+      name: "Investment",
+      selector: (row) => row.price,
       sortable: true,
+      cell: (row) => (
+        <span className="fw-bold" style={{ color: "#0a2e67" }}>
+          TZS {(row.price || 0).toLocaleString()}
+        </span>
+      )
     },
     {
       name: "Status",
-      selector: (row) => getCohortStatus(row),
-      sortable: true,
       cell: (row) => {
-        const status = getCohortStatus(row);
-        return (
-          <span className={`badge ${getStatusBadge(status)}`}>{status}</span>
-        );
+        const status = getStatusBadge(row);
+        return <span className={`status-badge ${status.class}`}>{status.label}</span>;
       },
     },
     {
       name: "Actions",
+      right: true,
       cell: (row) => (
         <div className="d-flex gap-2">
-          <button className="btn btn-sm btn-info" onClick={() => handleView(row)}>
-            <FaEye color="white" />
+          <button className="action-btn btn-view" onClick={() => { setSelectedCohort(row); setShowModal(true); }} title="View">
+            <FaEye />
           </button>
-          <button
-            className="btn btn-sm btn-warning"
-            onClick={() => navigate(`/provider/cohorts/${courseId}/${row.id}/edit`)}
-            title="Edit cohort"
-          >
-            <FaEdit color="white" />
+          <button className="action-btn btn-edit" onClick={() => navigate(`/provider/cohorts/${courseId}/${row.id}/edit`)} title="Edit">
+            <FaEdit />
           </button>
-            <button
-              className="btn btn-sm btn-danger"
-              onClick={() => handleDelete(row)}
-              title="Delete cohort"
-            >
-              <FaTrash color="white" />
-            </button>
+          <button className="action-btn btn-delete" onClick={() => handleDelete(row)} title="Delete">
+            <FaTrash />
+          </button>
         </div>
       ),
     },
   ];
 
   return (
-    <ProviderDashboardLayout title="Course Cohorts">
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-      <div className="container mt-4">
-        {/* Header Section */}
-        <div className="d-flex justify-content-between align-items-center mb-4">
+    <ProviderDashboardLayout title="Management">
+      <ToastContainer position="top-right" theme="colored" />
+      
+      <style>{`
+        .page-header { background: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem; }
+        .search-wrapper { position: relative; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        .search-input { padding-left: 35px !important; border-radius: 10px; border: 1px solid #e2e8f0; width: 250px; transition: 0.3s; }
+        .search-input:focus { width: 300px; border-color: #0a2e67; box-shadow: 0 0 0 4px rgba(10,46,103,0.05); }
+        
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
+        .status-open { background: #dcfce7; color: #15803d; }
+        .status-full { background: #fef9c3; color: #a16207; }
+        .status-closed { background: #f1f5f9; color: #475569; }
+
+        .action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px; }
+        .btn-view { background: #eff6ff; color: #2563eb; }
+        .btn-edit { background: #fff7ed; color: #ea580c; }
+        .btn-delete { background: #fef2f2; color: #dc2626; }
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(0.95); }
+
+        .btn-add-cohort { background: #0a2e67; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; transition: 0.3s; }
+        .btn-add-cohort:hover { background: #082452; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(10,46,103,0.2); }
+        
+        .rdt_Table { border-radius: 16px; overflow: hidden; }
+      `}</style>
+
+      <div className="container py-4">
+        <div className="page-header d-md-flex justify-content-between align-items-center">
           <div>
-            <button
-              className="btn btn-sm btn-outline-secondary mb-2"
-              onClick={() => navigate(-1)}
-            >
-              <FaArrowLeft /> Back
+            <button className="btn btn-link text-decoration-none text-muted p-0 mb-2 small d-flex align-items-center gap-2" onClick={() => navigate(-1)}>
+              <FaArrowLeft size={12} /> Back to Trainings
             </button>
-            <h5 className="mb-0" style={{fontSize:"16px"}}>
-              Cohorts for:{" "}
-              <span className="text-primary">
-                {courseName || `Course #${courseId}`}
-              </span>
-            </h5>
+            <h4 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>{courseName}</h4>
+            <p className="text-muted small mb-0">Manage intakes, enrollment capacity, and schedules.</p>
           </div>
 
-          <div className="d-flex gap-2">
-            <input
-              type="text"
-              placeholder="Search intake..."
-              className="form-control w-auto"
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-            />
-            {/* <button
-              className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
-              onClick={handleRefreshStatuses}
-              disabled={loading}
-              title="Refresh cohort statuses"
-            >
-              <FaSync className={loading ? "spinning" : ""} />
-              Refresh Status
-            </button> */}
-            <button
-              className="btn btn-sm btn-success d-flex align-items-center gap-1 vvb"
-              onClick={() => navigate(`/provider/cohorts/create/${courseId}`)}
-            >
-              <FaPlus /> Add Cohort
+          <div className="d-flex gap-3 mt-3 mt-md-0">
+            <div className="search-wrapper d-none d-lg-block">
+              <FaSearch className="search-icon" />
+              <input 
+                type="text" 
+                className="form-control search-input" 
+                placeholder="Find intake..." 
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+              />
+            </div>
+            <button className="btn-add-cohort d-flex align-items-center gap-2" onClick={() => navigate(`/provider/cohorts/create/${courseId}`)}>
+              <FaPlus size={14} /> Add Cohort
             </button>
           </div>
         </div>
 
-        {/* Table Section */}
-        <div className="card shadow-sm">
+        <div className="card border-0 shadow-sm overflow-hidden" style={{ borderRadius: "16px" }}>
           <DataTable
             columns={columns}
             data={filteredData}
             pagination
             highlightOnHover
-            striped
+            customStyles={customStyles}
             progressPending={loading}
-            noDataComponent={
-              <div className="p-5">
-                No cohorts found for this specific course.
-              </div>
-            }
+            noDataComponent={<div className="p-5 text-muted">No intakes found for this course.</div>}
           />
         </div>
 
-        {/* VIEW COHORT MODAL */}
+        {/* MODERN MODAL */}
         {showModal && selectedCohort && (
-          <div
-            className="modal fade show d-block"
-            style={{ background: "#00000080" }}
-          >
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content border-0 shadow">
-                <div className="modal-header bg-primary text-white">
-                  <h5 className="modal-title">
-                    {selectedCohort.intake_name || selectedCohort.intakeName}
-                  </h5>
-                  <button
-                    className="btn-close btn-close-white"
-                    onClick={() => setShowModal(false)}
-                  />
-                </div>
+          <div className="modal fade show d-block" style={{ background: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(4px)" }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "20px" }}>
                 <div className="modal-body p-4">
-                  <div className="row g-3">
-                    <div className="col-md-6 border-end">
-                      <p>
-                        <strong>Start Date:</strong>{" "}
-                        {selectedCohort.start_date || selectedCohort.startDate}
-                      </p>
-                      <p>
-                        <strong>End Date:</strong>{" "}
-                        {selectedCohort.end_date || selectedCohort.endDate}
-                      </p>
-                      <p>
-                        <strong>Registration Deadline:</strong>{" "}
-                        {selectedCohort.registration_deadline ||
-                          selectedCohort.registrationDeadline}
-                      </p>
-                      <p>
-                        <strong>Price:</strong> TZS{" "}
-                        {(selectedCohort.price || 0).toLocaleString()}
-                      </p>
-                      <p>
-                        <strong>Status:</strong>{" "}
-                        <span
-                          className={`badge ${getStatusBadge(getCohortStatus(selectedCohort))}`}
-                        >
-                          {getCohortStatus(selectedCohort)}
-                        </span>
-                      </p>
+                  <div className="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                      <span className="badge bg-light text-primary mb-2">Cohort Details</span>
+                      <h4 className="fw-bold mb-0">{selectedCohort.intake_name}</h4>
                     </div>
-                    <div className="col-md-6">
-                      <p>
-                        <strong>Capacity:</strong> {selectedCohort.capacity}{" "}
-                        Students
-                      </p>
-                      <p>
-                        <strong>Enrolled Students:</strong>{" "}
-                        {selectedCohort.enrolled_students ||
-                          selectedCohort.enrolledStudents ||
-                          0}
-                      </p>
-                      <p>
-                        <strong>Remaining Seats:</strong>{" "}
-                        <span
-                          className={
-                            calculateRemainingSeats(selectedCohort) === 0
-                              ? "text-danger fw-bold"
-                              : "text-success fw-bold"
-                          }
-                        >
-                          {calculateRemainingSeats(selectedCohort)}
-                        </span>
-                      </p>
-                      <p>
-                        <strong>Schedule:</strong>{" "}
-                        {selectedCohort.schedule_text ||
-                          selectedCohort.schedule}
-                      </p>
-                      <p>
-                        <strong>Venue/Link:</strong>{" "}
-                        {selectedCohort.venue ||
-                          selectedCohort.online_link ||
-                          selectedCohort.onlineLink ||
-                          "N/A"}
-                      </p>
+                    <button className="btn-close" onClick={() => setShowModal(false)}></button>
+                  </div>
+
+                  <div className="row g-4">
+                    <div className="col-6">
+                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Timeline</label>
+                      <div className="small fw-bold">{selectedCohort.start_date} - {selectedCohort.end_date}</div>
+                    </div>
+                    <div className="col-6">
+                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Investment</label>
+                      <div className="small fw-bold text-success">TZS {selectedCohort.price?.toLocaleString()}</div>
+                    </div>
+                    <div className="col-6">
+                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Enrollment</label>
+                      <div className="small fw-bold">{selectedCohort.enrolled_students} / {selectedCohort.capacity} Students</div>
+                    </div>
+                    <div className="col-6">
+                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Venue</label>
+                      <div className="small fw-bold text-truncate">{selectedCohort.venue || "Online / Link"}</div>
+                    </div>
+                    <div className="col-12">
+                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Schedule</label>
+                      <div className="p-3 bg-light rounded-3 small">{selectedCohort.schedule_text || "Contact provider for schedule details."}</div>
                     </div>
                   </div>
-                  <hr />
-                  <h6 className="fw-bold mb-2">Description</h6>
-                  <p className="text-muted">
-                    {selectedCohort.description || 
-                     selectedCohort.cohort_description ||
-                     selectedCohort.intake_description ||
-                     selectedCohort.notes ||
-                     "No description provided."}
-                  </p>
-                </div>
-                <div className="modal-footer bg-light">
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Close
+
+                  <button className="btn w-100 mt-4 py-2 fw-bold text-white" style={{ background: "#0a2e67", borderRadius: "10px" }} onClick={() => setShowModal(false)}>
+                    Close Details
                   </button>
                 </div>
               </div>
@@ -465,20 +308,6 @@ export default function CohortList() {
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .spinning {
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
     </ProviderDashboardLayout>
   );
 }

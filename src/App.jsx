@@ -40,6 +40,7 @@ import SocialEngagement from "./pages/provider/SocialEngagement.jsx";
 import ProviderReview from "./pages/provider/ProviderReview.jsx";
 import AllEnrollments from "./pages/provider/AllEnrollments.jsx";
 import AllCohort from "./pages/provider/AllCohort.jsx";
+import About from "./pages/About.jsx";
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
         <Route path="/course/:courseId/cohort/:cohortId" element={<Course />} />
         <Route path="/checkout/:courseId/:cohortId" element={<TrainingHubCheckout />} />
         <Route path="/pesapal-gateway" element={<PesaPalGateway />} />
+        <Route path="/contact" element={<About />} />
 
         {/* Student/User Routes */}
         <Route path="/learning" element={<Learning />} />

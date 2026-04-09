@@ -4,39 +4,22 @@ import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../../api/axio";
-import "../../App.css";
 
 export default function CreateCourse() {
   const navigate = useNavigate();
-
-  const [course, setCourse] = useState({
-    title: "",
-    category: "",
-    mode: "Online",
-    shortDescription: "",
-    longDescription: "",
-    learningOutcomes: [""],
-    skills: [""],
-    requirements: [""],
-    contents: [
-      {
-        title: "",
-        description: "",
-        video: null,
-        handouts: [], // Changed to array for multiple PDFs
-        video_links: [""], // Changed to array for multiple Links
-        notes_text: "",
-      },
-    ],
-    banner: null,
-  });
-
   const [loading, setLoading] = useState(false);
 
-  // ===== Dynamic Field Handlers =====
-  const handleChange = (e) => {
-    setCourse({ ...course, [e.target.name]: e.target.value });
-  };
+  const [course, setCourse] = useState({
+    title: "", category: "", mode: "Online", shortDescription: "",
+    longDescription: "", learningOutcomes: [""], skills: [""],
+    requirements: [""], banner: null,
+    contents: [
+      { title: "", description: "", video: null, handouts: [], video_links: [""], notes_text: "" }
+    ],
+  });
+
+  // --- Handlers ---
+  const handleChange = (e) => setCourse({ ...course, [e.target.name]: e.target.value });
 
   const handleArrayChange = (field, index, value) => {
     const updated = [...course[field]];
@@ -44,17 +27,13 @@ export default function CreateCourse() {
     setCourse({ ...course, [field]: updated });
   };
 
-  const addArrayItem = (field) => {
-    setCourse({ ...course, [field]: [...course[field], ""] });
-  };
-
+  const addArrayItem = (field) => setCourse({ ...course, [field]: [...course[field], ""] });
   const removeArrayItem = (field, index) => {
     const updated = [...course[field]];
     updated.splice(index, 1);
     setCourse({ ...course, [field]: updated });
   };
 
-  // ===== Content Section Handlers =====
   const handleContentChange = (index, field, value) => {
     const updated = [...course.contents];
     updated[index][field] = value;
@@ -76,17 +55,7 @@ export default function CreateCourse() {
   const addContent = () => {
     setCourse({
       ...course,
-      contents: [
-        ...course.contents,
-        {
-          title: "",
-          description: "",
-          video: null,
-          handouts: [],
-          video_links: [""],
-          notes_text: "",
-        },
-      ],
+      contents: [...course.contents, { title: "", description: "", video: null, handouts: [], video_links: [""], notes_text: "" }]
     });
   };
 
@@ -96,14 +65,12 @@ export default function CreateCourse() {
     setCourse({ ...course, contents: updated });
   };
 
-  // ===== Submit Handler =====
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const formData = new FormData();
-
       formData.append("title", course.title);
       formData.append("category", course.category);
       formData.append("mode", course.mode);
@@ -111,67 +78,33 @@ export default function CreateCourse() {
       formData.append("long_description", course.longDescription);
       formData.append("status", "Draft");
 
-      course.learningOutcomes.forEach((item, idx) => {
-        if (item) formData.append(`learning_outcomes[${idx}]`, item);
-      });
-      course.skills.forEach((item, idx) => {
-        if (item) formData.append(`skills[${idx}]`, item);
-      });
-      course.requirements.forEach((item, idx) => {
-        if (item) formData.append(`requirements[${idx}]`, item);
-      });
+      course.learningOutcomes.forEach((item, idx) => item && formData.append(`learning_outcomes[${idx}]`, item));
+      course.skills.forEach((item, idx) => item && formData.append(`skills[${idx}]`, item));
+      course.requirements.forEach((item, idx) => item && formData.append(`requirements[${idx}]`, item));
 
-      // Handle Nested Content with Multiple Files & Links
       course.contents.forEach((content, idx) => {
         formData.append(`contents[${idx}][title]`, content.title);
-        formData.append(
-          `contents[${idx}][description]`,
-          content.description || "",
-        );
-        formData.append(
-          `contents[${idx}][notes_text]`,
-          content.notes_text || "",
-        );
-
-        // Main Video File
-        if (content.video instanceof File) {
-          formData.append(`contents[${idx}][video]`, content.video);
-        }
-
-        // Multiple Video Links
-        content.video_links.forEach((link, lIdx) => {
-          if (link)
-            formData.append(`contents[${idx}][video_links][${lIdx}]`, link);
-        });
-
-        // Multiple Handout Files (PDFs)
+        formData.append(`contents[${idx}][description]`, content.description || "");
+        formData.append(`contents[${idx}][notes_text]`, content.notes_text || "");
+        if (content.video instanceof File) formData.append(`contents[${idx}][video]`, content.video);
+        content.video_links.forEach((link, lIdx) => link && formData.append(`contents[${idx}][video_links][${lIdx}]`, link));
         if (content.handouts && content.handouts.length > 0) {
-          Array.from(content.handouts).forEach((file, fIdx) => {
-            formData.append(`contents[${idx}][handouts][${fIdx}]`, file);
-          });
+          Array.from(content.handouts).forEach((file, fIdx) => formData.append(`contents[${idx}][handouts][${fIdx}]`, file));
         }
       });
 
-      if (course.banner instanceof File) {
-        formData.append("banner", course.banner);
-      }
-
-      // Ndani ya handleSubmit yako, badilisha sehemu ya response iwe hivi:
+      if (course.banner instanceof File) formData.append("banner", course.banner);
 
       const response = await api.post("/courses", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Hapa ndipo panapogoma! Hakikisha unatumia response.data.course.id
       if (response.data && response.data.course) {
         toast.success("Course created successfully!");
-        const newCourseId = response.data.course.id;
-        navigate(`/provider/cohorts/${newCourseId}`); // Hakikisha route hii ipo kwenye App.js
+        navigate(`/provider/cohorts/${response.data.course.id}`);
       }
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.message || "Check your form for errors.";
-      toast.error(errorMsg);
+      toast.error(err.response?.data?.message || "Check your form for errors.");
     } finally {
       setLoading(false);
     }
@@ -180,265 +113,131 @@ export default function CreateCourse() {
   return (
     <ProviderDashboardLayout title="Create Training">
       <ToastContainer position="top-right" />
-      <div className="container mt-4 mb-5">
-        <button
-          className="btn btn-sm btn-outline-secondary mb-4"
-          onClick={() => navigate(-1)}
-        >
-          &larr; Back
+      
+      <style>{`
+        .form-card { border: none; border-radius: 16px; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,0.04); }
+        .custom-input { padding: 12px 15px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 14px; transition: 0.3s; background: #fcfcfc; }
+        .custom-input:focus { border-color: #0a2e67; box-shadow: 0 0 0 4px rgba(10, 46, 103, 0.05); outline: none; background: #fff; }
+        .form-label-custom { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+        .section-card { background: #f8fafc; border: 1px solid #edf2f7; border-radius: 14px; padding: 25px; margin-bottom: 25px; position: relative; }
+        .btn-navy { background-color: #0a2e67; color: white; font-weight: 700; border-radius: 10px; padding: 14px 30px; border: none; transition: 0.3s; }
+        .btn-navy:hover { background-color: #082452; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(10, 46, 103, 0.2); }
+        .add-btn { font-size: 12px; font-weight: 700; color: #0a2e67; background: none; border: none; padding: 0; }
+        .badge-section { background: #e0e7ff; color: #0a2e67; font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; }
+      `}</style>
+
+      <div className="container py-4">
+        <button className="btn btn-sm text-muted mb-4 p-0 border-0" onClick={() => navigate(-1)}>
+          <i className="bi bi-chevron-left me-1"></i> Back
         </button>
 
-        <form
-          onSubmit={handleSubmit}
-          className="shadow-sm p-4 bg-white rounded"
-        >
-          <h2 className="mb-4 h4 border-bottom pb-2">Trainging Details</h2>
+        <form onSubmit={handleSubmit} className="form-card p-4 p-md-5">
+          <header className="mb-5">
+            <h2 className="fw-bold" style={{ color: "#0a2e67", fontSize: "24px" }}>Create New Training</h2>
+            <p className="text-muted small">Fill out the details below to set up your training program and curriculum.</p>
+          </header>
 
-          <div className="row mb-3">
+          <section className="row g-4 mb-5">
+            <div className="col-12">
+              <label className="form-label-custom">Training Title</label>
+              <input type="text" className="form-control custom-input w-100" name="title" value={course.title} onChange={handleChange} placeholder="e.g. Professional Web Development" required />
+            </div>
             <div className="col-md-6">
-              <label className="form-label fw-bold">Training Title</label>
-              <input
-                type="text"
-                className="form-control"
-                name="title"
-                value={course.title}
-                onChange={handleChange}
-                required
-              />
+              <label className="form-label-custom">Category</label>
+              <input type="text" className="form-control custom-input" name="category" value={course.category} onChange={handleChange} placeholder="e.g. IT & Software" required />
             </div>
-            <div className="col-md-3">
-              <label className="form-label fw-bold">Category</label>
-              <input
-                type="text"
-                className="form-control"
-                name="category"
-                value={course.category}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="col-md-3">
-              <label className="form-label fw-bold">Mode</label>
-              <select
-                className="form-select"
-                name="mode"
-                value={course.mode}
-                onChange={handleChange}
-              >
+            <div className="col-md-6">
+              <label className="form-label-custom">Delivery Mode</label>
+              <select className="form-select custom-input" name="mode" value={course.mode} onChange={handleChange}>
                 <option value="Online">Online</option>
                 <option value="Physical">Physical</option>
                 <option value="Hybrid">Hybrid</option>
               </select>
             </div>
-          </div>
+            <div className="col-12">
+              <label className="form-label-custom">Short Summary</label>
+              <textarea className="form-control custom-input" name="shortDescription" rows="2" value={course.shortDescription} onChange={handleChange} required />
+            </div>
+            <div className="col-12">
+              <label className="form-label-custom">Detailed Description</label>
+              <textarea className="form-control custom-input" name="longDescription" rows="5" value={course.longDescription} onChange={handleChange} required />
+            </div>
+          </section>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">Short Description</label>
-            <textarea
-              className="form-control"
-              name="shortDescription"
-              rows={2}
-              value={course.shortDescription}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label fw-bold">Long Description</label>
-            <textarea
-              className="form-control"
-              name="longDescription"
-              rows={4}
-              value={course.longDescription}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Dynamic Lists Section */}
-          <div className="row mb-4">
+          <div className="row g-4 mb-5">
             {["learningOutcomes", "skills", "requirements"].map((field) => (
               <div className="col-md-4" key={field}>
-                <h3 className="h6 fw-bold text-capitalize">
-                  {field.replace(/([A-Z])/g, " $1")}
-                </h3>
+                <label className="form-label-custom">{field.replace(/([A-Z])/g, " $1")}</label>
                 {course[field].map((item, idx) => (
-                  <div key={idx} className="input-group mb-2">
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      value={item}
-                      onChange={(e) =>
-                        handleArrayChange(field, idx, e.target.value)
-                      }
-                      required
-                    />
+                  <div key={idx} className="d-flex gap-2 mb-2">
+                    <input type="text" className="form-control custom-input form-control-sm" value={item} onChange={(e) => handleArrayChange(field, idx, e.target.value)} required />
                     {course[field].length > 1 && (
-                      <button
-                        type="button"
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => removeArrayItem(field, idx)}
-                      >
-                        ×
-                      </button>
+                      <button type="button" className="btn btn-sm text-danger border-0" onClick={() => removeArrayItem(field, idx)}><i className="bi bi-x-circle-fill"></i></button>
                     )}
                   </div>
                 ))}
-                <button
-                  type="button"
-                  className="btn btn-sm btn-link p-0"
-                  onClick={() => addArrayItem(field)}
-                >
-                  + Add
-                </button>
+                <button type="button" className="add-btn" onClick={() => addArrayItem(field)}>+ ADD ITEM</button>
               </div>
             ))}
           </div>
 
-          <hr />
-          <h3 className="h5 mb-3">Course Contents (Curriculum)</h3>
+          <hr className="my-5" />
 
-          {course.contents.map((content, idx) => (
-            <div key={idx} className="card mb-4 border-primary shadow-sm">
-              <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <span>Section {idx + 1}: Lesson Content</span>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-light"
-                  onClick={() => removeContent(idx)}
-                >
-                  ×
-                </button>
-              </div>
-              <div className="card-body">
+          <section className="mb-5">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h3 className="fw-bold" style={{ color: "#0a2e67", fontSize: "18px" }}>Curriculum Content</h3>
+              <button type="button" className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3" onClick={addContent}>+ Add Section</button>
+            </div>
+
+            {course.contents.map((content, idx) => (
+              <div key={idx} className="section-card">
+                <div className="d-flex justify-content-between align-items-start mb-4">
+                  <span className="badge-section">Section {idx + 1}</span>
+                  <button type="button" className="btn btn-sm text-danger p-0 border-0" onClick={() => removeContent(idx)}><i className="bi bi-trash3 me-1"></i> Remove</button>
+                </div>
+                
                 <div className="row g-3">
                   <div className="col-12">
-                    <label className="fw-bold small">Lesson Title</label>
-                    <input
-                      type="text"
-                      className="form-control mb-2"
-                      value={content.title}
-                      onChange={(e) =>
-                        handleContentChange(idx, "title", e.target.value)
-                      }
-                      required
-                    />
-                    <label className="fw-bold small">Overview</label>
-                    <textarea
-                      className="form-control mb-2"
-                      rows="2"
-                      value={content.description}
-                      onChange={(e) =>
-                        handleContentChange(idx, "description", e.target.value)
-                      }
-                    />
+                    <label className="form-label-custom">Lesson Title</label>
+                    <input type="text" className="form-control custom-input" value={content.title} onChange={(e) => handleContentChange(idx, "title", e.target.value)} required />
                   </div>
-
                   <div className="col-md-6">
-                    <label className="fw-bold small">Upload Main Video</label>
-                    <input
-                      type="file"
-                      className="form-control"
-                      accept="video/*"
-                      onChange={(e) =>
-                        handleContentChange(idx, "video", e.target.files[0])
-                      }
-                    />
+                    <label className="form-label-custom">Main Video</label>
+                    <input type="file" className="form-control custom-input" accept="video/*" onChange={(e) => handleContentChange(idx, "video", e.target.files[0])} />
                   </div>
-
                   <div className="col-md-6">
-                    <label className="fw-bold small">
-                      Additional Video Links
-                    </label>
-                    {content.video_links.map((vLink, lIdx) => (
-                      <input
-                        key={lIdx}
-                        type="url"
-                        className="form-control mb-1 form-control-sm"
-                        placeholder="https://youtube.com/..."
-                        value={vLink}
-                        onChange={(e) =>
-                          handleVideoLinkChange(idx, lIdx, e.target.value)
-                        }
-                      />
-                    ))}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-link p-0"
-                      onClick={() => addVideoLink(idx)}
-                    >
-                      + Add Link
-                    </button>
+                    <label className="form-label-custom">Handouts (PDFs)</label>
+                    <input type="file" className="form-control custom-input" multiple accept=".pdf" onChange={(e) => handleContentChange(idx, "handouts", e.target.files)} />
                   </div>
-
-                  <div className="col-md-6">
-                    <label className="fw-bold small">
-                      Handouts / Resources (Multiple PDFs)
-                    </label>
-                    <input
-                      type="file"
-                      className="form-control"
-                      accept=".pdf"
-                      multiple
-                      onChange={(e) =>
-                        handleContentChange(idx, "handouts", e.target.files)
-                      }
-                    />
-                    <small className="text-muted">
-                      You can select multiple files
-                    </small>
-                  </div>
-
                   <div className="col-12">
-                    <label className="fw-bold small">
-                      Detailed Lesson Notes
-                    </label>
-                    <textarea
-                      className="form-control"
-                      rows="4"
-                      placeholder="Write full lesson notes here..."
-                      value={content.notes_text}
-                      onChange={(e) =>
-                        handleContentChange(idx, "notes_text", e.target.value)
-                      }
-                    />
+                    <label className="form-label-custom">Video Links</label>
+                    {content.video_links.map((vLink, lIdx) => (
+                      <input key={lIdx} type="url" className="form-control custom-input mb-2" placeholder="Paste YouTube/Vimeo link" value={vLink} onChange={(e) => handleVideoLinkChange(idx, lIdx, e.target.value)} />
+                    ))}
+                    <button type="button" className="add-btn" onClick={() => addVideoLink(idx)}>+ ADD ANOTHER LINK</button>
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label-custom">Detailed Lesson Notes</label>
+                    <textarea className="form-control custom-input" rows="4" value={content.notes_text} onChange={(e) => handleContentChange(idx, "notes_text", e.target.value)} placeholder="Enter full text content for this lesson..." />
                   </div>
                 </div>
               </div>
+            ))}
+          </section>
+
+          <div className="mb-5">
+            <label className="form-label-custom">Training Banner Image</label>
+            <div className="p-4 border-2 border-dashed rounded-4 text-center bg-light" style={{ borderStyle: 'dashed', borderColor: '#cbd5e1' }}>
+              <input type="file" className="form-control custom-input mb-2" accept="image/*" onChange={(e) => setCourse({ ...course, banner: e.target.files[0] })} />
+              <small className="text-muted">High resolution images (1200x600px) work best.</small>
             </div>
-          ))}
-
-          <button
-            type="button"
-            className="btn btn-outline-primary mb-4"
-            onClick={addContent}
-          >
-            + Add New Section
-          </button>
-
-          <div className="mb-4">
-            <h3 className="h5">Course Banner</h3>
-            <input
-              type="file"
-              className="form-control"
-              accept="image/*"
-              onChange={(e) =>
-                setCourse({ ...course, banner: e.target.files[0] })
-              }
-            />
           </div>
 
-          <div className="d-grid">
-            <button
-              type="submit"
-              className="btn btn-primary btn-lg"
-              disabled={loading}
-            >
-              {loading && (
-                <span className="spinner-border spinner-border-sm me-2"></span>
-              )}
-              {loading ? "Creating Course..." : "Publish Course Draft"}
+          <div className="d-grid pt-4 mt-4 border-top">
+            <button type="submit" className="btn btn-navy" disabled={loading}>
+              {loading ? (
+                <><span className="spinner-border spinner-border-sm me-2"></span> Finalizing Course...</>
+              ) : "Create Course & Continue to Cohorts"}
             </button>
           </div>
         </form>

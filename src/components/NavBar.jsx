@@ -135,8 +135,8 @@ export default function NavBar() {
             ) : (
               <div className="d-lg-flex align-items-center">
                 <li className="nav-item">
-                  <Link className="nav-link text-dark" to="/about" style={{ fontSize: "13px" }}>
-                    About us
+                  <Link className="nav-link text-dark" to="/contact" style={{ fontSize: "13px" }}>
+                    Contact us
                   </Link>
                 </li>
                 <li className="nav-item ms-lg-3 me-2">
