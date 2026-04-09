@@ -4,23 +4,23 @@ import LOGO from "../assets/logo1.png";
 
 export default function NavBar() {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false); // Dropdown ya Profile
-  const [isNavOpen, setIsNavOpen] = useState(false); // Mobile Menu Toggle
+  const [isOpen, setIsOpen] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // User data
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  
+  // ✅ LOGIC: Angalia kama ni Provider na kama bado hajamaliza onboarding
+  // Hapa nimechukulia kuwa una field inaitwa 'status' au 'onboarded'
+  const isProviderOnboarding = user.role === "provider" && user.onboarded === false;
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("role");
+    localStorage.clear();
     navigate("/login");
     window.location.reload();
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -32,100 +32,96 @@ export default function NavBar() {
   }, []);
 
   return (
-    <nav className="navbar navbar-expand-lg bg-white border-bottom sticky-top">
-      <div className="container-fluid px-4">
-        {/* LOGO - Nimeondoa kila class inayoweza kuifanya ionekane kama button */}
-        <Link to="/" style={{ textDecoration: 'none', border: 'none', outline: 'none', boxShadow: 'none' }}>
-          <img src={LOGO} alt="TrainingHub Logo" style={{ height: "70px", display: "block" }} />
+    <nav className="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2">
+      <div className="container-fluid px-lg-4">
+        <Link to="/" className="navbar-brand me-2">
+          <img src={LOGO} alt="Logo" style={{ height: "50px", objectFit: "contain" }} />
         </Link>
 
-        {/* HAMBURGER BUTTON - Kwa ajili ya Mobile pekee */}
         <button 
           className="navbar-toggler shadow-none border-0" 
           type="button" 
           onClick={() => setIsNavOpen(!isNavOpen)}
         >
-          <span className="navbar-toggler-icon"></span>
+          <i className={`bi ${isNavOpen ? 'bi-x-lg' : 'bi-list'} fs-3`}></i>
         </button>
 
-        {/* EXPLORE - Style yako asilia */}
-        <Link
-          style={{ fontSize: "13px", fontWeight: "bold" }}
-          to="/"
-          className="btn btn-link text-dark text-decoration-none me-3 d-none d-lg-inline-block"
-        >
-          Explore
-        </Link>
+        <div className={`collapse navbar-collapse ${isNavOpen ? "show" : ""}`}>
+          
+          {/* SEARCH - Ficha kama yuko onboarding ili asivurugike */}
+          {!isProviderOnboarding && (
+            <form className="d-flex mt-3 mt-lg-0 flex-grow-1 mx-lg-4 order-2 order-lg-1">
+              <div className="input-group w-100">
+                <span className="input-group-text bg-light border-0">
+                  <i className="bi bi-search"></i>
+                </span>
+                <input
+                  type="search"
+                  className="form-control border-0 bg-light shadow-none"
+                  placeholder="Search for Training..."
+                  style={{ fontSize: "14px" }}
+                />
+              </div>
+            </form>
+          )}
 
-        {/* SEARCH BAR - Style yako asilia */}
-        <form className="d-none d-lg-flex flex-grow-1 me-4">
-          <div className="input-group">
-            <span className="input-group-text bg-light border-0">
-              <i className="bi bi-search"></i>
-            </span>
-            <input
-              type="search"
-              className="form-control border-0 bg-light shadow-none"
-              placeholder="Search for Training"
-            />
-          </div>
-        </form>
-
-        {/* MENU ITEMS */}
-        <div className={`collapse navbar-collapse ${isNavOpen ? "show" : ""}`} id="navbarNav">
-          <ul className="navbar-nav ms-auto align-items-center">
-            <li className="nav-item" style={{ fontSize: "13px" }}>
-              <Link className="nav-link text-dark" to="/trainings" onClick={() => setIsNavOpen(false)}>
-                Trainings
-              </Link>
-            </li>
+          <ul className="navbar-nav ms-auto align-items-lg-center order-1 order-lg-2 gap-2">
+            
+            {/* LINKS ZA KAWAIDA - Zinaonekana kama siyo onboarding */}
+            {!isProviderOnboarding && (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link text-dark fw-bold" to="/" onClick={() => setIsNavOpen(false)} style={{ fontSize: "13px" }}>
+                    Explore
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link text-dark" to="/trainings" onClick={() => setIsNavOpen(false)} style={{ fontSize: "13px" }}>
+                    Trainings
+                  </Link>
+                </li>
+              </>
+            )}
 
             {token ? (
               <>
-                <li className="nav-item" style={{ fontSize: "13px" }}>
-                  <Link className="nav-link text-dark fw-semibold" to="/learning" onClick={() => setIsNavOpen(false)}>
-                    My Learning
-                  </Link>
-                </li>
-                <li className="nav-item" style={{ fontSize: "13px" }}>
-                  <Link className="nav-link text-dark fw-semibold" to="/transactions" onClick={() => setIsNavOpen(false)}>
-                    Transactions
-                  </Link>
-                </li>
-
-                {/* Profile Dropdown */}
-                <li className="nav-item dropdown ms-lg-3" ref={dropdownRef}>
+                {/* FICHA HIZI KAMA NI PROVIDER ANAYEFANYA ONBOARDING */}
+                {!isProviderOnboarding && (
+                  <>
+                    <li className="nav-item">
+                      <Link className="nav-link text-dark fw-semibold" to="/learning" onClick={() => setIsNavOpen(false)} style={{ fontSize: "13px" }}>
+                        My Learning
+                      </Link>
+                    </li>
+                    <li className="nav-item">
+                      <Link className="nav-link text-dark fw-semibold" to="/transactions" onClick={() => setIsNavOpen(false)} style={{ fontSize: "13px" }}>
+                        Transactions
+                      </Link>
+                    </li>
+                  </>
+                )}
+                
+                {/* PROFILE DROPDOWN - Hii inabaki ili aweze ku-Logout */}
+                <li className="nav-item dropdown ms-lg-2" ref={dropdownRef}>
                   <button
-                    className="btn btn-outline-dark dropdown-toggle rounded-circle p-2 shadow-none"
+                    className="btn btn-dark rounded-circle p-0 d-flex align-items-center justify-content-center shadow-none mt-2 mt-lg-0"
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
-                    style={{ width: "40px", height: "40px" }}
+                    style={{ width: "38px", height: "38px", fontSize: "14px" }}
                   >
-                    {user.name?.charAt(0) || "U"}
+                    {user.name?.charAt(0).toUpperCase() || "U"}
                   </button>
 
-                  <ul 
-                    className={`dropdown-menu dropdown-menu-end shadow border-0 ${isOpen ? "show" : ""}`}
-                    style={{ 
-                        display: isOpen ? "block" : "none", 
-                        right: 0, 
-                        left: "auto",
-                        position: "absolute",
-                        zIndex: 1000
-                    }}
-                  >
-                    <li>
-                      <h6 className="dropdown-header small text-muted">
-                        {user.email}
-                      </h6>
+                  <ul className={`dropdown-menu dropdown-menu-end shadow border-0 mt-2 ${isOpen ? "show d-block" : "d-none"}`}
+                      style={{ position: "absolute", right: 0 }}>
+                    <li className="px-3 py-2 border-bottom">
+                       <p className="mb-0 small fw-bold text-truncate" style={{maxWidth: "150px"}}>{user.name}</p>
+                       <span className="badge bg-primary-subtle text-primary x-small">
+                        {isProviderOnboarding ? "Onboarding" : user.role}
+                       </span>
                     </li>
-                    <li><hr className="dropdown-divider" /></li>
                     <li>
-                      <button
-                        style={{ fontSize: "13px" }}
-                        className="dropdown-item text-danger"
-                        onClick={handleLogout}
-                      >
+                      <button className="dropdown-item small text-danger fw-bold" onClick={handleLogout}>
                         Logout
                       </button>
                     </li>
@@ -133,23 +129,23 @@ export default function NavBar() {
                 </li>
               </>
             ) : (
-              <div className="d-lg-flex align-items-center">
+              <div className="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mt-3 mt-lg-0">
                 <li className="nav-item">
-                  <Link className="nav-link text-dark" to="/contact" style={{ fontSize: "13px" }}>
+                  <Link className="nav-link text-dark me-2" to="/contact" style={{ fontSize: "13px" }}>
                     Contact us
                   </Link>
                 </li>
-                <li className="nav-item ms-lg-3 me-2">
-                  <Link to="/login">
-                    <button style={{ fontSize: "13px" }} className="btn btn-outline-dark px-3 shadow-none">
+                <li className="nav-item">
+                  <Link to="/login" className="w-100" onClick={() => setIsNavOpen(false)}>
+                    <button className="btn btn-outline-dark px-4 w-100 shadow-none" style={{ fontSize: "13px", borderRadius: "4px" }}>
                       Log in
                     </button>
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link to="/tenant-register">
-                    <button style={{ fontSize: "13px" }} className="btn btn-dark px-3 shadow-none">
-                      For Training Provider
+                  <Link to="/tenant-register" className="w-100" onClick={() => setIsNavOpen(false)}>
+                    <button className="btn btn-dark px-3 w-100 shadow-none" style={{ fontSize: "13px", borderRadius: "4px" }}>
+                      Join as Provider
                     </button>
                   </Link>
                 </li>

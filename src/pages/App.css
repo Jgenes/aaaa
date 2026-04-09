@@ -631,3 +631,82 @@ label{
 select option{
   font-size: 13px;
 }
+/* Rangi za Giza (Deep Navy) */
+.modern-header {
+    background-color: #111827 !important;
+    height: 70px;
+    border-bottom: 1px solid #1f2937;
+}
+
+.modern-sidebar {
+    background-color: #111827 !important;
+    min-height: calc(100vh - 70px);
+    border-right: 1px solid #1f2937;
+}
+
+.sidebar-label {
+    color: #4b5563;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+}
+
+/* Sidebar Links */
+.nav-link-modern {
+    color: #9ca3af;
+    padding: 10px 15px;
+    border-radius: 4px; /* Square feel kidogo */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-link-modern:hover {
+    background-color: #1f2937;
+    color: #3b82f6;
+}
+
+.active-link {
+    background-color: #1e293b;
+    color: #3b82f6 !important;
+    border-left: 3px solid #3b82f6;
+}
+
+/* User Profile Avatar */
+.avatar-circle {
+    width: 35px;
+    height: 35px;
+    background-color: #3b82f6;
+    color: white;
+    border-radius: 4px; /* Squared */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.modern-search {
+    background-color: #1f2937 !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 4px;
+}
+
+/* Main Content Area */
+.main-content-bg {
+    background-color: #f9fafb;
+    min-height: calc(100vh - 70px);
+}
+
+.page-title {
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: -0.02em;
+}
+
+.x-small { font-size: 0.7rem; }
