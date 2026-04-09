@@ -306,7 +306,7 @@ export default function Home() {
           <div className="col-md-8">
             <div className="provider-carousel-wrapper">
               <div className="provider-carousel d-flex overflow-auto">
-                <div className="provider-card me-3 flex-shrink-0"><img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=500" alt="Tech" /><div className="provider-label"><span>Joseph Genes</span><i className="bi bi-arrow-right-short fs-4"></i></div></div>
+                <div className="provider-card me-3 flex-shrink-0"><img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=500" alt="Tech" /><div className="provider-label"><span>Software Engineering</span><i className="bi bi-arrow-right-short fs-4"></i></div></div>
                 <div className="provider-card me-3 flex-shrink-0"><img src="https://images.unsplash.com/photo-1551288049-bbbda536339a?auto=format&fit=crop&w=500" alt="Data" /><div className="provider-label"><span>Microsoft Excel</span><i className="bi bi-arrow-right-short fs-4"></i></div></div>
                 <div className="provider-card me-3 flex-shrink-0"><img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=500" alt="AI" /><div className="provider-label"><span>Large Language Models</span><i className="bi bi-arrow-right-short fs-4"></i></div></div>
                 <div className="provider-card me-3 flex-shrink-0"><img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=500" alt="Cloud" /><div className="provider-label"><span>Cloud Computing</span><i className="bi bi-arrow-right-short fs-4"></i></div></div>
