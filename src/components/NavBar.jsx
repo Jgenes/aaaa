@@ -34,7 +34,7 @@ export default function NavBar() {
   return (
     <nav className="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2">
       <div className="container-fluid px-lg-4">
-        <Link to="/" className="navbar-brand me-2">
+        <Link to="/" className="navbar-brand me-2" style={{ backgroundColor:"white" }} >
           <img src={LOGO} alt="Logo" style={{ height: "50px", objectFit: "contain" }} />
         </Link>
 
