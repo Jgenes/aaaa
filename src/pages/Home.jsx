@@ -17,54 +17,6 @@ const ACCREDITATION_LOGOS = [
   { src: LogoOsha, alt: "OSHA Tanzania" },
 ];
 
-const LEARNING_PATHS = [
-  {
-    title: "Software Engineering",
-    text: "Full-stack, mobile and quality engineering tracks",
-    image:
-      "https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=600&q=70",
-  },
-  {
-    title: "Microsoft Excel",
-    text: "Data analysis, reporting and automation",
-    image:
-      "https://images.unsplash.com/photo-1551288049-bbbda536339a?auto=format&fit=crop&w=600&q=70",
-  },
-  {
-    title: "Large Language Models",
-    text: "Applied AI and prompt engineering foundations",
-    image:
-      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=600&q=70",
-  },
-  {
-    title: "Cloud Computing",
-    text: "Cloud fundamentals, DevOps and infrastructure",
-    image:
-      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=70",
-  },
-];
-
-const FAQS = [
-  {
-    id: "faq-1",
-    question: "Can I try TrainHub first, to make sure it's right for me?",
-    answer:
-      "Yes, we provide demo sessions and course outlines to help you decide which path fits your career goals perfectly.",
-  },
-  {
-    id: "faq-2",
-    question: "What is included in the Professional Track?",
-    answer:
-      "You get full access to live sessions, recorded materials, hands-on projects, and a verified industry certificate.",
-  },
-  {
-    id: "faq-3",
-    question: "How do I get my certificate?",
-    answer:
-      "Once you complete all modules and pass the final assessment, your certificate will be generated instantly in your profile.",
-  },
-];
-
 export default function Home() {
   const [courses, setCourses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -73,7 +25,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [showAllFaqs, setShowAllFaqs] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -530,103 +481,6 @@ export default function Home() {
                   from your learning dashboard.
                 </p>
               </article>
-            </div>
-          </div>
-        </section>
-
-        {/* --------------------------------------------------- Learning paths */}
-        <section className="th-section" aria-labelledby="paths-title">
-          <div className="th-container-wide">
-            <div className="th-section-head">
-              <div>
-                <p className="th-eyebrow">Career and life skills</p>
-                <h2 className="th-section-title" id="paths-title">
-                  Learn essential career and life skills
-                </h2>
-                <p className="th-section-lead">
-                  TrainingHub helps you build in-demand skills fast and advance your career.
-                </p>
-              </div>
-            </div>
-
-            <div className="course-grid">
-              {LEARNING_PATHS.map((path) => (
-                <Link
-                  key={path.title}
-                  to="/trainings"
-                  className="th-path-card"
-                  aria-label={`Explore ${path.title} trainings`}
-                >
-                  <img src={path.image} alt="" loading="lazy" />
-                  <div className="th-path-card__body">
-                    <h3 className="th-path-card__title">{path.title}</h3>
-                    <p className="th-path-card__text">{path.text}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ------------------------------------------------------------- FAQ */}
-        <section className="th-section" aria-labelledby="faq-title">
-          <div className="th-container-wide">
-            <div className="row g-5">
-              <div className="col-lg-4">
-                <p className="th-eyebrow">Support</p>
-                <h2 className="th-section-title" id="faq-title">
-                  Frequently asked questions
-                </h2>
-                <p className="th-section-lead mb-4">
-                  Everything you need to know about enrolling, learning and getting certified.
-                </p>
-                <Link to="/contact" className="btn btn-outline-dark">
-                  Talk to our team
-                  <i className="bi bi-chat-dots" aria-hidden="true"></i>
-                </Link>
-              </div>
-
-              <div className="col-lg-8">
-                <div className="accordion th-faq" id="homeFaq">
-                  {FAQS.slice(0, showAllFaqs ? FAQS.length : 2).map((faq, index) => (
-                    <div className="accordion-item" key={faq.id}>
-                      <h3 className="accordion-header" id={`${faq.id}-heading`}>
-                        <button
-                          className={`accordion-button ${index > 0 ? "collapsed" : ""}`}
-                          type="button"
-                          data-bs-toggle="collapse"
-                          data-bs-target={`#${faq.id}`}
-                          aria-expanded={index === 0 ? "true" : "false"}
-                          aria-controls={faq.id}
-                        >
-                          {faq.question}
-                        </button>
-                      </h3>
-                      <div
-                        id={faq.id}
-                        className={`accordion-collapse collapse ${index === 0 ? "show" : ""}`}
-                        aria-labelledby={`${faq.id}-heading`}
-                        data-bs-parent="#homeFaq"
-                      >
-                        <div className="accordion-body">{faq.answer}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  className="btn btn-link mt-2"
-                  onClick={() => setShowAllFaqs((prev) => !prev)}
-                  aria-expanded={showAllFaqs}
-                >
-                  {showAllFaqs ? "Show fewer questions" : `Show all ${FAQS.length} questions`}
-                  <i
-                    className={`bi bi-chevron-${showAllFaqs ? "up" : "down"}`}
-                    aria-hidden="true"
-                  ></i>
-                </button>
-              </div>
             </div>
           </div>
         </section>

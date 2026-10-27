@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import LOGO from "../assets/trainhub-tz-logo.png";
+import NotificationBar from "./NotificationBar";
 
 const NAV_LINKS = [
   { to: "/", label: "Explore", match: (p) => p === "/" },
@@ -156,148 +157,152 @@ export default function NavBar() {
   );
 
   return (
-    <header className="site-header">
-      <div className="th-container-wide site-header__inner">
-        <Link to="/" className="site-brand">
-          <img
-            src={LOGO}
-            alt="TrainHub TZ — Elevating Skills. Transforming Tanzania."
-            width="413"
-            height="127"
-          />
-        </Link>
+    <>
+      <NotificationBar />
 
-        <nav className="site-nav" aria-label="Primary">
-          {visibleLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className={`site-nav__link ${
-                link.match(location.pathname) ? "is-active" : ""
-              }`}
-              aria-current={link.match(location.pathname) ? "page" : undefined}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+      <header className="site-header">
+        <div className="th-container-wide site-header__inner">
+          <Link to="/" className="site-brand">
+            <img
+              src={LOGO}
+              alt="TrainHub TZ — Elevating Skills. Transforming Tanzania."
+              width="413"
+              height="127"
+            />
+          </Link>
 
-        {!isProviderOnboarding && (
-          <div className="site-header__search d-none d-xl-block">
-            {renderSearch("site-search-desktop")}
-          </div>
-        )}
-
-        <div className="site-actions">
-          {token ? (
-            renderUserMenu()
-          ) : (
-            <>
-              <Link to="/login" className="btn btn-outline-dark btn-sm">
-                Log in
-              </Link>
-              <Link to="/tenant-register" className="btn btn-primary btn-sm">
-                Join as provider
-              </Link>
-            </>
-          )}
-        </div>
-
-        <button
-          type="button"
-          className="site-toggle"
-          onClick={() => setIsNavOpen((prev) => !prev)}
-          aria-expanded={isNavOpen}
-          aria-controls="site-mobile-menu"
-          aria-label={isNavOpen ? "Close menu" : "Open menu"}
-        >
-          <i className={`bi ${isNavOpen ? "bi-x-lg" : "bi-list"}`} aria-hidden="true"></i>
-        </button>
-      </div>
-
-      <div
-        id="site-mobile-menu"
-        className={`site-mobile ${isNavOpen ? "is-open" : ""}`}
-      >
-        <div className="th-container-wide">
-          {!isProviderOnboarding && (
-            <div className="site-mobile__search">
-              {renderSearch("site-search-mobile")}
-            </div>
-          )}
-
-          {token && (
-            <div className="site-mobile__account">
-              <span className="th-avatar th-avatar--dark" aria-hidden="true">
-                {user.name?.charAt(0).toUpperCase() || "U"}
-              </span>
-              <div style={{ minWidth: 0 }}>
-                <span className="site-account__name">{user.name || "Your account"}</span>
-                <span className="site-account__role">
-                  {isProviderOnboarding ? "Onboarding" : user.role || "Learner"}
-                </span>
-              </div>
-            </div>
-          )}
-
-          <ul className="site-mobile__list">
+          <nav className="site-nav" aria-label="Primary">
             {visibleLinks.map((link) => (
-              <li key={link.to}>
-                <Link
-                  to={link.to}
-                  className={`site-mobile__link ${
-                    link.match(location.pathname) ? "is-active" : ""
-                  }`}
-                  onClick={() => setIsNavOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            {canAccessDashboard && (
-              <li>
-                <Link
-                  to={dashboardPath}
-                  className="site-mobile__link"
-                  onClick={() => setIsNavOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              </li>
-            )}
-          </ul>
-
-          <div className="site-mobile__actions">
-            {token ? (
-              <button
-                type="button"
-                className="btn btn-outline-dark w-100"
-                onClick={handleLogout}
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`site-nav__link ${
+                  link.match(location.pathname) ? "is-active" : ""
+                }`}
+                aria-current={link.match(location.pathname) ? "page" : undefined}
               >
-                <i className="bi bi-box-arrow-right" aria-hidden="true"></i>
-                Log out
-              </button>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          {!isProviderOnboarding && (
+            <div className="site-header__search d-none d-xl-block">
+              {renderSearch("site-search-desktop")}
+            </div>
+          )}
+
+          <div className="site-actions">
+            {token ? (
+              renderUserMenu()
             ) : (
               <>
-                <Link
-                  to="/login"
-                  className="btn btn-outline-dark w-100"
-                  onClick={() => setIsNavOpen(false)}
-                >
+                <Link to="/login" className="btn btn-outline-dark btn-sm">
                   Log in
                 </Link>
-                <Link
-                  to="/tenant-register"
-                  className="btn btn-primary w-100"
-                  onClick={() => setIsNavOpen(false)}
-                >
+                <Link to="/tenant-register" className="btn btn-primary btn-sm">
                   Join as provider
                 </Link>
               </>
             )}
           </div>
+
+          <button
+            type="button"
+            className="site-toggle"
+            onClick={() => setIsNavOpen((prev) => !prev)}
+            aria-expanded={isNavOpen}
+            aria-controls="site-mobile-menu"
+            aria-label={isNavOpen ? "Close menu" : "Open menu"}
+          >
+            <i className={`bi ${isNavOpen ? "bi-x-lg" : "bi-list"}`} aria-hidden="true"></i>
+          </button>
         </div>
-      </div>
-    </header>
+
+        <div
+          id="site-mobile-menu"
+          className={`site-mobile ${isNavOpen ? "is-open" : ""}`}
+        >
+          <div className="th-container-wide">
+            {!isProviderOnboarding && (
+              <div className="site-mobile__search">
+                {renderSearch("site-search-mobile")}
+              </div>
+            )}
+
+            {token && (
+              <div className="site-mobile__account">
+                <span className="th-avatar th-avatar--dark" aria-hidden="true">
+                  {user.name?.charAt(0).toUpperCase() || "U"}
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <span className="site-account__name">{user.name || "Your account"}</span>
+                  <span className="site-account__role">
+                    {isProviderOnboarding ? "Onboarding" : user.role || "Learner"}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <ul className="site-mobile__list">
+              {visibleLinks.map((link) => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className={`site-mobile__link ${
+                      link.match(location.pathname) ? "is-active" : ""
+                    }`}
+                    onClick={() => setIsNavOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              {canAccessDashboard && (
+                <li>
+                  <Link
+                    to={dashboardPath}
+                    className="site-mobile__link"
+                    onClick={() => setIsNavOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+              )}
+            </ul>
+
+            <div className="site-mobile__actions">
+              {token ? (
+                <button
+                  type="button"
+                  className="btn btn-outline-dark w-100"
+                  onClick={handleLogout}
+                >
+                  <i className="bi bi-box-arrow-right" aria-hidden="true"></i>
+                  Log out
+                </button>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="btn btn-outline-dark w-100"
+                    onClick={() => setIsNavOpen(false)}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    to="/tenant-register"
+                    className="btn btn-primary w-100"
+                    onClick={() => setIsNavOpen(false)}
+                  >
+                    Join as provider
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+    </>
   );
 }

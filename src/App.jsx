@@ -41,6 +41,7 @@ import ProviderReview from "./pages/provider/ProviderReview.jsx";
 import AllEnrollments from "./pages/provider/AllEnrollments.jsx";
 import AllCohort from "./pages/provider/AllCohort.jsx";
 import About from "./pages/About.jsx";
+import ChatWidget from "./components/ChatWidget";
 
 function App() {
   return (
@@ -103,6 +104,8 @@ function App() {
         <Route path="/admin/reports" element={<AdminReports />} />
         
       </Routes>
+
+      <ChatWidget />
     </Router>
   );
 }
