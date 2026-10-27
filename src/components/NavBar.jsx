@@ -1,19 +1,41 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import LOGO from "../assets/logo1.png";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import LOGO from "../assets/trainhub-tz-logo.png";
+
+const NAV_LINKS = [
+  { to: "/", label: "Explore", match: (p) => p === "/" },
+  {
+    to: "/trainings",
+    label: "Trainings",
+    match: (p) => p.startsWith("/trainings") || p.startsWith("/course/"),
+  },
+  { to: "/learning", label: "My Learning", auth: true, match: (p) => p.startsWith("/learning") },
+  {
+    to: "/transactions",
+    label: "Transactions",
+    auth: true,
+    match: (p) => p.startsWith("/transactions"),
+  },
+  { to: "/contact", label: "Contact", guest: true, match: (p) => p === "/contact" },
+];
 
 export default function NavBar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  
-  // ✅ LOGIC: Angalia kama ni Provider na kama bado hajamaliza onboarding
-  // Hapa nimechukulia kuwa una field inaitwa 'status' au 'onboarded'
+
+  // A provider who has not completed onboarding gets a distraction-free header
   const isProviderOnboarding = user.role === "provider" && user.onboarded === false;
+
+  const dashboardPath =
+    user.role === "admin" ? "/admin/dashboard" : "/provider/dashboard";
+  const canAccessDashboard = user.role === "admin" || user.role === "provider";
 
   const handleLogout = () => {
     localStorage.clear();
@@ -21,139 +43,261 @@ export default function NavBar() {
     window.location.reload();
   };
 
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const term = searchTerm.trim();
+    setIsNavOpen(false);
+    navigate(term ? `/trainings?q=${encodeURIComponent(term)}` : "/trainings");
+  };
+
+  // Close menus when the route changes
+  useEffect(() => {
+    setIsNavOpen(false);
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  // Close the account menu on outside click / Escape
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        setIsNavOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
+  const visibleLinks = NAV_LINKS.filter((link) => {
+    if (isProviderOnboarding) return link.guest === true;
+    if (link.auth) return Boolean(token);
+    if (link.guest) return !token;
+    return true;
+  });
+
+  const renderSearch = (id) => (
+    <form className="site-search" role="search" onSubmit={handleSearch}>
+      <i className="bi bi-search site-search__icon" aria-hidden="true"></i>
+      <label htmlFor={id} className="visually-hidden">
+        Search trainings
+      </label>
+      <input
+        id={id}
+        type="search"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Search trainings, skills…"
+        autoComplete="off"
+      />
+    </form>
+  );
+
+  const renderUserMenu = () => (
+    <div className="site-account" ref={dropdownRef}>
+      <button
+        type="button"
+        className="site-account__trigger"
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        aria-label={`Account menu for ${user.name || "user"}`}
+      >
+        <span className="th-avatar th-avatar--dark" aria-hidden="true">
+          {user.name?.charAt(0).toUpperCase() || "U"}
+        </span>
+        <i className="bi bi-chevron-down site-account__chevron" aria-hidden="true"></i>
+      </button>
+
+      {isOpen && (
+        <div className="site-account__menu" role="menu">
+          <div className="site-account__identity">
+            <span className="site-account__name">{user.name || "Your account"}</span>
+            <span className="site-account__role">
+              {isProviderOnboarding ? "Onboarding" : user.role || "Learner"}
+            </span>
+          </div>
+
+          {canAccessDashboard && (
+            <Link className="site-account__item" to={dashboardPath} role="menuitem">
+              <i className="bi bi-speedometer2" aria-hidden="true"></i>
+              Dashboard
+            </Link>
+          )}
+          <Link className="site-account__item" to="/learning" role="menuitem">
+            <i className="bi bi-collection-play" aria-hidden="true"></i>
+            My learning
+          </Link>
+          <Link className="site-account__item" to="/transactions" role="menuitem">
+            <i className="bi bi-receipt" aria-hidden="true"></i>
+            Transactions
+          </Link>
+          <div className="dropdown-divider"></div>
+          <button
+            type="button"
+            className="site-account__item site-account__item--danger"
+            onClick={handleLogout}
+            role="menuitem"
+          >
+            <i className="bi bi-box-arrow-right" aria-hidden="true"></i>
+            Log out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <nav className="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2">
-      <div className="container-fluid px-lg-4">
-        <Link to="/" className="navbar-brand me-2" style={{ backgroundColor:"white" }} >
-          <img src={LOGO} alt="Logo" style={{ height: "50px", objectFit: "contain" }} />
+    <header className="site-header">
+      <div className="th-container-wide site-header__inner">
+        <Link to="/" className="site-brand">
+          <img
+            src={LOGO}
+            alt="TrainHub TZ — Elevating Skills. Transforming Tanzania."
+            width="413"
+            height="127"
+          />
         </Link>
 
-        <button 
-          className="navbar-toggler shadow-none border-0" 
-          type="button" 
-          onClick={() => setIsNavOpen(!isNavOpen)}
-        >
-          <i className={`bi ${isNavOpen ? 'bi-x-lg' : 'bi-list'} fs-3`}></i>
-        </button>
+        <nav className="site-nav" aria-label="Primary">
+          {visibleLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`site-nav__link ${
+                link.match(location.pathname) ? "is-active" : ""
+              }`}
+              aria-current={link.match(location.pathname) ? "page" : undefined}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
-        <div className={`collapse navbar-collapse ${isNavOpen ? "show" : ""}`}>
-          
-          {/* SEARCH - Ficha kama yuko onboarding ili asivurugike */}
+        {!isProviderOnboarding && (
+          <div className="site-header__search d-none d-xl-block">
+            {renderSearch("site-search-desktop")}
+          </div>
+        )}
+
+        <div className="site-actions">
+          {token ? (
+            renderUserMenu()
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-outline-dark btn-sm">
+                Log in
+              </Link>
+              <Link to="/tenant-register" className="btn btn-primary btn-sm">
+                Join as provider
+              </Link>
+            </>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="site-toggle"
+          onClick={() => setIsNavOpen((prev) => !prev)}
+          aria-expanded={isNavOpen}
+          aria-controls="site-mobile-menu"
+          aria-label={isNavOpen ? "Close menu" : "Open menu"}
+        >
+          <i className={`bi ${isNavOpen ? "bi-x-lg" : "bi-list"}`} aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div
+        id="site-mobile-menu"
+        className={`site-mobile ${isNavOpen ? "is-open" : ""}`}
+      >
+        <div className="th-container-wide">
           {!isProviderOnboarding && (
-            <form className="d-flex mt-3 mt-lg-0 flex-grow-1 mx-lg-4 order-2 order-lg-1">
-              <div className="input-group w-100">
-                <span className="input-group-text bg-light border-0">
-                  <i className="bi bi-search"></i>
-                </span>
-                <input
-                  type="search"
-                  className="form-control border-0 bg-light shadow-none"
-                  placeholder="Search for Training..."
-                  style={{ fontSize: "14px" }}
-                />
-              </div>
-            </form>
+            <div className="site-mobile__search">
+              {renderSearch("site-search-mobile")}
+            </div>
           )}
 
-          <ul className="navbar-nav ms-auto align-items-lg-center order-1 order-lg-2 gap-2">
-            
-            {/* LINKS ZA KAWAIDA - Zinaonekana kama siyo onboarding */}
-            {!isProviderOnboarding && (
-              <>
-                <li className="nav-item">
-                  <Link className="nav-link text-dark fw-bold" to="/" onClick={() => setIsNavOpen(false)} style={{ fontSize: "13px" }}>
-                    Explore
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link text-dark" to="/trainings" onClick={() => setIsNavOpen(false)} style={{ fontSize: "13px" }}>
-                    Trainings
-                  </Link>
-                </li>
-              </>
-            )}
-
-            {token ? (
-              <>
-                {/* FICHA HIZI KAMA NI PROVIDER ANAYEFANYA ONBOARDING */}
-                {!isProviderOnboarding && (
-                  <>
-                    <li className="nav-item">
-                      <Link className="nav-link text-dark fw-semibold" to="/learning" onClick={() => setIsNavOpen(false)} style={{ fontSize: "13px" }}>
-                        My Learning
-                      </Link>
-                    </li>
-                    <li className="nav-item">
-                      <Link className="nav-link text-dark fw-semibold" to="/transactions" onClick={() => setIsNavOpen(false)} style={{ fontSize: "13px" }}>
-                        Transactions
-                      </Link>
-                    </li>
-                  </>
-                )}
-                
-                {/* PROFILE DROPDOWN - Hii inabaki ili aweze ku-Logout */}
-                <li className="nav-item dropdown ms-lg-2" ref={dropdownRef}>
-                  <button
-                    className="btn btn-dark rounded-circle p-0 d-flex align-items-center justify-content-center shadow-none mt-2 mt-lg-0"
-                    type="button"
-                    onClick={() => setIsOpen(!isOpen)}
-                    style={{ width: "38px", height: "38px", fontSize: "14px" }}
-                  >
-                    {user.name?.charAt(0).toUpperCase() || "U"}
-                  </button>
-
-                  <ul className={`dropdown-menu dropdown-menu-end shadow border-0 mt-2 ${isOpen ? "show d-block" : "d-none"}`}
-                      style={{ position: "absolute", right: 0 }}>
-                    <li className="px-3 py-2 border-bottom">
-                       <p className="mb-0 small fw-bold text-truncate" style={{maxWidth: "150px"}}>{user.name}</p>
-                       <span className="badge bg-primary-subtle text-primary x-small">
-                        {isProviderOnboarding ? "Onboarding" : user.role}
-                       </span>
-                    </li>
-                    <li>
-                      <button className="dropdown-item small text-danger fw-bold" onClick={handleLogout}>
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </li>
-              </>
-            ) : (
-              <div className="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mt-3 mt-lg-0">
-                <li className="nav-item">
-                  <Link className="nav-link text-dark me-2" to="/contact" style={{ fontSize: "13px" }}>
-                    Contact us
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/login" className="w-100" onClick={() => setIsNavOpen(false)}>
-                    <button className="btn btn-outline-dark px-4 w-100 shadow-none" style={{ fontSize: "13px", borderRadius: "4px" }}>
-                      Log in
-                    </button>
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/tenant-register" className="w-100" onClick={() => setIsNavOpen(false)}>
-                    <button className="btn btn-dark px-3 w-100 shadow-none" style={{ fontSize: "13px", borderRadius: "4px" }}>
-                      Join as Provider
-                    </button>
-                  </Link>
-                </li>
+          {token && (
+            <div className="site-mobile__account">
+              <span className="th-avatar th-avatar--dark" aria-hidden="true">
+                {user.name?.charAt(0).toUpperCase() || "U"}
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <span className="site-account__name">{user.name || "Your account"}</span>
+                <span className="site-account__role">
+                  {isProviderOnboarding ? "Onboarding" : user.role || "Learner"}
+                </span>
               </div>
+            </div>
+          )}
+
+          <ul className="site-mobile__list">
+            {visibleLinks.map((link) => (
+              <li key={link.to}>
+                <Link
+                  to={link.to}
+                  className={`site-mobile__link ${
+                    link.match(location.pathname) ? "is-active" : ""
+                  }`}
+                  onClick={() => setIsNavOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+            {canAccessDashboard && (
+              <li>
+                <Link
+                  to={dashboardPath}
+                  className="site-mobile__link"
+                  onClick={() => setIsNavOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              </li>
             )}
           </ul>
+
+          <div className="site-mobile__actions">
+            {token ? (
+              <button
+                type="button"
+                className="btn btn-outline-dark w-100"
+                onClick={handleLogout}
+              >
+                <i className="bi bi-box-arrow-right" aria-hidden="true"></i>
+                Log out
+              </button>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="btn btn-outline-dark w-100"
+                  onClick={() => setIsNavOpen(false)}
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/tenant-register"
+                  className="btn btn-primary w-100"
+                  onClick={() => setIsNavOpen(false)}
+                >
+                  Join as provider
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

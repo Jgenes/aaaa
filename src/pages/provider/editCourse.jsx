@@ -117,17 +117,8 @@ export default function EditCourse() {
     <ProviderDashboardLayout title="Edit Training">
       <ToastContainer position="top-right" theme="colored" />
       
-      <style>{`
-        .edit-card { background: #fff; border-radius: 12px; border: 1px solid #edf2f7; padding: 25px; }
-        .form-label { font-weight: 600; color: #4a5568; font-size: 14px; }
-        .form-control, .form-select { border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px 12px; }
-        .form-control:focus { border-color: #0a2e67; box-shadow: 0 0 0 3px rgba(10,46,103,0.1); }
-        .section-title { font-size: 15px; font-weight: 700; color: #0a2e67; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #f8fafc; padding-bottom: 10px; }
-        .image-preview-box { width: 100%; height: 200px; border-radius: 10px; border: 2px dashed #e2e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f8fafc; }
-        .image-preview-box img { width: 100%; height: 100%; object-fit: cover; }
-      `}</style>
 
-      <div className="container py-4">
+      <div>
         <button className="btn btn-link text-decoration-none text-muted p-0 mb-4 d-flex align-items-center gap-2" onClick={() => navigate(-1)}>
           <FaArrowLeft size={12} /> Back to List
         </button>
@@ -139,18 +130,18 @@ export default function EditCourse() {
               <div className="edit-card shadow-sm mb-4">
                 <div className="section-title"><FaInfoCircle /> General Information</div>
                 <div className="mb-3">
-                  <label className="form-label">Training Title *</label>
-                  <input type="text" className="form-control" name="title" value={course.title} onChange={handleChange} required placeholder="e.g. Advanced System Analysis" />
+                  <label className="form-label" htmlFor="title">Training Title *</label>
+                  <input id="title" type="text" className="form-control" name="title" value={course.title} onChange={handleChange} required placeholder="e.g. Advanced System Analysis" />
                 </div>
                 
                 <div className="row">
                   <div className="col-md-6 mb-3">
-                    <label className="form-label">Category *</label>
-                    <input type="text" className="form-control" name="category" value={course.category} onChange={handleChange} required />
+                    <label className="form-label" htmlFor="category">Category *</label>
+                    <input id="category" type="text" className="form-control" name="category" value={course.category} onChange={handleChange} required />
                   </div>
                   <div className="col-md-6 mb-3">
-                    <label className="form-label">Delivery Mode *</label>
-                    <select className="form-select" name="mode" value={course.mode} onChange={handleChange}>
+                    <label className="form-label" htmlFor="mode">Delivery Mode *</label>
+                    <select id="mode" className="form-select" name="mode" value={course.mode} onChange={handleChange}>
                       <option>Online</option>
                       <option>Offline</option>
                       <option>Hybrid</option>
@@ -159,13 +150,13 @@ export default function EditCourse() {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Short Summary *</label>
-                  <textarea className="form-control" name="shortDescription" value={course.shortDescription} onChange={handleChange} rows="2" required />
+                  <label className="form-label" htmlFor="shortDescription">Short Summary *</label>
+                  <textarea id="shortDescription" className="form-control" name="shortDescription" value={course.shortDescription} onChange={handleChange} rows="2" required />
                 </div>
 
                 <div className="mb-0">
-                  <label className="form-label">Detailed Description *</label>
-                  <textarea className="form-control" name="longDescription" value={course.longDescription} onChange={handleChange} rows="6" required />
+                  <label className="form-label" htmlFor="longDescription">Detailed Description *</label>
+                  <textarea id="longDescription" className="form-control" name="longDescription" value={course.longDescription} onChange={handleChange} rows="6" required />
                 </div>
               </div>
 
@@ -173,16 +164,16 @@ export default function EditCourse() {
                 <div className="section-title"><FaListUl /> Course Highlights</div>
                 <div className="row">
                   <div className="col-md-12 mb-3">
-                    <label className="form-label">Learning Outcomes (One per line)</label>
-                    <textarea className="form-control" name="learningOutcomes" value={course.learningOutcomes} onChange={handleChange} rows="4" placeholder="What will they learn?" />
+                    <label className="form-label" htmlFor="learningOutcomes">Learning Outcomes (One per line)</label>
+                    <textarea id="learningOutcomes" className="form-control" name="learningOutcomes" value={course.learningOutcomes} onChange={handleChange} rows="4" placeholder="What will they learn?" />
                   </div>
                   <div className="col-md-6 mb-3">
-                    <label className="form-label">Requirements</label>
-                    <textarea className="form-control" name="requirements" value={course.requirements} onChange={handleChange} rows="4" placeholder="Prerequisites..." />
+                    <label className="form-label" htmlFor="requirements">Requirements</label>
+                    <textarea id="requirements" className="form-control" name="requirements" value={course.requirements} onChange={handleChange} rows="4" placeholder="Prerequisites..." />
                   </div>
                   <div className="col-md-6 mb-3">
-                    <label className="form-label">Skills Gained</label>
-                    <textarea className="form-control" name="skills" value={course.skills} onChange={handleChange} rows="4" placeholder="e.g. React, Laravel..." />
+                    <label className="form-label" htmlFor="skills">Skills Gained</label>
+                    <textarea id="skills" className="form-control" name="skills" value={course.skills} onChange={handleChange} rows="4" placeholder="e.g. React, Laravel..." />
                   </div>
                 </div>
               </div>
@@ -199,8 +190,8 @@ export default function EditCourse() {
                     <div className="text-muted small">No image selected</div>
                   )}
                 </div>
-                <label className="form-label">Change Banner Image</label>
-                <input type="file" className="form-control" onChange={handleFileChange} accept="image/*" />
+                <label className="form-label" htmlFor="change_banner_image">Change Banner Image</label>
+                <input id="change_banner_image" type="file" className="form-control" onChange={handleFileChange} accept="image/*" />
               </div>
 
               <div className="edit-card shadow-sm">

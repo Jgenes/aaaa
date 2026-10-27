@@ -120,7 +120,7 @@ export default function AdminCourses() {
             name: 'Action',
             cell: row => (
                 <button
-                style={{backgroundColor:'#0a2e67', fontSize:'13px', transition: '0.2s', color:'#fff', borderColor:'#0a2e67'}}
+                style={{backgroundColor:'var(--th-primary)', fontSize:'13px', transition: '0.2s', color:'#fff', borderColor:'var(--th-primary)'}}
                     className="btn btn-sm btn-outline-primary fw-bold"
                     data-bs-toggle="modal"
                     data-bs-target="#courseModal"
@@ -148,7 +148,7 @@ export default function AdminCourses() {
                         <span className="input-group-text bg-white border-end-0">
                             <i className="bi bi-search text-muted"></i>
                         </span>
-                        <input 
+                        <input aria-label="Search courses" 
                             type="text" 
                             className="form-control border-start-0" 
                             placeholder="Search courses..." 
@@ -181,7 +181,7 @@ export default function AdminCourses() {
                             <h5 className="modal-title">
                                 {selectedCourse?.title}
                             </h5>
-                            <button type="button" className="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            <button type="button" className="btn-close btn-close-white" aria-label="Close dialog" data-bs-dismiss="modal"></button>
                         </div>
 
                         <div className="modal-body bg-light">
@@ -279,8 +279,8 @@ export default function AdminCourses() {
 
                             {isDrafting && (
                                 <div className="mt-4 p-3 border border-danger rounded bg-white shadow-sm">
-                                    <label className="form-label fw-bold text-danger">Reason for Rejection/Draft:</label>
-                                    <textarea 
+                                    <label className="form-label fw-bold text-danger" htmlFor="reason_for_rejection_draft">Reason for Rejection/Draft:</label>
+                                    <textarea id="reason_for_rejection_draft" 
                                         className="form-control" 
                                         rows="3" 
                                         placeholder="Enter reason here..."

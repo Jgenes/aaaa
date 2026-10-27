@@ -118,24 +118,14 @@ export default function EditCohort() {
     <ProviderDashboardLayout title="Edit Intake Details">
       <ToastContainer position="top-right" theme="colored" />
       
-      <style>{`
-        .form-section { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #edf2f7; }
-        .section-title { font-size: 14px; font-weight: 700; color: #0a2e67; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .form-label { font-weight: 600; color: #4a5568; font-size: 13px; }
-        .form-control, .form-select { border-radius: 8px; padding: 10px 15px; border: 1px solid #e2e8f0; font-size: 14px; }
-        .form-control:focus { border-color: #0a2e67; box-shadow: 0 0 0 3px rgba(10,46,103,0.1); }
-        .btn-update { background: #0a2e67; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; transition: 0.3s; width: 100%; }
-        .btn-update:hover:not(:disabled) { background: #082452; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(10,46,103,0.15); }
-        .input-group-text { background: #f8fafc; border-color: #e2e8f0; color: #64748b; }
-      `}</style>
 
-      <div className="container py-4" style={{ maxWidth: "800px" }}>
+      <div className="th-form-narrow">
         {/* Header */}
         <div className="mb-4">
           <button className="btn btn-link text-decoration-none text-muted p-0 mb-2 small d-flex align-items-center gap-2" onClick={() => navigate(-1)}>
             <FaArrowLeft size={12} /> Discard Changes
           </button>
-          <h3 className="fw-bold" style={{ color: "#0a2e67" }}>Modify Cohort</h3>
+          <h3 className="fw-bold" style={{ color: "var(--th-primary)" }}>Modify Cohort</h3>
           <p className="text-muted small">Update settings for <strong>{cohort.intakeName}</strong></p>
         </div>
 
@@ -146,17 +136,17 @@ export default function EditCohort() {
               <FaInfoCircle /> Basic Information
             </div>
             <div className="mb-3">
-              <label className="form-label">Intake Name</label>
-              <input type="text" className="form-control" name="intakeName" value={cohort.intakeName} onChange={handleChange} required />
+              <label className="form-label" htmlFor="intakeName">Intake Name</label>
+              <input id="intakeName" type="text" className="form-control" name="intakeName" value={cohort.intakeName} onChange={handleChange} required />
             </div>
             <div className="row g-3">
               <div className="col-md-6">
-                <label className="form-label">Start Date</label>
-                <input type="date" className="form-control" name="startDate" value={cohort.startDate} onChange={handleChange} required />
+                <label className="form-label" htmlFor="startDate">Start Date</label>
+                <input id="startDate" type="date" className="form-control" name="startDate" value={cohort.startDate} onChange={handleChange} required />
               </div>
               <div className="col-md-6">
-                <label className="form-label">End Date</label>
-                <input type="date" className="form-control" name="endDate" value={cohort.endDate} onChange={handleChange} required />
+                <label className="form-label" htmlFor="endDate">End Date</label>
+                <input id="endDate" type="date" className="form-control" name="endDate" value={cohort.endDate} onChange={handleChange} required />
               </div>
             </div>
           </div>
@@ -168,30 +158,30 @@ export default function EditCohort() {
             </div>
             <div className="row g-3 mb-3">
               <div className="col-md-6">
-                <label className="form-label">Mode of Study</label>
-                <select className="form-select" name="mode" value={cohort.mode} onChange={handleChange}>
+                <label className="form-label" htmlFor="mode">Mode of Study</label>
+                <select id="mode" className="form-select" name="mode" value={cohort.mode} onChange={handleChange}>
                   <option value="Online">Online</option>
                   <option value="Physical">Physical</option>
                   <option value="Hybrid">Hybrid</option>
                 </select>
               </div>
               <div className="col-md-6">
-                <label className="form-label">Schedule</label>
-                <input type="text" className="form-control" name="schedule" value={cohort.schedule} onChange={handleChange} required />
+                <label className="form-label" htmlFor="schedule">Schedule</label>
+                <input id="schedule" type="text" className="form-control" name="schedule" value={cohort.schedule} onChange={handleChange} required />
               </div>
             </div>
 
             {cohort.mode !== "Online" && (
               <div className="mb-3">
-                <label className="form-label">Physical Venue</label>
-                <input type="text" className="form-control" name="venue" value={cohort.venue} onChange={handleChange} placeholder="Room number or Building" />
+                <label className="form-label" htmlFor="venue">Physical Venue</label>
+                <input id="venue" type="text" className="form-control" name="venue" value={cohort.venue} onChange={handleChange} placeholder="Room number or Building" />
               </div>
             )}
 
             {cohort.mode !== "Physical" && (
               <div className="mb-3">
-                <label className="form-label">Class Link (Zoom/Meet)</label>
-                <input type="url" className="form-control" name="onlineLink" value={cohort.onlineLink} onChange={handleChange} placeholder="https://..." />
+                <label className="form-label" htmlFor="onlineLink">Class Link (Zoom/Meet)</label>
+                <input id="onlineLink" type="url" className="form-control" name="onlineLink" value={cohort.onlineLink} onChange={handleChange} placeholder="https://..." />
               </div>
             )}
           </div>
@@ -203,19 +193,19 @@ export default function EditCohort() {
             </div>
             <div className="row g-3 mb-3">
               <div className="col-md-4">
-                <label className="form-label">Max Capacity</label>
+                <label className="form-label" htmlFor="capacity">Max Capacity</label>
                 <div className="input-group">
-                  <input type="number" className="form-control" name="capacity" value={cohort.capacity} onChange={handleChange} required />
+                  <input id="capacity" type="number" className="form-control" name="capacity" value={cohort.capacity} onChange={handleChange} required />
                   <span className="input-group-text small">Seats</span>
                 </div>
               </div>
               <div className="col-md-4">
-                <label className="form-label">Price (TZS)</label>
-                <input type="number" className="form-control" name="price" value={cohort.price} onChange={handleChange} required />
+                <label className="form-label" htmlFor="price">Price (TZS)</label>
+                <input id="price" type="number" className="form-control" name="price" value={cohort.price} onChange={handleChange} required />
               </div>
               <div className="col-md-4">
-                <label className="form-label">Current Status</label>
-                <select className="form-select" name="status" value={cohort.status} onChange={handleChange}>
+                <label className="form-label" htmlFor="status">Current Status</label>
+                <select id="status" className="form-select" name="status" value={cohort.status} onChange={handleChange}>
                   <option value="Open">Open</option>
                   <option value="Full">Full</option>
                   <option value="Closed">Closed</option>
@@ -223,15 +213,15 @@ export default function EditCohort() {
               </div>
             </div>
             <div className="mb-3">
-              <label className="form-label">Registration Deadline</label>
+              <label className="form-label" htmlFor="registrationDeadline">Registration Deadline</label>
               <div className="input-group">
                 <span className="input-group-text"><FaCalendarAlt /></span>
-                <input type="date" className="form-control" name="registrationDeadline" value={cohort.registrationDeadline} onChange={handleChange} required />
+                <input id="registrationDeadline" type="date" className="form-control" name="registrationDeadline" value={cohort.registrationDeadline} onChange={handleChange} required />
               </div>
             </div>
             <div className="mb-0">
-              <label className="form-label">Additional Description</label>
-              <textarea className="form-control" name="description" rows={3} value={cohort.description} onChange={handleChange}></textarea>
+              <label className="form-label" htmlFor="description">Additional Description</label>
+              <textarea id="description" className="form-control" name="description" rows={3} value={cohort.description} onChange={handleChange}></textarea>
             </div>
           </div>
 

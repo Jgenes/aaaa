@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
@@ -10,23 +10,42 @@ export default function PesaPalGateway() {
 
   const { url, courseName } = location.state || {};
 
-  // Function ya kuahirisha malipo
   const handleCancel = () => {
-    if (
-      window.confirm("Are you sure you want to cancel the payment process?")
-    ) {
-      navigate("/trainings"); // Inamrudisha mteja ukurasa wa nyuma (Checkout page)
+    if (window.confirm("Are you sure you want to cancel the payment process?")) {
+      navigate("/trainings");
     }
   };
 
   if (!url) {
     return (
-      <div className="text-center py-5">
-        <h4>Payment information not found.</h4>
-        <button onClick={() => navigate("/")} className="btn btn-primary">
-          Return Home
-        </button>
-      </div>
+      <>
+        <NavBar />
+        <main id="main-content" className="th-container-wide th-section">
+          <div className="th-empty">
+            <span className="th-empty__icon">
+              <i className="bi bi-credit-card" aria-hidden="true"></i>
+            </span>
+            <h1 className="th-empty__title">Payment information not found</h1>
+            <p className="th-empty__text">
+              This can happen if the page was reloaded. Start the enrolment again from the
+              training page.
+            </p>
+            <div className="d-flex gap-2 justify-content-center flex-wrap">
+              <button type="button" onClick={() => navigate("/")} className="btn btn-primary">
+                Return home
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/trainings")}
+                className="btn btn-outline-dark"
+              >
+                Browse trainings
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
@@ -34,66 +53,49 @@ export default function PesaPalGateway() {
     <div className="d-flex flex-column min-vh-100 bg-light">
       <NavBar />
 
-      <div className="container flex-grow-1 my-4">
-        <div
-          className="card shadow-lg border-0 overflow-hidden"
-          style={{ borderRadius: "15px" }}
-        >
-          <div
-            style={{ backgroundColor: "#0a2e67" }}
-            className="card-header text-white py-3 d-flex justify-content-between align-items-center"
-          >
-            <div className="d-flex align-items-center">
-              {/* --- CANCEL BUTTON --- */}
-              <button
-                onClick={handleCancel}
-                className="btn btn-sm btn-outline-light me-3"
-                style={{ borderRadius: "20px", fontSize: "12px" }}
-              >
-                <i className="bi bi-arrow-left me-1"></i> Cancel
-              </button>
-
-              <h5 className="mb-0" style={{ fontSize: "15px" }}>
-                Payment for: {courseName}
-              </h5>
-            </div>
-
-            <span
-              className="badge bg-success text-uppercase"
-              style={{ fontSize: "10px" }}
-            >
-              Secure Payment
-            </span>
+      <main id="main-content" className="th-container-wide flex-grow-1 py-4">
+        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+          <div>
+            <h1 className="mb-1" style={{ fontSize: "var(--th-fs-xl)" }}>
+              Secure payment
+            </h1>
+            <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+              {courseName ? `Paying for: ${courseName}` : "Complete your payment below."}
+            </p>
           </div>
+          <div className="d-flex align-items-center gap-2">
+            <span className="th-status th-status--success">
+              <i className="bi bi-shield-lock" aria-hidden="true"></i>
+              PesaPal secured
+            </span>
+            <button type="button" onClick={handleCancel} className="btn btn-outline-dark btn-sm">
+              <i className="bi bi-arrow-left" aria-hidden="true"></i>
+              Cancel
+            </button>
+          </div>
+        </div>
 
-          <div
-            className="card-body p-0 position-relative"
-            style={{ minHeight: "400px" }}
-          >
-            {/* 1. Spinner wakati iframe inaload */}
+        <div className="card overflow-hidden">
+          <div className="card-body p-0 position-relative" style={{ minHeight: 480 }}>
             {iframeLoading && (
-              <div className="position-absolute top-50 start-50 translate-middle text-center w-100">
-                <div
-                  className="spinner-border text-primary"
-                  role="status"
-                  style={{ width: "3rem", height: "3rem" }}
-                >
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-                <p className="mt-3 text-muted fw-bold">
-                  Please wait, connecting to payment server...
+              <div
+                className="position-absolute top-50 start-50 translate-middle text-center w-100 px-3"
+                role="status"
+              >
+                <div className="spinner-border" aria-hidden="true"></div>
+                <p className="mt-3 text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                  Connecting to the payment server…
                 </p>
               </div>
             )}
 
-            {/* 2. Iframe ya PesaPal */}
             <iframe
               src={url}
-              title="PesaPal Payment"
+              title="PesaPal payment gateway"
               onLoad={() => setIframeLoading(false)}
               style={{
                 width: "100%",
-                height: "750px",
+                height: "720px",
                 border: "none",
                 display: iframeLoading ? "none" : "block",
               }}
@@ -102,10 +104,13 @@ export default function PesaPalGateway() {
           </div>
         </div>
 
-        <p className="text-center text-muted mt-3 small">
-          If you encounter any issues, please contact support before canceling.
+        <p
+          className="text-center text-muted mt-3 mb-0"
+          style={{ fontSize: "var(--th-fs-xs)" }}
+        >
+          If you encounter any issues, please contact support before cancelling.
         </p>
-      </div>
+      </main>
 
       <Footer />
     </div>

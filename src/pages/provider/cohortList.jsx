@@ -7,6 +7,7 @@ import { getCohorts, deleteCohort } from "../../api/courseServices";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { tableStyles } from "../../lib/tableStyles";
 export default function CohortList() {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -83,34 +84,6 @@ export default function CohortList() {
   };
 
   // Modern DataTable Styling
-  const customStyles = {
-    header: { style: { minHeight: '56px' } },
-    headRow: {
-      style: {
-        borderTopStyle: 'solid',
-        borderTopWidth: '1px',
-        borderTopColor: '#f1f5f9',
-        backgroundColor: '#f8fafc',
-      },
-    },
-    headCells: {
-      style: {
-        fontWeight: '700',
-        textTransform: 'uppercase',
-        fontSize: '11px',
-        letterSpacing: '0.5px',
-        color: '#64748b',
-      },
-    },
-    cells: {
-      style: {
-        fontSize: '14px',
-        color: '#334155',
-        paddingTop: '12px',
-        paddingBottom: '12px',
-      },
-    },
-  };
 
   const columns = [
     {
@@ -164,7 +137,7 @@ export default function CohortList() {
       selector: (row) => row.price,
       sortable: true,
       cell: (row) => (
-        <span className="fw-bold" style={{ color: "#0a2e67" }}>
+        <span className="fw-bold" style={{ color: "var(--th-primary)" }}>
           TZS {(row.price || 0).toLocaleString()}
         </span>
       )
@@ -199,44 +172,21 @@ export default function CohortList() {
     <ProviderDashboardLayout title="Management">
       <ToastContainer position="top-right" theme="colored" />
       
-      <style>{`
-        .page-header { background: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem; }
-        .search-wrapper { position: relative; }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-        .search-input { padding-left: 35px !important; border-radius: 10px; border: 1px solid #e2e8f0; width: 250px; transition: 0.3s; }
-        .search-input:focus { width: 300px; border-color: #0a2e67; box-shadow: 0 0 0 4px rgba(10,46,103,0.05); }
-        
-        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
-        .status-open { background: #dcfce7; color: #15803d; }
-        .status-full { background: #fef9c3; color: #a16207; }
-        .status-closed { background: #f1f5f9; color: #475569; }
 
-        .action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px; }
-        .btn-view { background: #eff6ff; color: #2563eb; }
-        .btn-edit { background: #fff7ed; color: #ea580c; }
-        .btn-delete { background: #fef2f2; color: #dc2626; }
-        .action-btn:hover { transform: translateY(-2px); filter: brightness(0.95); }
-
-        .btn-add-cohort { background: #0a2e67; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; transition: 0.3s; }
-        .btn-add-cohort:hover { background: #082452; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(10,46,103,0.2); }
-        
-        .rdt_Table { border-radius: 16px; overflow: hidden; }
-      `}</style>
-
-      <div className="container py-4">
+      <div>
         <div className="page-header d-md-flex justify-content-between align-items-center">
           <div>
             <button className="btn btn-link text-decoration-none text-muted p-0 mb-2 small d-flex align-items-center gap-2" onClick={() => navigate(-1)}>
               <FaArrowLeft size={12} /> Back to Trainings
             </button>
-            <h4 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>{courseName}</h4>
+            <h4 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>{courseName}</h4>
             <p className="text-muted small mb-0">Manage intakes, enrollment capacity, and schedules.</p>
           </div>
 
           <div className="d-flex gap-3 mt-3 mt-md-0">
             <div className="search-wrapper d-none d-lg-block">
               <FaSearch className="search-icon" />
-              <input 
+              <input aria-label="Find intake" 
                 type="text" 
                 className="form-control search-input" 
                 placeholder="Find intake..." 
@@ -250,13 +200,13 @@ export default function CohortList() {
           </div>
         </div>
 
-        <div className="card border-0 shadow-sm overflow-hidden" style={{ borderRadius: "16px" }}>
+        <div className="table-wrapper">
           <DataTable
             columns={columns}
             data={filteredData}
             pagination
             highlightOnHover
-            customStyles={customStyles}
+            customStyles={tableStyles}
             progressPending={loading}
             noDataComponent={<div className="p-5 text-muted">No intakes found for this course.</div>}
           />
@@ -264,42 +214,46 @@ export default function CohortList() {
 
         {/* MODERN MODAL */}
         {showModal && selectedCohort && (
-          <div className="modal fade show d-block" style={{ background: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(4px)" }}>
+          <div className="modal fade show d-block th-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cohort-details-title">
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "20px" }}>
                 <div className="modal-body p-4">
                   <div className="d-flex justify-content-between align-items-start mb-4">
                     <div>
                       <span className="badge bg-light text-primary mb-2">Cohort Details</span>
-                      <h4 className="fw-bold mb-0">{selectedCohort.intake_name}</h4>
+                      <h4 className="fw-bold mb-0" id="cohort-details-title">{selectedCohort.intake_name}</h4>
                     </div>
-                    <button className="btn-close" onClick={() => setShowModal(false)}></button>
+                    <button
+                      className="btn-close"
+                      aria-label="Close cohort details"
+                      onClick={() => setShowModal(false)}
+                    ></button>
                   </div>
 
                   <div className="row g-4">
                     <div className="col-6">
-                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Timeline</label>
+                      <div className="detail-label">Timeline</div>
                       <div className="small fw-bold">{selectedCohort.start_date} - {selectedCohort.end_date}</div>
                     </div>
                     <div className="col-6">
-                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Investment</label>
+                      <div className="detail-label">Investment</div>
                       <div className="small fw-bold text-success">TZS {selectedCohort.price?.toLocaleString()}</div>
                     </div>
                     <div className="col-6">
-                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Enrollment</label>
+                      <div className="detail-label">Enrollment</div>
                       <div className="small fw-bold">{selectedCohort.enrolled_students} / {selectedCohort.capacity} Students</div>
                     </div>
                     <div className="col-6">
-                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Venue</label>
+                      <div className="detail-label">Venue</div>
                       <div className="small fw-bold text-truncate">{selectedCohort.venue || "Online / Link"}</div>
                     </div>
                     <div className="col-12">
-                      <label className="text-uppercase small fw-bolder text-muted d-block mb-1">Schedule</label>
+                      <div className="detail-label">Schedule</div>
                       <div className="p-3 bg-light rounded-3 small">{selectedCohort.schedule_text || "Contact provider for schedule details."}</div>
                     </div>
                   </div>
 
-                  <button className="btn w-100 mt-4 py-2 fw-bold text-white" style={{ background: "#0a2e67", borderRadius: "10px" }} onClick={() => setShowModal(false)}>
+                  <button className="btn btn-primary w-100 mt-4 py-2 fw-bold" onClick={() => setShowModal(false)}>
                     Close Details
                   </button>
                 </div>

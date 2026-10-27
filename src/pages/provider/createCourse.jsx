@@ -114,65 +114,70 @@ export default function CreateCourse() {
     <ProviderDashboardLayout title="Create Training">
       <ToastContainer position="top-right" />
       
-      <style>{`
-        .form-card { border: none; border-radius: 16px; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,0.04); }
-        .custom-input { padding: 12px 15px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 14px; transition: 0.3s; background: #fcfcfc; }
-        .custom-input:focus { border-color: #0a2e67; box-shadow: 0 0 0 4px rgba(10, 46, 103, 0.05); outline: none; background: #fff; }
-        .form-label-custom { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
-        .section-card { background: #f8fafc; border: 1px solid #edf2f7; border-radius: 14px; padding: 25px; margin-bottom: 25px; position: relative; }
-        .btn-navy { background-color: #0a2e67; color: white; font-weight: 700; border-radius: 10px; padding: 14px 30px; border: none; transition: 0.3s; }
-        .btn-navy:hover { background-color: #082452; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(10, 46, 103, 0.2); }
-        .add-btn { font-size: 12px; font-weight: 700; color: #0a2e67; background: none; border: none; padding: 0; }
-        .badge-section { background: #e0e7ff; color: #0a2e67; font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; }
-      `}</style>
 
-      <div className="container py-4">
+      <div>
         <button className="btn btn-sm text-muted mb-4 p-0 border-0" onClick={() => navigate(-1)}>
           <i className="bi bi-chevron-left me-1"></i> Back
         </button>
 
         <form onSubmit={handleSubmit} className="form-card p-4 p-md-5">
           <header className="mb-5">
-            <h2 className="fw-bold" style={{ color: "#0a2e67", fontSize: "24px" }}>Create New Training</h2>
+            <h2 className="fw-bold text-primary">Create New Training</h2>
             <p className="text-muted small">Fill out the details below to set up your training program and curriculum.</p>
           </header>
 
           <section className="row g-4 mb-5">
             <div className="col-12">
-              <label className="form-label-custom">Training Title</label>
-              <input type="text" className="form-control custom-input w-100" name="title" value={course.title} onChange={handleChange} placeholder="e.g. Professional Web Development" required />
+              <label className="form-label-custom" htmlFor="title">Training Title</label>
+              <input id="title" type="text" className="form-control custom-input w-100" name="title" value={course.title} onChange={handleChange} placeholder="e.g. Professional Web Development" required />
             </div>
             <div className="col-md-6">
-              <label className="form-label-custom">Category</label>
-              <input type="text" className="form-control custom-input" name="category" value={course.category} onChange={handleChange} placeholder="e.g. IT & Software" required />
+              <label className="form-label-custom" htmlFor="category">Category</label>
+              <input id="category" type="text" className="form-control custom-input" name="category" value={course.category} onChange={handleChange} placeholder="e.g. IT & Software" required />
             </div>
             <div className="col-md-6">
-              <label className="form-label-custom">Delivery Mode</label>
-              <select className="form-select custom-input" name="mode" value={course.mode} onChange={handleChange}>
+              <label className="form-label-custom" htmlFor="mode">Delivery Mode</label>
+              <select id="mode" className="form-select custom-input" name="mode" value={course.mode} onChange={handleChange}>
                 <option value="Online">Online</option>
                 <option value="Physical">Physical</option>
                 <option value="Hybrid">Hybrid</option>
               </select>
             </div>
             <div className="col-12">
-              <label className="form-label-custom">Short Summary</label>
-              <textarea className="form-control custom-input" name="shortDescription" rows="2" value={course.shortDescription} onChange={handleChange} required />
+              <label className="form-label-custom" htmlFor="shortDescription">Short Summary</label>
+              <textarea id="shortDescription" className="form-control custom-input" name="shortDescription" rows="2" value={course.shortDescription} onChange={handleChange} required />
             </div>
             <div className="col-12">
-              <label className="form-label-custom">Detailed Description</label>
-              <textarea className="form-control custom-input" name="longDescription" rows="5" value={course.longDescription} onChange={handleChange} required />
+              <label className="form-label-custom" htmlFor="longDescription">Detailed Description</label>
+              <textarea id="longDescription" className="form-control custom-input" name="longDescription" rows="5" value={course.longDescription} onChange={handleChange} required />
             </div>
           </section>
 
           <div className="row g-4 mb-5">
             {["learningOutcomes", "skills", "requirements"].map((field) => (
               <div className="col-md-4" key={field}>
-                <label className="form-label-custom">{field.replace(/([A-Z])/g, " $1")}</label>
+                <div className="form-label-custom" id={`${field}-label`}>
+                  {field.replace(/([A-Z])/g, " $1")}
+                </div>
                 {course[field].map((item, idx) => (
                   <div key={idx} className="d-flex gap-2 mb-2">
-                    <input type="text" className="form-control custom-input form-control-sm" value={item} onChange={(e) => handleArrayChange(field, idx, e.target.value)} required />
+                    <input
+                      type="text"
+                      className="form-control custom-input form-control-sm"
+                      aria-label={`${field.replace(/([A-Z])/g, " $1")} ${idx + 1}`}
+                      value={item}
+                      onChange={(e) => handleArrayChange(field, idx, e.target.value)}
+                      required
+                    />
                     {course[field].length > 1 && (
-                      <button type="button" className="btn btn-sm text-danger border-0" onClick={() => removeArrayItem(field, idx)}><i className="bi bi-x-circle-fill"></i></button>
+                      <button
+                        type="button"
+                        className="btn btn-sm text-danger border-0"
+                        aria-label={`Remove ${field.replace(/([A-Z])/g, " $1").toLowerCase()} ${idx + 1}`}
+                        onClick={() => removeArrayItem(field, idx)}
+                      >
+                        <i className="bi bi-x-circle-fill" aria-hidden="true"></i>
+                      </button>
                     )}
                   </div>
                 ))}
@@ -185,7 +190,7 @@ export default function CreateCourse() {
 
           <section className="mb-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h3 className="fw-bold" style={{ color: "#0a2e67", fontSize: "18px" }}>Curriculum Content</h3>
+              <h3 className="fw-bold text-primary fs-5">Curriculum Content</h3>
               <button type="button" className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3" onClick={addContent}>+ Add Section</button>
             </div>
 
@@ -193,32 +198,49 @@ export default function CreateCourse() {
               <div key={idx} className="section-card">
                 <div className="d-flex justify-content-between align-items-start mb-4">
                   <span className="badge-section">Section {idx + 1}</span>
-                  <button type="button" className="btn btn-sm text-danger p-0 border-0" onClick={() => removeContent(idx)}><i className="bi bi-trash3 me-1"></i> Remove</button>
+                  <button
+                    type="button"
+                    className="btn btn-sm text-danger p-0 border-0"
+                    aria-label={`Remove section ${idx + 1}`}
+                    onClick={() => removeContent(idx)}
+                  >
+                    <i className="bi bi-trash3 me-1" aria-hidden="true"></i> Remove
+                  </button>
                 </div>
                 
                 <div className="row g-3">
                   <div className="col-12">
-                    <label className="form-label-custom">Lesson Title</label>
-                    <input type="text" className="form-control custom-input" value={content.title} onChange={(e) => handleContentChange(idx, "title", e.target.value)} required />
+                    <label className="form-label-custom" htmlFor={`lesson-title-${idx}`}>Lesson Title</label>
+                    <input id={`lesson-title-${idx}`} type="text" className="form-control custom-input" value={content.title} onChange={(e) => handleContentChange(idx, "title", e.target.value)} required />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label-custom">Main Video</label>
-                    <input type="file" className="form-control custom-input" accept="video/*" onChange={(e) => handleContentChange(idx, "video", e.target.files[0])} />
+                    <label className="form-label-custom" htmlFor={`main-video-${idx}`}>Main Video</label>
+                    <input id={`main-video-${idx}`} type="file" className="form-control custom-input" accept="video/*" onChange={(e) => handleContentChange(idx, "video", e.target.files[0])} />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label-custom">Handouts (PDFs)</label>
-                    <input type="file" className="form-control custom-input" multiple accept=".pdf" onChange={(e) => handleContentChange(idx, "handouts", e.target.files)} />
+                    <label className="form-label-custom" htmlFor={`handouts-${idx}`}>Handouts (PDFs)</label>
+                    <input id={`handouts-${idx}`} type="file" className="form-control custom-input" multiple accept=".pdf" onChange={(e) => handleContentChange(idx, "handouts", e.target.files)} />
                   </div>
                   <div className="col-12">
-                    <label className="form-label-custom">Video Links</label>
+                    <div className="form-label-custom" id={`video-links-label-${idx}`}>
+                      Video Links
+                    </div>
                     {content.video_links.map((vLink, lIdx) => (
-                      <input key={lIdx} type="url" className="form-control custom-input mb-2" placeholder="Paste YouTube/Vimeo link" value={vLink} onChange={(e) => handleVideoLinkChange(idx, lIdx, e.target.value)} />
+                      <input
+                        key={lIdx}
+                        type="url"
+                        className="form-control custom-input mb-2"
+                        aria-label={`Video link ${lIdx + 1} for section ${idx + 1}`}
+                        placeholder="Paste YouTube/Vimeo link"
+                        value={vLink}
+                        onChange={(e) => handleVideoLinkChange(idx, lIdx, e.target.value)}
+                      />
                     ))}
                     <button type="button" className="add-btn" onClick={() => addVideoLink(idx)}>+ ADD ANOTHER LINK</button>
                   </div>
                   <div className="col-12">
-                    <label className="form-label-custom">Detailed Lesson Notes</label>
-                    <textarea className="form-control custom-input" rows="4" value={content.notes_text} onChange={(e) => handleContentChange(idx, "notes_text", e.target.value)} placeholder="Enter full text content for this lesson..." />
+                    <label className="form-label-custom" htmlFor={`lesson-notes-${idx}`}>Detailed Lesson Notes</label>
+                    <textarea id={`lesson-notes-${idx}`} className="form-control custom-input" rows="4" value={content.notes_text} onChange={(e) => handleContentChange(idx, "notes_text", e.target.value)} placeholder="Enter full text content for this lesson..." />
                   </div>
                 </div>
               </div>
@@ -226,9 +248,9 @@ export default function CreateCourse() {
           </section>
 
           <div className="mb-5">
-            <label className="form-label-custom">Training Banner Image</label>
+            <label className="form-label-custom" htmlFor="training_banner_image">Training Banner Image</label>
             <div className="p-4 border-2 border-dashed rounded-4 text-center bg-light" style={{ borderStyle: 'dashed', borderColor: '#cbd5e1' }}>
-              <input type="file" className="form-control custom-input mb-2" accept="image/*" onChange={(e) => setCourse({ ...course, banner: e.target.files[0] })} />
+              <input id="training_banner_image" type="file" className="form-control custom-input mb-2" accept="image/*" onChange={(e) => setCourse({ ...course, banner: e.target.files[0] })} />
               <small className="text-muted">High resolution images (1200x600px) work best.</small>
             </div>
           </div>

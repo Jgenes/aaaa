@@ -23,7 +23,7 @@ export default function ManageCourseExtras() {
   const [announcements, setAnnouncements] = useState([]);
 
   const [tool, setTool] = useState({ name: "", description: "", link: "" });
-  const [tools, setTools] = useState([]);
+  const [, setTools] = useState([]);
 
   const loadExtras = async () => {
     try {
@@ -91,11 +91,11 @@ export default function ManageCourseExtras() {
   return (
     <ProviderDashboardLayout title="Manage Course Materials">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="container mt-4">
+      <div>
         {/* NOTES */}
         <h3 className="h5 mb-3">📚 Upload Notes</h3>
         <div className="card p-3 mb-4 shadow-sm border-0 bg-light">
-          <input
+          <input aria-label="Note title"
             type="text"
             className="form-control form-control-sm mb-2"
             placeholder="Note title"
@@ -133,7 +133,7 @@ export default function ManageCourseExtras() {
         {/* ANNOUNCEMENTS */}
         <h3 className="h5 mb-3">📢 Add Announcement</h3>
         <div className="card p-3 mb-4 shadow-sm border-0 bg-light">
-          <input
+          <input aria-label="Announcement title"
             className="form-control form-control-sm mb-2"
             placeholder="Announcement Title"
             value={announcement.title}
@@ -141,7 +141,7 @@ export default function ManageCourseExtras() {
               setAnnouncement({ ...announcement, title: e.target.value })
             }
           />
-          <textarea
+          <textarea aria-label="Announcement message"
             className="form-control form-control-sm mb-2"
             placeholder="Message body..."
             value={announcement.body}
@@ -188,19 +188,19 @@ export default function ManageCourseExtras() {
         {/* TOOLS */}
         <h3 className="h5 mb-3">🧰 Tools</h3>
         <div className="d-flex gap-2 mb-3">
-          <input
+          <input aria-label="Resource name"
             className="form-control form-control-sm"
             placeholder="Tool Name"
             value={tool.name}
             onChange={(e) => setTool({ ...tool, name: e.target.value })}
           />
-          <input
+          <input aria-label="Resource link"
             className="form-control form-control-sm"
             placeholder="Link"
             value={tool.link}
             onChange={(e) => setTool({ ...tool, link: e.target.value })}
           />
-          <input
+          <input aria-label="Resource description"
             className="form-control form-control-sm"
             placeholder="Description"
             value={tool.description}

@@ -5,6 +5,7 @@ import { FaArrowLeft, FaSearch, FaEye, FaUserGraduate, FaMoneyBillWave, FaMapMar
 import api from "../../api/axio";
 import ProviderDashboardLayout from './layouts/ProviderDashboardLayout';
 
+import { tableStyles } from "../../lib/tableStyles";
 export default function Penrollments() {
     const { courseId } = useParams();
     const navigate = useNavigate();
@@ -14,26 +15,6 @@ export default function Penrollments() {
     const [loading, setLoading] = useState(true);
     const [selectedStudent, setSelectedStudent] = useState(null);
 
-    const customStyles = {
-        headCells: {
-            style: {
-                backgroundColor: "#f8fafc",
-                color: "#0a2e67",
-                fontWeight: "700",
-                fontSize: "13px",
-                textTransform: "uppercase",
-                paddingLeft: '18px'
-            },
-        },
-        cells: {
-            style: {
-                fontSize: "14px",
-                paddingLeft: '18px',
-                paddingTop: '12px',
-                paddingBottom: '12px'
-            },
-        },
-    };
 
     const columns = [
         {
@@ -71,7 +52,7 @@ export default function Penrollments() {
                 const status = row.status?.toUpperCase();
                 const isSuccess = ["PAID", "COMPLETED", "SUCCESS"].includes(status);
                 return (
-                    <span className={`fw-bold d-flex align-items-center gap-1`} style={{ color: isSuccess ? "#2ecc71" : "#f39c12", fontSize: "12px" }}>
+                    <span className={`fw-bold d-flex align-items-center gap-1`} style={{ color: isSuccess ? "var(--th-success)" : "var(--th-warning)", fontSize: "12px" }}>
                         <span style={{ fontSize: "10px" }}>●</span> {status || "PENDING"}
                     </span>
                 );
@@ -121,20 +102,8 @@ export default function Penrollments() {
 
     return (
         <ProviderDashboardLayout title="Course Enrollments">
-            <style>{`
-                .search-card { background: #fff; border-radius: 12px; padding: 15px 20px; border: 1px solid #edf2f7; margin-bottom: 20px; }
-                .search-input-group { position: relative; max-width: 350px; }
-                .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #a0aec0; }
-                .search-control { padding-left: 35px; border-radius: 8px; border: 1px solid #e2e8f0; height: 40px; font-size: 14px; }
-                .table-wrapper { background: #fff; border-radius: 12px; border: 1px solid #edf2f7; overflow: hidden; }
-                .modal-content { border-radius: 16px; border: none; }
-                .modal-header { border-bottom: 1px solid #f1f5f9; background: #fafafa; border-radius: 16px 16px 0 0; }
-                .detail-label { font-size: 11px; text-transform: uppercase; color: #a0aec0; font-weight: 700; margin-bottom: 2px; }
-                .detail-value { font-size: 14px; color: #2d3748; font-weight: 600; }
-                .section-divider { border-left: 3px solid #0a2e67; padding-left: 10px; margin: 15px 0; color: #0a2e67; font-weight: 700; font-size: 14px; }
-            `}</style>
 
-            <div className="container py-4">
+            <div>
                 {/* Back Link */}
                 <button className="btn btn-link text-decoration-none text-muted p-0 mb-4 d-flex align-items-center gap-2" onClick={() => navigate(-1)}>
                     <FaArrowLeft size={12} /> Back to Trainings
@@ -145,7 +114,7 @@ export default function Penrollments() {
                     <div className="d-flex justify-content-between align-items-center">
                         <div className="search-input-group flex-grow-1">
                             <FaSearch className="search-icon" size={13} />
-                            <input 
+                            <input aria-label="Search student name or email" 
                                 type="text" 
                                 className="form-control search-control" 
                                 placeholder="Search student name or email..." 
@@ -167,7 +136,7 @@ export default function Penrollments() {
                         pagination
                         highlightOnHover
                         responsive
-                        customStyles={customStyles}
+                        customStyles={tableStyles}
                         noDataComponent={<div className="p-5 text-muted">No students enrolled yet.</div>}
                     />
                 </div>
@@ -178,10 +147,10 @@ export default function Penrollments() {
                 <div className="modal-dialog modal-lg modal-dialog-centered">
                     <div className="modal-content shadow-lg">
                         <div className="modal-header px-4 py-3">
-                            <h5 className="modal-title fw-bold" style={{ color: "#0a2e67" }}>
+                            <h5 className="modal-title fw-bold" style={{ color: "var(--th-primary)" }}>
                                 <FaUserGraduate className="me-2" /> Student Profile
                             </h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" className="btn-close" aria-label="Close dialog" data-bs-dismiss="modal"></button>
                         </div>
                         <div className="modal-body p-4">
                             {selectedStudent ? (

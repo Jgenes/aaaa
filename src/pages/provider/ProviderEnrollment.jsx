@@ -3,6 +3,7 @@ import api from "../../api/axio";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
 
+import { tableStyles } from "../../lib/tableStyles";
 export default function ProviderEnrollments() {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,9 +130,9 @@ export default function ProviderEnrollments() {
       {/* Main Table Card */}
       <div className="card border-0 shadow-sm">
         <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-          <h5 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>Student Registry</h5>
+          <h5 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>Student Registry</h5>
           <div style={{ maxWidth: "250px", width: "100%" }}>
-            <input
+            <input aria-label="Search enrollments"
               type="text"
               className="form-control form-control-sm shadow-none"
               placeholder="Search by name or course..."
@@ -151,9 +152,7 @@ export default function ProviderEnrollments() {
             noDataComponent={<div className="p-5 text-muted">Hakuna enrollment iliyopatikana.</div>}
             highlightOnHover
             responsive
-            customStyles={{
-              headCells: { style: { color: "#0a2e67", fontWeight: "bold", fontSize: "13px" } },
-            }}
+            customStyles={tableStyles}
           />
         </div>
       </div>
@@ -164,7 +163,7 @@ export default function ProviderEnrollments() {
           <div className="modal-content border-0 shadow">
             <div className="modal-header border-0 pb-0">
               <h5 className="modal-title fw-bold">Full Student Details</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+              <button type="button" className="btn-close" aria-label="Close dialog" data-bs-dismiss="modal"></button>
             </div>
             <div className="modal-body p-4">
               {selectedStudent ? (

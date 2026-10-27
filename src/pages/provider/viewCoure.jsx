@@ -35,7 +35,7 @@ export default function ViewCourse() {
 
   if (!course) return (
     <ProviderDashboardLayout title="Not Found">
-      <div className="container py-5 text-center">
+      <div className="text-center py-4">
         <h4 className="text-muted">Training session not found!</h4>
         <button className="btn btn-primary mt-3" onClick={() => navigate(-1)}>Go Back</button>
       </div>
@@ -44,18 +44,8 @@ export default function ViewCourse() {
 
   return (
     <ProviderDashboardLayout title="Training Preview">
-      <style>{`
-        .course-banner { height: 320px; width: 100%; object-fit: cover; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .info-card { background: #fff; border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid #edf2f7; }
-        .section-header { font-size: 16px; font-weight: 700; color: #0a2e67; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .outcome-item { background: #f8fafc; border-radius: 10px; padding: 12px 18px; margin-bottom: 10px; border-left: 4px solid #0a2e67; list-style: none; font-size: 14px; }
-        .skill-badge { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .lesson-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; transition: 0.3s; }
-        .lesson-card:hover { border-color: #0a2e67; transform: translateX(5px); }
-        .status-pill { padding: 4px 12px; border-radius: 50px; font-size: 12px; font-weight: 700; }
-      `}</style>
 
-      <div className="container py-4" style={{ maxWidth: "1000px" }}>
+      <div className="th-page-narrow">
         {/* Navigation */}
         <button className="btn btn-link text-decoration-none text-muted p-0 mb-4 d-flex align-items-center gap-2" onClick={() => navigate(-1)}>
           <FaArrowLeft size={14} /> Back to Dashboard
@@ -71,7 +61,7 @@ export default function ViewCourse() {
           <div className="d-flex justify-content-between align-items-start mb-3">
             <div>
               <span className="badge bg-primary-subtle text-primary mb-2 px-3 py-2">{course.category}</span>
-              <h2 className="fw-bold" style={{ color: "#0a2e67" }}>{course.title}</h2>
+              <h2 className="fw-bold" style={{ color: "var(--th-primary)" }}>{course.title}</h2>
             </div>
             <span className={`status-pill ${course.status === "Published" ? "bg-success text-white" : "bg-warning text-dark"}`}>
               {course.status}
@@ -130,7 +120,7 @@ export default function ViewCourse() {
                 course.contents.map((content, idx) => (
                   <div key={idx} className="lesson-card p-4 mb-3">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <h6 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>
+                      <h6 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>
                         Lesson {idx + 1}: {content.title}
                       </h6>
                     </div>

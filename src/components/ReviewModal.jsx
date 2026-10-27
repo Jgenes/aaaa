@@ -1,7 +1,14 @@
-import React, { useState } from "react";
-import { FaStar } from "react-icons/fa";
-import api from "../api/axio";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import api from "../api/axio";
+
+const RATING_LABELS = {
+  1: "Poor",
+  2: "Fair",
+  3: "Good",
+  4: "Very good",
+  5: "Excellent",
+};
 
 export default function ReviewModal({ courseId, onClose }) {
   const [rating, setRating] = useState(0);
@@ -9,132 +16,136 @@ export default function ReviewModal({ courseId, onClose }) {
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key === "Escape" && !isSubmitting) onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isSubmitting, onClose]);
+
   const handleSubmit = async () => {
     if (rating === 0) {
-      return toast.warning("Tafadhali chagua nyota angalau moja!");
+      return toast.warning("Please choose at least one star.");
     }
 
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
       await api.post(
-        "/reviews", 
-        { 
-          course_id: courseId, 
-          rating: rating, 
-          comment: comment 
-        },
+        "/reviews",
+        { course_id: courseId, rating, comment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success("Asante kwa maoni yako!");
-      onClose(); // Funga modal baada ya kufanikiwa
+      toast.success("Thank you for your feedback!");
+      onClose();
     } catch (error) {
       console.error("Review Error:", error);
-      toast.error("Imeshindwa kutuma review. Jaribu tena.");
+      toast.error("We could not submit your review. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div 
-      className="modal fade show d-block" 
-      tabIndex="-1" 
-      style={{ backgroundColor: "rgba(0,0,0,0.7)", zIndex: 2000 }}
+    <div
+      className="modal fade show d-block"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="review-modal-title"
+      style={{ backgroundColor: "rgba(7, 27, 51, 0.6)", zIndex: 2000 }}
     >
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "15px" }}>
-          
-          <div className="modal-header border-0 pe-4 pt-4">
-            <h5 style={{fontSize:"14px"}} className="modal-title fw-bold">Rate this training</h5>
-            <button 
-              type="button" 
-              className="btn-close" 
+        <div className="modal-content">
+          <div className="modal-header">
+            <h2 className="modal-title" id="review-modal-title">
+              Rate this training
+            </h2>
+            <button
+              type="button"
+              className="btn-close"
               onClick={onClose}
               disabled={isSubmitting}
+              aria-label="Close review dialog"
             ></button>
           </div>
 
-          <div className="modal-body text-center px-4 pb-4">
-            <p className="text-secondary small mb-4">
-              Your feedback helps us improve and helps other students.
+          <div className="modal-body">
+            <p className="text-muted mb-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+              Your feedback helps us improve and helps other learners choose with confidence.
             </p>
 
-            {/* Star Rating System */}
-            <div className="d-flex justify-content-center gap-2 mb-4">
-              {[...Array(5)].map((_, i) => {
-                const ratingValue = i + 1;
-                return (
-                  <label key={i} style={{ cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name="rating"
-                      value={ratingValue}
-                      className="d-none"
-                      onClick={() => setRating(ratingValue)}
-                    />
-                    <FaStar
-                      size={42}
-                      style={{ transition: "0.2s" }}
-                      color={ratingValue <= (hover || rating) ? "#ffc107" : "#e4e5e9"}
-                      onMouseEnter={() => setHover(ratingValue)}
+            <fieldset className="text-center mb-4">
+              <legend className="form-label w-100 text-center">
+                Your rating
+                {rating > 0 && (
+                  <span className="text-muted fw-normal"> — {RATING_LABELS[rating]}</span>
+                )}
+              </legend>
+              <div className="d-flex justify-content-center gap-2" role="radiogroup">
+                {[1, 2, 3, 4, 5].map((value) => {
+                  const filled = value <= (hover || rating);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={rating === value}
+                      aria-label={`${value} star${value > 1 ? "s" : ""} — ${RATING_LABELS[value]}`}
+                      onClick={() => setRating(value)}
+                      onMouseEnter={() => setHover(value)}
                       onMouseLeave={() => setHover(0)}
-                    />
-                  </label>
-                );
-              })}
-            </div>
+                      className="border-0 bg-transparent p-1"
+                      style={{ lineHeight: 1 }}
+                    >
+                      <i
+                        className={`bi ${filled ? "bi-star-fill" : "bi-star"}`}
+                        style={{
+                          fontSize: 30,
+                          color: filled ? "var(--th-orange-500)" : "#cdd6e2",
+                        }}
+                        aria-hidden="true"
+                      ></i>
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
 
-            {/* Comment Area */}
-            <div className="text-start mb-3">
-              <label className="form-label small fw-bold text-muted">Review Comment (Optional)</label>
+            <div>
+              <label className="form-label" htmlFor="review-comment">
+                Review comment <span className="text-muted fw-normal">(optional)</span>
+              </label>
               <textarea
-                className="form-control bg-light border-0"
+                id="review-comment"
+                className="form-control"
                 rows="4"
                 placeholder="What did you like or dislike about this course?"
-                style={{ borderRadius: "10px", fontSize: "14px" }}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
               ></textarea>
             </div>
           </div>
 
-          <div className="modal-footer border-0 px-4 pb-4">
-            <button 
-              type="button" 
-              className="btn btn-light px-4 border-0" 
+          <div className="modal-footer">
+            <button
+              type="button"
+              className="btn btn-outline-dark"
               onClick={onClose}
               disabled={isSubmitting}
-              style={{ borderRadius: "8px", fontWeight: "500", fontSize:"13px" }}
             >
-              Maybe Later
+              Maybe later
             </button>
-            <button 
-  type="button" 
-  className="btn px-4 shadow-sm submitReview" // Nimeondoa btn-primary ili isilete mgongano wa rangi
-  onClick={handleSubmit}
-  disabled={isSubmitting}
-  style={{ 
-    borderRadius: "8px", 
-    fontWeight: "500", 
-    backgroundColor: "#0a2e67", // Nimeondoa semicolon hapa
-    color: "white",
-    fontSize:"13px",
-    border: "none" // Inasaidia rangi yako itokee vizuri bila border ya kigeni
-  }}
->
-  {isSubmitting ? (
-    <>
-      <span className="spinner-border spinner-border-sm me-2"></span>
-      Sending...
-    </>
-  ) : (
-    "Submit Review"
-  )}
-</button>
+            <button
+              type="button"
+              className={`btn btn-primary ${isSubmitting ? "is-loading" : ""}`}
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Sending…" : "Submit review"}
+            </button>
           </div>
-          
         </div>
       </div>
     </div>

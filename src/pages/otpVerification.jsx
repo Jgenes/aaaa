@@ -1,16 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../api/axio";
-import "react-toastify/dist/ReactToastify.css";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
+import AuthLayout from "../components/AuthLayout";
 
 function OtpVerification() {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Get email from navigation state or fallback to localStorage
+
   const emailFromState = location.state?.email || localStorage.getItem("loginEmail");
 
   const [otp, setOtp] = useState(new Array(6).fill(""));
@@ -20,7 +17,7 @@ function OtpVerification() {
   const [timer, setTimer] = useState(0);
   const inputRefs = useRef([]);
 
-  // Timer Logic for Resend OTP
+  // Resend cooldown
   useEffect(() => {
     let interval = null;
     if (!canResend && timer > 0) {
@@ -38,31 +35,46 @@ function OtpVerification() {
     return () => clearInterval(interval);
   }, [timer, canResend]);
 
-  // Handle individual digit input
   const handleChange = (element, index) => {
-    if (isNaN(element.value)) return false;
+    if (Number.isNaN(Number(element.value))) return false;
     const newOtp = [...otp];
     newOtp[index] = element.value;
     setOtp(newOtp);
 
-    // Auto-focus next input box
     if (element.value !== "" && index < 5) {
-      inputRefs.current[index + 1].focus();
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
-  // Handle Backspace
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
+      inputRefs.current[index - 1]?.focus();
     }
   };
 
-  // Main Verification API Call
-  const handleVerifyOtp = async () => {
+  const handlePaste = (event) => {
+    const pasted = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pasted) return;
+    event.preventDefault();
+    const next = new Array(6).fill("");
+    pasted.split("").forEach((digit, i) => {
+      next[i] = digit;
+    });
+    setOtp(next);
+    inputRefs.current[Math.min(pasted.length, 5)]?.focus();
+  };
+
+  const resolveDestination = (user) => {
+    if (user?.role === "admin") return "/admin/dashboard";
+    if (user?.role === "provider") return "/provider/dashboard";
+    return "/learning";
+  };
+
+  const handleVerifyOtp = async (event) => {
+    event?.preventDefault();
     const finalOtp = otp.join("");
     if (finalOtp.length < 6) {
-      toast.error("Please enter 6-digit code.");
+      toast.error("Please enter the 6-digit code.");
       return;
     }
 
@@ -76,9 +88,9 @@ function OtpVerification() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user || {}));
       localStorage.removeItem("loginEmail");
-      
-      toast.success("OTP Verified Successfully!");
-      navigate(res.data.redirect || "/dashboard");
+
+      toast.success("OTP verified successfully!");
+      navigate(res.data.redirect || resolveDestination(res.data.user));
     } catch (err) {
       toast.error(err.response?.data?.message || "Invalid or expired OTP");
     } finally {
@@ -86,7 +98,6 @@ function OtpVerification() {
     }
   };
 
-  // Resend OTP API Call with Loader
   const handleResendOtp = async () => {
     if (!canResend || resendLoading) return;
 
@@ -95,7 +106,7 @@ function OtpVerification() {
       await api.post("/resend-otp", { email: emailFromState });
       toast.success("A new code has been sent to your email.");
       setCanResend(false);
-      setTimer(30); // 30 second cooldown
+      setTimer(30);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to resend code");
     } finally {
@@ -104,157 +115,75 @@ function OtpVerification() {
   };
 
   return (
-    <>
-      <style>{`
-        .otp-wrapper {
-          min-height: 70vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background-color: #f9fafb;
-        }
-        .otp-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          background: #ffffff;
-          max-width: 420px;
-          width: 100%;
-          padding: 40px;
-        }
-        .otp-input-group {
-          display: flex;
-          gap: 10px;
-          justify-content: center;
-          margin-bottom: 25px;
-        }
-        .otp-box {
-          width: 45px;
-          height: 50px;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          text-align: center;
-          font-size: 20px;
-          font-weight: 700;
-          color: #0a2e67;
-          transition: all 0.2s ease;
-        }
-        .otp-box:focus {
-          border-color: #0a2e67;
-          box-shadow: 0 0 0 3px rgba(10, 46, 103, 0.1);
-          outline: none;
-        }
-        .verify-btn {
-          background-color: #0a2e67;
-          color: white;
-          border: none;
-          padding: 12px;
-          border-radius: 6px;
-          font-weight: 600;
-          font-size: 14px;
-          width: 100%;
-          transition: opacity 0.2s;
-        }
-        .verify-btn:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-        .resend-section {
-          font-size: 13px;
-          color: #6b7280;
-          text-align: center;
-          margin-top: 20px;
-        }
-        .resend-btn {
-          color: #0a2e67;
-          text-decoration: none;
-          font-weight: 700;
-          cursor: pointer;
-          background: none;
-          border: none;
-          padding: 0;
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-        }
-        .resend-btn:disabled {
-          color: #9ca3af;
-          cursor: not-allowed;
-        }
-      `}</style>
+    <AuthLayout
+      title="Verify your login"
+      subtitle="Enter the 6-digit code we sent to your email address to finish signing in."
+      asideTitle="Secure by design."
+      points={[
+        "One-time codes keep your account safe",
+        "Codes expire shortly after they are issued",
+        "Need help? Our support team is one click away",
+      ]}
+    >
+      <div
+        className="alert alert-info d-flex align-items-start gap-2"
+        role="status"
+        aria-live="polite"
+      >
+        <i className="bi bi-shield-lock" aria-hidden="true"></i>
+        <span>
+          Code sent to <strong>{emailFromState || "your email"}</strong>
+        </span>
+      </div>
 
-      <NavBar />
-      
-      <div className="otp-wrapper">
-        <ToastContainer position="top-center" autoClose={3000} />
-        
-        <div className="otp-card shadow-sm">
-          <div className="text-center mb-4">
-            {/* <div className="mb-3">
-              <i className="bi bi-shield-lock-fill" style={{ fontSize: "40px", color: "#0a2e67" }}></i>
-            </div> */}
-            <h5 className="fw-bold mb-1" style={{ fontSize: "20px" }}>Verify OTP</h5>
-            <p className="text-muted" style={{ fontSize: "13px" }}>
-              Please enter the code sent to:<br/>
-              <span className="fw-bold text-dark">{emailFromState || "your email"}</span>
-            </p>
-          </div>
-
-          {/* OTP Inputs */}
-          <div className="otp-input-group">
+      <form onSubmit={handleVerifyOtp} noValidate>
+        <fieldset>
+          <legend className="form-label mb-2">Verification code</legend>
+          <div className="th-otp" onPaste={handlePaste}>
             {otp.map((digit, index) => (
               <input
                 key={index}
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 maxLength="1"
-                className="otp-box"
                 value={digit}
+                aria-label={`Digit ${index + 1} of 6`}
+                aria-invalid={false}
+                autoComplete={index === 0 ? "one-time-code" : "off"}
                 ref={(el) => (inputRefs.current[index] = el)}
                 onChange={(e) => handleChange(e.target, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
               />
             ))}
           </div>
+        </fieldset>
 
-          {/* Verify Button */}
-          <button
-            className="verify-btn"
-            onClick={handleVerifyOtp}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2"></span>
-                Verifying...
-              </>
-            ) : (
-              "Confirm"
-            )}
-          </button>
+        <button
+          type="submit"
+          className={`btn btn-primary w-100 ${loading ? "is-loading" : ""}`}
+          disabled={loading}
+        >
+          {loading ? "Verifying…" : "Confirm code"}
+        </button>
+      </form>
 
-          {/* Resend Section */}
-          <div className="resend-section">
-            Didn't receive the code? {" "}
-            <button 
-              className="resend-btn" 
-              onClick={handleResendOtp}
-              disabled={!canResend || resendLoading}
-            >
-              {resendLoading && (
-                <span className="spinner-border spinner-border-sm" role="status"></span>
-              )}
-              {resendLoading 
-                ? "Sending..." 
-                : canResend 
-                  ? "Resend Code" 
-                  : `Try again in ${timer}s`
-              }
-            </button>
-          </div>
-        </div>
+      <div className="text-center mt-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+        <span className="text-muted">Didn&apos;t receive the code? </span>
+        <button
+          type="button"
+          className="btn btn-link btn-sm p-0 align-baseline"
+          onClick={handleResendOtp}
+          disabled={!canResend || resendLoading}
+        >
+          {resendLoading ? "Sending…" : canResend ? "Resend code" : `Try again in ${timer}s`}
+        </button>
       </div>
 
-      <Footer />
-    </>
+      <p className="th-auth__foot">
+        Wrong email? <Link to="/login">Back to login</Link>
+      </p>
+    </AuthLayout>
   );
 }
 

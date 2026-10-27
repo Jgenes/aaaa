@@ -3,6 +3,7 @@ import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
 import { FaEye, FaEdit, FaTrash, FaCogs, FaSearch, FaPlus, FaCalendarAlt, FaMapMarkerAlt, FaLink } from "react-icons/fa";
 
+import { tableStyles } from "../../lib/tableStyles";
 // Dummy Cohort Data (Imebaki vile vile)
 const data = [
   {
@@ -38,25 +39,6 @@ const data = [
   },
 ];
 
-const customStyles = {
-  headCells: {
-    style: {
-      backgroundColor: "#f8fafc",
-      color: "#475569",
-      fontWeight: "700",
-      fontSize: "13px",
-      textTransform: "uppercase",
-    },
-  },
-  cells: {
-    style: {
-      fontSize: "14px",
-      color: "#1e293b",
-      paddingTop: "12px",
-      paddingBottom: "12px",
-    },
-  },
-};
 
 export default function ProviderCohorts() {
   const [filterText, setFilterText] = useState("");
@@ -128,7 +110,7 @@ export default function ProviderCohorts() {
 
   return (
     <ProviderDashboardLayout title="Training Cohorts">
-      <div className="container-fluid py-4">
+      <div>
         
         {/* Header Section */}
         <div className="card border-0 shadow-sm mb-4">
@@ -140,7 +122,7 @@ export default function ProviderCohorts() {
                 <div className="d-flex gap-2 w-100 w-md-auto">
                     <div className="input-group" style={{ maxWidth: "300px" }}>
                         <span className="input-group-text bg-white border-end-0"><FaSearch className="text-muted" /></span>
-                        <input
+                        <input aria-label="Search cohorts"
                             type="text"
                             placeholder="Search cohorts..."
                             className="form-control border-start-0 ps-0"
@@ -162,7 +144,7 @@ export default function ProviderCohorts() {
                 data={filteredData}
                 pagination
                 highlightOnHover
-                customStyles={customStyles}
+                customStyles={tableStyles}
                 responsive
             />
         </div>

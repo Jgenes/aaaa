@@ -23,7 +23,7 @@ export default function ProviderReview() {
 
     const renderStars = (rating) => {
         return [...Array(5)].map((_, i) => (
-            <FaStar key={i} color={i < Math.round(rating) ? "#ffc107" : "#e4e5e9"} size={14} />
+            <FaStar key={i} color={i < Math.round(rating) ? "var(--th-highlight)" : "var(--th-line-strong)"} size={14} />
         ));
     };
 
@@ -46,9 +46,9 @@ export default function ProviderReview() {
                             {data.stats.map(stat => (
                                 <div key={stat.id} style={{ 
                                     background: 'white', padding: '20px', borderRadius: '15px', 
-                                    border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+                                    border: '1px solid var(--th-line-strong)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
                                 }}>
-                                    <div style={{ color: '#a0aec0', fontSize: '11px', textTransform: 'uppercase' }}>Course Rating</div>
+                                    <div style={{ color: 'var(--th-placeholder)', fontSize: '11px', textTransform: 'uppercase' }}>Course Rating</div>
                                     <div style={{ fontSize: '16px', margin: '5px 0' }}>{stat.title}</div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <span style={{ fontSize: '24px' }}>{stat.avg_rating}</span>
@@ -68,7 +68,7 @@ export default function ProviderReview() {
                                 {data.reviews.map((review) => (
                                     <div key={review.id} style={{
                                         backgroundColor: 'white', padding: '20px', borderRadius: '12px',
-                                        border: '1px solid #edf2f7'
+                                        border: '1px solid var(--th-line)'
                                     }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -76,7 +76,7 @@ export default function ProviderReview() {
                                                 <div>
                                                     <div style={{ fontSize: '15px' }}>{review.user?.name}</div>
                                                     <div style={{ fontSize: '12px', color: '#718096' }}>
-                                                        On <span style={{ color: '#4a5568' }}>{review.course?.title}</span>
+                                                        On <span style={{ color: 'var(--th-text)' }}>{review.course?.title}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -84,7 +84,7 @@ export default function ProviderReview() {
                                                 {renderStars(review.rating)}
                                             </div>
                                         </div>
-                                        <p style={{ marginTop: '15px', color: '#4a5568', lineHeight: '1.6' }}>
+                                        <p style={{ marginTop: '15px', color: 'var(--th-text)', lineHeight: '1.6' }}>
                                             "{review.comment || "The student didn't leave a written comment."}"
                                         </p>
                                     </div>
