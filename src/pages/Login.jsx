@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../api/axio";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
+import AuthLayout from "../components/AuthLayout";
+import AuthField from "../components/AuthField";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -50,143 +50,97 @@ export default function Login() {
   };
 
   return (
-    <>
-      <NavBar />
+    <AuthLayout
+      eyebrow="Learner account"
+      title="Welcome back"
+      subtitle="Sign in to continue your training. We'll email you a one-time code to confirm it's you."
+      asideTitle="Skills that move Tanzania forward."
+      asideLead="Join thousands of professionals learning with accredited providers across the country."
+      points={[
+        {
+          title: "Learn from accredited providers",
+          text: "Every training is published by a verified Tanzanian institution.",
+        },
+        {
+          title: "Cohorts, not playlists",
+          text: "Structured intakes with real projects and trainer feedback.",
+        },
+        {
+          title: "Certificates that verify",
+          text: "Finish a cohort and share a certificate anyone can check.",
+        },
+      ]}
+    >
+      {justActivated && (
+        <div className="alert alert-success d-flex align-items-start gap-2" role="status">
+          <i className="bi bi-check-circle-fill" aria-hidden="true"></i>
+          <span>Your account is activated. Sign in to continue.</span>
+        </div>
+      )}
 
-      <main id="main-content" className="th-auth">
-        <div className="th-auth__panel">
-          <div className="th-auth__card">
-            <h1 className="th-auth__title">Welcome back</h1>
-            <p className="th-auth__sub">
-              Sign in to continue your training. We&apos;ll email you a one-time code to
-              confirm it&apos;s you.
-            </p>
+      <form className="th-auth__form" onSubmit={handleLogin} noValidate>
+        <AuthField
+          id="login-email"
+          label="Email address"
+          type="email"
+          icon="bi-envelope"
+          autoComplete="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (errors.email) setErrors((prev) => ({ ...prev, email: null }));
+          }}
+          error={errors.email}
+        />
 
-            {justActivated && (
-              <div className="alert alert-success d-flex align-items-start gap-2" role="status">
-                <i className="bi bi-check-circle-fill" aria-hidden="true"></i>
-                <span>Your account is activated. Sign in to continue.</span>
-              </div>
-            )}
+        <AuthField
+          id="login-password"
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          icon="bi-lock"
+          autoComplete="current-password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (errors.password) setErrors((prev) => ({ ...prev, password: null }));
+          }}
+          error={errors.password}
+          trailing={
+            <button
+              type="button"
+              className="th-field__trailing"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              aria-controls="login-password"
+            >
+              <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true"></i>
+            </button>
+          }
+        />
 
-            <form onSubmit={handleLogin} noValidate>
-              <div className="mb-3">
-                <label className="form-label" htmlFor="login-email">
-                  Email address
-                </label>
-                <div className="field-icon">
-                  <i className="bi bi-envelope field-icon__adornment" aria-hidden="true"></i>
-                  <input
-                    id="login-email"
-                    type="email"
-                    autoComplete="email"
-                    className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (errors.email) setErrors((prev) => ({ ...prev, email: null }));
-                    }}
-                    aria-invalid={Boolean(errors.email)}
-                    aria-describedby={errors.email ? "login-email-error" : undefined}
-                  />
-                </div>
-                {errors.email && (
-                  <p className="invalid-feedback d-block" id="login-email-error">
-                    {errors.email}
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label" htmlFor="login-password">
-                  Password
-                </label>
-                <div className="field-icon">
-                  <i className="bi bi-lock field-icon__adornment" aria-hidden="true"></i>
-                  <input
-                    id="login-password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (errors.password) setErrors((prev) => ({ ...prev, password: null }));
-                    }}
-                    aria-invalid={Boolean(errors.password)}
-                    aria-describedby={errors.password ? "login-password-error" : undefined}
-                    style={{ paddingRight: "2.75rem" }}
-                  />
-                  <button
-                    type="button"
-                    className="field-icon__button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    aria-pressed={showPassword}
-                  >
-                    <i
-                      className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
-                      aria-hidden="true"
-                    ></i>
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="invalid-feedback d-block" id="login-password-error">
-                    {errors.password}
-                  </p>
-                )}
-              </div>
-
-              <div className="th-auth__helper">
-                <span className="text-muted">One-time code verification</span>
-                <Link to="/contact" className="fw-semibold">
-                  Forgot password?
-                </Link>
-              </div>
-
-              <button
-                type="submit"
-                className={`btn btn-primary w-100 ${loading ? "is-loading" : ""}`}
-                disabled={loading}
-              >
-                {loading ? "Sending code…" : "Log in"}
-              </button>
-            </form>
-
-            <p className="th-auth__foot">
-              Don&apos;t have an account? <Link to="/register">Create one</Link>
-            </p>
-          </div>
+        <div className="th-auth__row">
+          <span className="th-auth__helper">Verified with a one-time code</span>
+          <Link to="/contact" className="th-auth__helper-link">
+            Forgot password?
+          </Link>
         </div>
 
-        <aside className="th-auth__aside" aria-hidden="true">
-          <div>
-            <h2>Skills that move Tanzania forward.</h2>
-            <ul className="th-auth__points">
-              <li>
-                <i className="bi bi-check-circle-fill"></i>
-                Accredited courses from verified providers
-              </li>
-              <li>
-                <i className="bi bi-check-circle-fill"></i>
-                Cohort-based learning with real projects
-              </li>
-              <li>
-                <i className="bi bi-check-circle-fill"></i>
-                Verifiable certificates on completion
-              </li>
-            </ul>
-          </div>
-          <p className="mb-0">
-            Elevating skills. Transforming Tanzania. Join thousands of professionals
-            learning with TrainHub TZ.
-          </p>
-        </aside>
-      </main>
+        <button
+          type="submit"
+          className={`btn btn-primary btn-lg w-100 ${loading ? "is-loading" : ""}`}
+          disabled={loading}
+        >
+          {loading ? "Sending code…" : "Log in"}
+        </button>
+      </form>
 
-      <Footer />
-    </>
+      <p className="th-auth__foot">
+        <span>Don&apos;t have an account yet?</span>
+        <Link to="/register">Create one</Link>
+      </p>
+    </AuthLayout>
   );
 }
