@@ -16,7 +16,14 @@ const EMAIL = "info@traininghub.co.tz";
 
 // Focused flows: the launcher would sit on top of the submit button on small
 // screens, and an auth form is not a good place to upsell support.
-const HIDDEN_PREFIXES = ["/login", "/register", "/otp-verification", "/activate-account"];
+const HIDDEN_PREFIXES = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/otp-verification",
+  "/activate-account",
+];
 
 const CHANNELS = [
   {

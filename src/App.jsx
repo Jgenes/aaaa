@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import RegisterTenant from "./pages/tenantRegister";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
 import Home from "./pages/Home";
 import Course from "./pages/Course";
@@ -51,6 +53,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/otp-verification" element={<OtpVerification />} />
         <Route path="/activate-account" element={<ActivateAccount />} />
         <Route path="/tenant-register" element={<RegisterTenant />} />

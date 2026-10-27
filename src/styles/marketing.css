@@ -1719,6 +1719,10 @@
   box-shadow: var(--th-shadow-sm);
 }
 
+.th-auth__card--wide {
+  max-width: 34rem;
+}
+
 /* Card head ------------------------------------------------- */
 .th-auth__card-head {
   margin-bottom: var(--th-space-6);
@@ -1774,6 +1778,21 @@
   border: 0;
 }
 
+/* Two fields side by side (name + email, password + confirmation) */
+.th-auth__row-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--th-space-4);
+  align-items: start;
+}
+
+.th-auth__hint {
+  margin: 0;
+  font-size: var(--th-fs-xs);
+  line-height: 1.5;
+  color: var(--th-muted);
+}
+
 .th-auth__row {
   display: flex;
   flex-wrap: wrap;
@@ -1809,6 +1828,71 @@
   color: var(--th-ink);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* Inline notice (expired / invalid link, API failure) -------- */
+.th-auth__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: var(--th-space-4);
+  padding: var(--th-space-3) var(--th-space-4);
+  font-size: var(--th-fs-sm);
+  line-height: 1.55;
+  color: var(--th-warning);
+  background: var(--th-warning-soft);
+  border: 1px solid rgba(138, 84, 0, 0.24);
+  border-radius: var(--th-radius-sm);
+}
+
+.th-auth__notice i {
+  margin-top: 0.15rem;
+  flex: none;
+}
+
+/* Confirmation state (link sent / password saved) ------------- */
+.th-auth__done {
+  display: flex;
+  flex-direction: column;
+  gap: var(--th-space-4);
+}
+
+.th-auth__done-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--th-space-1);
+  font-size: 1.25rem;
+  color: var(--th-success);
+  background: var(--th-success-soft);
+  border-radius: var(--th-radius-pill);
+}
+
+.th-auth__done-text {
+  margin: 0;
+  font-size: var(--th-fs-sm);
+  line-height: var(--th-lh-relaxed);
+  color: var(--th-text);
+}
+
+.th-auth__done-hint {
+  margin: 0 0 var(--th-space-2);
+  font-size: var(--th-fs-xs);
+  line-height: 1.6;
+  color: var(--th-muted);
+}
+
+.th-auth__inline-button {
+  padding: 0;
+  font: inherit;
+  color: var(--th-link);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 /* Field primitives ------------------------------------------- */
@@ -2499,6 +2583,10 @@
     max-width: 30rem;
   }
 
+  .th-auth__card--wide {
+    max-width: 34rem;
+  }
+
   .th-quote {
     border-left: 0;
     border-top: 1px solid var(--th-line);
@@ -2569,6 +2657,12 @@
   .th-logos img {
     height: 40px;
     max-width: 130px;
+  }
+}
+
+@media (max-width: 639.98px) {
+  .th-auth__row-fields {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
