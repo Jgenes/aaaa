@@ -35,19 +35,19 @@ export default function ProviderVerification() {
           </p>
 
           <div className="th-panel-muted text-start mb-4">
-            <h2 className="mb-2" style={{ fontSize: "var(--th-fs-base)" }}>
+            <h2 className="mb-2">
               While you wait
             </h2>
             <ul className="list-unstyled mb-0 d-flex flex-column gap-2">
-              <li className="d-flex gap-2" style={{ fontSize: "var(--th-fs-sm)" }}>
+              <li className="d-flex gap-2">
                 <i className="bi bi-check2 text-primary" aria-hidden="true"></i>
                 Prepare your course outlines and cohort dates
               </li>
-              <li className="d-flex gap-2" style={{ fontSize: "var(--th-fs-sm)" }}>
+              <li className="d-flex gap-2">
                 <i className="bi bi-check2 text-primary" aria-hidden="true"></i>
                 Have your accreditation certificates ready to upload
               </li>
-              <li className="d-flex gap-2" style={{ fontSize: "var(--th-fs-sm)" }}>
+              <li className="d-flex gap-2">
                 <i className="bi bi-check2 text-primary" aria-hidden="true"></i>
                 Reply promptly if our team requests clarification
               </li>

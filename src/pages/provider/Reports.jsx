@@ -222,7 +222,7 @@ function StatCard({ title, value, color }) {
             <small className="text-uppercase fw-bold opacity-75 d-block mb-1">{title}</small>
             <h2 className="fw-bold mb-0">{value ?? 0}</h2>
         </div>
-        <div className="position-absolute" style={{right: '-20px', bottom: '-20px', width: '100px', height: '100px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%'}}></div>
+        <div className="position-absolute" style={{right: '-20px', bottom: '-20px', width: '100px', height: '100px', background: 'rgba(255,255,255,0.1)',}}></div>
       </div>
     </div>
   );

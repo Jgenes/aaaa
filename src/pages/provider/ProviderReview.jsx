@@ -45,8 +45,8 @@ export default function ProviderReview() {
                         }}>
                             {data.stats.map(stat => (
                                 <div key={stat.id} style={{ 
-                                    background: 'white', padding: '20px', borderRadius: '15px', 
-                                    border: '1px solid var(--th-line-strong)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+                                    background: 'white', padding: '20px', 
+                                    border: '1px solid var(--th-line-strong)',
                                 }}>
                                     <div style={{ color: 'var(--th-placeholder)', fontSize: '11px', textTransform: 'uppercase' }}>Course Rating</div>
                                     <div style={{ fontSize: '16px', margin: '5px 0' }}>{stat.title}</div>
@@ -67,7 +67,7 @@ export default function ProviderReview() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                 {data.reviews.map((review) => (
                                     <div key={review.id} style={{
-                                        backgroundColor: 'white', padding: '20px', borderRadius: '12px',
+                                        backgroundColor: 'white', padding: '20px',
                                         border: '1px solid var(--th-line)'
                                     }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -91,7 +91,7 @@ export default function ProviderReview() {
                                 ))}
                             </div>
                         ) : (
-                            <div style={{ textAlign: 'center', padding: '40px', background: '#fff', borderRadius: '15px' }}>
+                            <div style={{ textAlign: 'center', padding: '40px', background: '#fff', }}>
                                 <p>No feedback received yet.</p>
                             </div>
                         )}

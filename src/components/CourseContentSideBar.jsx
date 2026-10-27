@@ -63,7 +63,6 @@ export default function CourseContentSidebar({
                   style={{
                     width: 26,
                     height: 26,
-                    borderRadius: "50%",
                     background: item.is_completed ? "var(--th-success-soft)" : "#fff",
                     border: "1px solid var(--th-line)",
                     color: item.is_completed ? "var(--th-success)" : "var(--th-muted)",

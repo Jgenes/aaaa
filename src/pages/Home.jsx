@@ -5,26 +5,16 @@ import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseCard from "../components/CourseCard";
 import HeroImage from "../assets/banner0.jpg";
+import LogoNacte from "../assets/NACTE.png";
+import LogoVeta from "../assets/VETA.png";
+import LogoTcu from "../assets/TCU.png";
+import LogoOsha from "../assets/OSHA.png";
 
-const LOGO_VOLKSWAGEN =
-  "https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg";
-const LOGO_SAMSUNG =
-  "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg";
-const LOGO_CISCO =
-  "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg";
-const LOGO_VIMEO = "https://upload.wikimedia.org/wikipedia/commons/9/9c/Vimeo_logo.svg";
-const LOGO_PG =
-  "https://upload.wikimedia.org/wikipedia/commons/8/85/Procter_%26_Gamble_logo.svg";
-const LOGO_ERICSSON =
-  "https://upload.wikimedia.org/wikipedia/commons/0/0e/Ericsson_logo.svg";
-
-const PARTNER_LOGOS = [
-  { src: LOGO_VOLKSWAGEN, alt: "Volkswagen" },
-  { src: LOGO_SAMSUNG, alt: "Samsung" },
-  { src: LOGO_CISCO, alt: "Cisco" },
-  { src: LOGO_VIMEO, alt: "Vimeo" },
-  { src: LOGO_PG, alt: "Procter & Gamble" },
-  { src: LOGO_ERICSSON, alt: "Ericsson" },
+const ACCREDITATION_LOGOS = [
+  { src: LogoNacte, alt: "NACTE" },
+  { src: LogoVeta, alt: "VETA" },
+  { src: LogoTcu, alt: "Tanzania Commission for Universities" },
+  { src: LogoOsha, alt: "OSHA Tanzania" },
 ];
 
 const LEARNING_PATHS = [
@@ -153,23 +143,15 @@ export default function Home() {
         <section className="hero" aria-labelledby="hero-title">
           <div className="th-container-wide hero__grid">
             <div>
-              <span className="hero__badge">
-                <span className="hero__badge-star">
-                  <i className="bi bi-star-fill" aria-hidden="true"></i>
-                  4.8
-                </span>
-                Most trusted professional training platform in Tanzania
-              </span>
+              <p className="th-eyebrow">Accredited training · Tanzania</p>
 
               <h1 className="hero__title" id="hero-title">
-                Elevate your career with{" "}
-                <span className="hero__title-accent">industry-standard</span> training.
+                Skills that move careers <span className="hero__title-accent">forward</span>
               </h1>
 
               <p className="hero__lead">
-                Join over 5,000 professionals mastering new skills through expert-led
-                courses, verified providers and real-world projects — delivered across
-                Tanzania.
+                Compare accredited cohorts from verified Tanzanian training providers,
+                enrol in minutes and learn with practitioners who do the work every day.
               </p>
 
               <div className="hero__actions">
@@ -183,7 +165,7 @@ export default function Home() {
                 </button>
                 <button
                   type="button"
-                  className="btn btn-outline-dark"
+                  className="btn btn-secondary"
                   onClick={() => scrollTo("top-training")}
                 >
                   Latest trainings
@@ -220,23 +202,13 @@ export default function Home() {
                 </figcaption>
               </figure>
 
-              <div className="hero__float hero__float--top">
-                <span className="hero__float-icon">
+              <div className="hero__float hero__float--bottom">
+                <span className="hero__float-icon hero__float-icon--orange">
                   <i className="bi bi-patch-check-fill" aria-hidden="true"></i>
                 </span>
                 <div>
                   <strong>Verified providers</strong>
                   <small>NACTE · VETA · TCU aligned</small>
-                </div>
-              </div>
-
-              <div className="hero__float hero__float--bottom">
-                <span className="hero__float-icon hero__float-icon--orange">
-                  <i className="bi bi-mortarboard-fill" aria-hidden="true"></i>
-                </span>
-                <div>
-                  <strong>Industry certificate</strong>
-                  <small>Issued on completion</small>
                 </div>
               </div>
             </div>
@@ -339,28 +311,32 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ------------------------------------------------------- Partners */}
-        <section className="th-section-tight th-surface-alt">
-          <div className="th-container-wide text-center">
-            <p className="th-eyebrow justify-content-center mb-4">
-              Partnering with world-class organisations
-            </p>
+        {/* ------------------------------------------------ Accreditation strip */}
+        <section className="th-section-tight" aria-labelledby="accreditation-title">
+          <div className="th-container-wide">
+            <div className="th-section-head th-section-head--plain">
+              <div>
+                <h2 className="th-eyebrow mb-0" id="accreditation-title">
+                  Recognised accreditation bodies
+                </h2>
+              </div>
+              {providers.length > 0 && (
+                <p className="th-results-count mb-0">
+                  {providers.length} accredited training provider
+                  {providers.length === 1 ? "" : "s"} publishing on TrainHub
+                </p>
+              )}
+            </div>
             <div className="th-logos">
-              {PARTNER_LOGOS.map((logo) => (
+              {ACCREDITATION_LOGOS.map((logo) => (
                 <img key={logo.alt} src={logo.src} alt={logo.alt} loading="lazy" />
               ))}
             </div>
-            {providers.length > 0 && (
-              <p className="text-muted mt-4 mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
-                Trusted by {providers.length} accredited training provider
-                {providers.length === 1 ? "" : "s"} across Tanzania.
-              </p>
-            )}
           </div>
         </section>
 
         {/* -------------------------------------------------- Testimonials */}
-        <section className="th-section" aria-labelledby="testimonials-title">
+        <section className="th-section th-surface-alt" aria-labelledby="testimonials-title">
           <div className="th-container-wide">
             <div className="th-section-head">
               <div>
@@ -416,7 +392,7 @@ export default function Home() {
                 </div>
 
                 {reviewSlides.length > 1 && (
-                  <>
+                  <div className="th-carousel-controls">
                     <button
                       className="carousel-control-prev"
                       type="button"
@@ -447,7 +423,7 @@ export default function Home() {
                         ></button>
                       ))}
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             ) : (
@@ -503,8 +479,63 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ------------------------------------------------------- Why TrainHub */}
+        <section className="th-section th-surface-alt" aria-labelledby="why-title">
+          <div className="th-container-wide">
+            <div className="th-section-head">
+              <div>
+                <p className="th-eyebrow">Why TrainHub</p>
+                <h2 className="th-section-title" id="why-title">
+                  A clearer way to choose training
+                </h2>
+                <p className="th-section-lead">
+                  Every provider is verified before publishing, so you compare real
+                  cohorts, real schedules and real prices in one place.
+                </p>
+              </div>
+              <Link to="/contact" className="btn btn-ghost btn-sm">
+                Talk to our team
+                <i className="bi bi-arrow-right" aria-hidden="true"></i>
+              </Link>
+            </div>
+
+            <div className="th-feature-grid">
+              <article className="th-feature">
+                <span className="th-feature__icon">
+                  <i className="bi bi-patch-check" aria-hidden="true"></i>
+                </span>
+                <h3 className="th-feature__title">Verified providers</h3>
+                <p className="th-feature__text">
+                  Institutions submit registration and accreditation documents before a
+                  single cohort goes live on the platform.
+                </p>
+              </article>
+              <article className="th-feature">
+                <span className="th-feature__icon th-feature__icon--green">
+                  <i className="bi bi-calendar3" aria-hidden="true"></i>
+                </span>
+                <h3 className="th-feature__title">Transparent cohorts</h3>
+                <p className="th-feature__text">
+                  Start dates, schedules, venues and seat counts come straight from the
+                  provider — no brochures, no guesswork.
+                </p>
+              </article>
+              <article className="th-feature">
+                <span className="th-feature__icon th-feature__icon--orange">
+                  <i className="bi bi-shield-check" aria-hidden="true"></i>
+                </span>
+                <h3 className="th-feature__title">Secure enrolment</h3>
+                <p className="th-feature__text">
+                  Pay through PesaPal, keep your receipts in one place and track progress
+                  from your learning dashboard.
+                </p>
+              </article>
+            </div>
+          </div>
+        </section>
+
         {/* --------------------------------------------------- Learning paths */}
-        <section className="th-section th-surface-alt" aria-labelledby="paths-title">
+        <section className="th-section" aria-labelledby="paths-title">
           <div className="th-container-wide">
             <div className="th-section-head">
               <div>

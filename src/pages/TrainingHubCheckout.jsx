@@ -207,10 +207,10 @@ export default function TrainingHubCheckout() {
                   handleRequestOtp();
                 }}
               >
-                <h2 className="mb-1" style={{ fontSize: "var(--th-fs-lg)" }}>
+                <h2 className="mb-1">
                   Billing information
                 </h2>
-                <p className="text-muted mb-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+                <p className="text-muted mb-4">
                   This appears on your invoice and receipt.
                 </p>
 
@@ -402,7 +402,6 @@ export default function TrainingHubCheckout() {
                 </button>
                 <p
                   className="text-muted text-center mt-3 mb-0"
-                  style={{ fontSize: "var(--th-fs-xs)" }}
                 >
                   <i className="bi bi-shield-lock me-1" aria-hidden="true"></i>
                   We&apos;ll email a 6-digit code to confirm this purchase.
@@ -427,7 +426,7 @@ export default function TrainingHubCheckout() {
                   <h3 className="mb-1" style={{ fontSize: "var(--th-fs-base)", fontWeight: 700 }}>
                     {course?.title || "Course"}
                   </h3>
-                  <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                  <p className="text-muted mb-0">
                     Cohort: {cohort?.intake_name || "—"}
                   </p>
                 </div>
@@ -459,7 +458,7 @@ export default function TrainingHubCheckout() {
                   </span>
                 </div>
 
-                <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-xs)" }}>
+                <p className="text-muted mb-0">
                   Payments are processed by PesaPal. You will receive an invoice and receipt by
                   email once payment completes.
                 </p>
@@ -491,7 +490,7 @@ export default function TrainingHubCheckout() {
                 ></button>
               </div>
               <div className="modal-body text-center">
-                <p className="text-muted mb-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+                <p className="text-muted mb-4">
                   We&apos;ve sent a 6-digit verification code to your email. Enter it below to
                   confirm your purchase.
                 </p>

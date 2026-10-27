@@ -15,7 +15,6 @@ export default function SocialEngagement() {
         border: 'none',
         width: '45px',
         height: '45px',
-        borderRadius: '10px',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
@@ -80,9 +79,7 @@ export default function SocialEngagement() {
                     }}>
                         {courses.length > 0 ? courses.map((course) => (
                             <div key={course.id} style={{ 
-                                backgroundColor: 'white', 
-                                borderRadius: '12px', 
-                                boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                                backgroundColor: 'white',
                                 border: '1px solid #eee',
                                 overflow: 'hidden'
                             }}>
@@ -114,11 +111,11 @@ export default function SocialEngagement() {
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '10px' }}>
-                                        <div style={{ flex: 1, textAlign: 'center', background: '#fbfbfb', padding: '8px', borderRadius: '8px', border: '1px solid var(--th-line)' }}>
+                                        <div style={{ flex: 1, textAlign: 'center', background: '#fbfbfb', padding: '8px', border: '1px solid var(--th-line)' }}>
                                             <div style={{ fontSize: '10px', color: '#999' }}>STATUS</div>
                                             <div style={{ fontSize: '12px', color: '#28a745' }}>{course.status || 'Active'}</div>
                                         </div>
-                                        <div style={{ flex: 1, textAlign: 'center', background: '#fbfbfb', padding: '8px', borderRadius: '8px', border: '1px solid var(--th-line)' }}>
+                                        <div style={{ flex: 1, textAlign: 'center', background: '#fbfbfb', padding: '8px', border: '1px solid var(--th-line)' }}>
                                             <div style={{ fontSize: '10px', color: '#999' }}>COHORT</div>
                                             <div style={{ fontSize: '12px', color: '#333' }}>{course.cohorts_count || 1} Active</div>
                                         </div>

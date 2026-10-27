@@ -82,10 +82,10 @@ export default function About() {
           <div className="row g-4">
             <div className="col-lg-7">
               <div className="th-panel">
-                <h2 className="mb-1" style={{ fontSize: "var(--th-fs-lg)" }}>
+                <h2 className="mb-1">
                   Send a message
                 </h2>
-                <p className="text-muted mb-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+                <p className="text-muted mb-4">
                   Fill in the form and we will get back to you within one business day.
                 </p>
 
@@ -192,7 +192,6 @@ export default function About() {
                         style={{
                           width: 38,
                           height: 38,
-                          borderRadius: "var(--th-radius-md)",
                           background: "rgba(255,255,255,0.12)",
                           display: "inline-flex",
                           alignItems: "center",
@@ -237,7 +236,6 @@ export default function About() {
                       style={{
                         width: 36,
                         height: 36,
-                        borderRadius: "50%",
                         border: "1px solid rgba(255,255,255,0.24)",
                         color: "#fff",
                         display: "inline-flex",

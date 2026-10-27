@@ -138,7 +138,7 @@ export default function Register() {
             placeholder="Enter phone number"
             inputProps={{ id: "register-phone", autoComplete: "tel" }}
             containerStyle={{ width: "100%" }}
-            buttonStyle={{ borderRadius: "10px 0 0 10px", background: "var(--th-surface-sunken)" }}
+            buttonStyle={{ background: "var(--th-surface-sunken)" }}
           />
           {errors.phone && <p className="invalid-feedback d-block">{errors.phone}</p>}
         </div>

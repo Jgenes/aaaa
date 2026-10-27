@@ -123,14 +123,14 @@ export default function CreateCohort() {
             </div>
 
             {cohort.mode !== "Online" && (
-              <div className="mb-3 animate__animated animate__fadeIn">
+              <div className="mb-3">
                 <label className="form-label" htmlFor="venue">Physical Venue</label>
                 <input id="venue" type="text" className="form-control" name="venue" value={cohort.venue} onChange={handleChange} placeholder="Room number, Building or Street" />
               </div>
             )}
 
             {cohort.mode !== "Physical" && (
-              <div className="mb-3 animate__animated animate__fadeIn">
+              <div className="mb-3">
                 <label className="form-label" htmlFor="onlineLink">Class Link (Zoom/Meet)</label>
                 <input id="onlineLink" type="url" className="form-control" name="onlineLink" value={cohort.onlineLink} onChange={handleChange} placeholder="https://zoom.us/j/..." />
               </div>
@@ -178,7 +178,7 @@ export default function CreateCohort() {
 
           {/* Actions */}
           <div className="d-flex gap-3 mt-4">
-            <button type="button" className="btn btn-light px-4 fw-bold" style={{ borderRadius: "10px" }} onClick={() => navigate(-1)}>
+            <button type="button" className="btn btn-light px-4 fw-bold" onClick={() => navigate(-1)}>
               Cancel
             </button>
             <button type="submit" className="btn-submit d-flex align-items-center justify-content-center gap-2" disabled={isSubmitting}>

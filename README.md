@@ -44,22 +44,36 @@ src/styles/base.css        reset, typography, layout primitives, a11y helpers
 src/styles/components.css  buttons, forms, cards, tables, modals, navigation…
 src/styles/marketing.css   public header/footer, hero, course cards, auth, pages
 src/styles/dashboard.css   provider & admin application shell
+src/styles/provider.css    provider screen-level classes (tables, forms, modals)
+src/lib/tableStyles.js     shared react-data-table-component theme
 src/App.css                legacy aliases + shared page styles (single source)
 ```
 
+### Visual language (v2 — editorial)
+
+| Aspect | Decision |
+| --- | --- |
+| Canvas | warm paper `#f6f4ef` alternating with white sections, separated by 1px hairlines |
+| Actions | ink navy `#0b1d33` solid buttons; orange `#e07a1f` used only for accent rules, active markers and highlights |
+| Type | *Plus Jakarta Sans* display at tight tracking (`-0.035em`) for headlines, *Inter* for UI text; micro labels are 11px uppercase with `0.16em` tracking |
+| Shape | 2–6px radii on cards and inputs, 10px on modals and the CTA band; no oversized rounded cards |
+| Depth | borders do the work; shadows appear only on overlays, sticky panels and hovered cards |
+| Density | 4px spacing scale, fluid section rhythm (`--th-section-y`), 66ch measure for prose |
+| Motion | 160ms colour/border transitions; no decorative animation; `prefers-reduced-motion` disables all of it |
+
 Key conventions:
 
-- **Brand palette** is sampled from the logo: navy `#124a8f` (primary),
-  green `#358a50` (accent / success), orange `#f0a02a` (highlight), with a
-  neutral ink/line/surface scale.
-- **Type**: *Plus Jakarta Sans* for headings, *Inter* for UI and body copy
-  (loaded from Google Fonts with `display=swap` and preconnect hints).
-- **Spacing** uses a 4px scale (`--th-space-*`) and fluid section rhythm
-  (`--th-section-y`).
-- Prefer tokens over literal values: `var(--th-primary)`,
-  `var(--th-radius-md)`, `var(--th-shadow-md)`…
+- **Brand palette** is sampled from the logo: navy `#124a8f` (links),
+  green `#358a50` (success), orange `#e07a1f` (accent), plus a neutral
+  ink / line / paper scale.
+- Prefer tokens over literal values: `var(--th-ink)`, `var(--th-paper)`,
+  `var(--th-radius-sm)`, `var(--th-shadow-md)`…
 - Bootstrap components are re-themed through their CSS custom properties in
   `components.css`, so plain Bootstrap markup picks up the design system.
+- Dashboard screens share `DashboardShell`; provider screens additionally use
+  `provider.css` classes instead of per-page `<style>` blocks.
+- Contrast: body copy 9.9:1, muted copy 6.9:1, placeholders 5.4:1, white on ink
+  17:1 — all above WCAG 2.2 AA for their text size.
 
 ### Reusable UI pieces
 
@@ -84,6 +98,10 @@ respected globally.
 executes it in **jsdom** for every route in `src/App.jsx`. It fails if the app
 does not mount, renders an empty screen, or logs a React warning / runtime
 error. Network calls are stubbed to fail fast, so the test is hermetic.
+
+Run `AUDIT=1 npm run test:ui` for a structural report per route: heading
+count, missing `alt` text, unnamed controls, duplicate ids, unlabelled form
+fields and inline-style count.
 
 Chart screens are excluded from chart-rendering assertions because jsdom has no
 `<canvas>` implementation — everything else is asserted.
