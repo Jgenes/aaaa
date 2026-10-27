@@ -318,6 +318,109 @@
 }
 
 /* ------------------------------------------------------------
+   Site announcement strip
+   ------------------------------------------------------------ */
+.site-notice {
+  background: var(--th-navy-950);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: var(--th-fs-xs);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.site-notice__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--th-space-3);
+  min-height: 38px;
+  padding-block: 0.35rem;
+}
+
+.site-notice__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  font-size: var(--th-fs-2xs);
+  font-weight: 700;
+  letter-spacing: var(--th-track-label);
+  text-transform: uppercase;
+  color: var(--th-orange-500);
+}
+
+.site-notice__list {
+  display: flex;
+  align-items: center;
+  gap: var(--th-space-5);
+  flex: 1 1 auto;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.site-notice__list::-webkit-scrollbar {
+  display: none;
+}
+
+.site-notice__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.site-notice__tag {
+  font-size: var(--th-fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.site-notice__link {
+  color: #fff;
+  font-weight: 500;
+}
+
+.site-notice__link:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-notice__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--th-radius-xs);
+  cursor: pointer;
+}
+
+.site-notice__close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+@media (max-width: 767.98px) {
+  .site-notice__inner {
+    gap: var(--th-space-2);
+  }
+
+  .site-notice__label {
+    letter-spacing: 0.1em;
+  }
+}
+
+/* ------------------------------------------------------------
    Hero
    ------------------------------------------------------------ */
 .hero {
@@ -817,57 +920,6 @@
 }
 
 /* ------------------------------------------------------------
-   Learning path cards
-   ------------------------------------------------------------ */
-.th-path-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  background: var(--th-surface);
-  border: 1px solid var(--th-line);
-  border-radius: var(--th-radius-md);
-  overflow: hidden;
-  transition:
-    border-color var(--th-dur) var(--th-ease),
-    box-shadow var(--th-dur) var(--th-ease);
-}
-
-.th-path-card:hover {
-  border-color: var(--th-line-strong);
-  box-shadow: var(--th-shadow-md);
-}
-
-.th-path-card img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-bottom: 1px solid var(--th-line);
-  transition: filter var(--th-dur-slow) var(--th-ease);
-}
-
-.th-path-card:hover img {
-  filter: contrast(1.04);
-}
-
-.th-path-card__body {
-  padding: var(--th-space-4) var(--th-space-5) var(--th-space-5);
-}
-
-.th-path-card__title {
-  font-size: var(--th-fs-base);
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-  color: var(--th-ink);
-}
-
-.th-path-card__text {
-  color: var(--th-muted);
-  font-size: var(--th-fs-xs);
-  line-height: 1.55;
-  margin: 0;
-}
-
-/* ------------------------------------------------------------
    Accreditation / partner logos
    ------------------------------------------------------------ */
 .th-logos {
@@ -1027,33 +1079,6 @@
   justify-content: center;
   gap: var(--th-space-2);
   margin-top: var(--th-space-5);
-}
-
-/* ------------------------------------------------------------
-   FAQ
-   ------------------------------------------------------------ */
-.th-faq .accordion-item {
-  background: transparent;
-}
-
-.th-faq .accordion-button {
-  font-family: var(--th-font-display);
-  font-size: var(--th-fs-md);
-  font-weight: 700;
-  color: var(--th-ink);
-  background: transparent;
-  padding-left: 0;
-}
-
-.th-faq .accordion-button:not(.collapsed) {
-  background: transparent;
-  color: var(--th-ink);
-  box-shadow: none;
-}
-
-.th-faq .accordion-body {
-  padding-left: 0;
-  padding-right: 0;
 }
 
 /* ------------------------------------------------------------
