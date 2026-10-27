@@ -61,7 +61,7 @@ export default function ProviderEnrollments() {
       cell: (row) => {
         const isPaid = ["PAID", "COMPLETED", "SUCCESS"].includes(row.status?.toUpperCase());
         return (
-          <span className={`badge ${isPaid ? "bg-success" : "bg-danger"}`} style={{ fontSize: "10px", padding: "5px 12px", borderRadius: "2px" }}>
+          <span className={`badge ${isPaid ? "bg-success" : "bg-danger"}`} style={{ fontSize: "10px", padding: "5px 12px", }}>
             {isPaid ? "Active" : "Pending"}
           </span>
         );
@@ -73,7 +73,6 @@ export default function ProviderEnrollments() {
       cell: (row) => (
         <button
           className="btn btn-sm btn-light border shadow-sm"
-          style={{ borderRadius: "2px" }}
           data-bs-toggle="modal"
           data-bs-target="#studentModal"
           onClick={() => setSelectedStudent(row)}
@@ -96,7 +95,7 @@ export default function ProviderEnrollments() {
       {/* Stats Summary */}
       <div className="row mb-4">
         <div className="col-md-3 mb-2">
-          <div className="card border-0 shadow-sm p-3 border-start border-primary border-4" style={{ borderRadius: "0px" }}>
+          <div className="card border-0 shadow-sm p-3 border-start border-primary border-4">
             <small className="text-muted fw-bold d-block text-uppercase" style={{ letterSpacing: "0.5px", fontSize: "10px" }}>Total Students</small>
             <h4 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>{enrollments.length}</h4>
           </div>
@@ -104,7 +103,7 @@ export default function ProviderEnrollments() {
       </div>
 
       {/* Table Card */}
-      <div className="card border-0 shadow-sm" style={{ borderRadius: "5px" }}>
+      <div className="card border-0 shadow-sm">
         <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
           <h6 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>Enrollment List</h6>
           
@@ -113,8 +112,7 @@ export default function ProviderEnrollments() {
             type="text"
             className="form-control form-control-sm shadow-none"
             style={{ 
-                width: "250px", 
-                borderRadius: "5px", // Sharp corners
+                width: "250px", // Sharp corners
                 border: "1px solid var(--th-line-strong)" 
             }}
             placeholder="Search trainee..."
@@ -140,8 +138,8 @@ export default function ProviderEnrollments() {
       {/* Details Modal */}
       <div className="modal fade" id="studentModal" tabIndex="-1" aria-hidden="true">
         <div className="modal-dialog modal-lg modal-dialog-centered">
-          <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "0px" }}>
-            <div className="modal-header bg-light border-0" style={{ borderRadius: "0px" }}>
+          <div className="modal-content border-0 shadow-lg">
+            <div className="modal-header bg-light border-0">
               <h5 className="modal-title fw-bold" style={{ color: "var(--th-primary)" }}>
                 <i className="bi bi-person-badge me-2"></i>
                 Trainee Profile
@@ -156,7 +154,7 @@ export default function ProviderEnrollments() {
                     <div className="p-3 border-start border-4 border-primary" style={{ backgroundColor: "var(--th-blue-50)" }}>
                       <small className="text-uppercase text-muted fw-bold" style={{ fontSize: "11px" }}>Enrolled Course</small>
                       <h5 className="fw-bold mb-1" style={{ color: "var(--th-primary)" }}>{selectedStudent.course?.title}</h5>
-                      <span className="badge bg-primary px-3 shadow-sm" style={{ borderRadius: "2px" }}>
+                      <span className="badge bg-primary px-3 shadow-sm">
                         {selectedStudent.cohort?.intake_name}
                       </span>
                     </div>
@@ -192,7 +190,7 @@ export default function ProviderEnrollments() {
                     <div className="d-flex justify-content-between align-items-center">
                       <div>
                         <small className="text-muted d-block" style={{ fontSize: "11px" }}>Status</small>
-                        <span className="badge bg-success-subtle text-success border border-success px-3" style={{ borderRadius: "2px" }}>
+                        <span className="badge bg-success-subtle text-success border border-success px-3">
                           {selectedStudent.status}
                         </span>
                       </div>
@@ -209,7 +207,7 @@ export default function ProviderEnrollments() {
             </div>
 
             <div className="modal-footer border-0">
-              <button type="button" className="btn btn-secondary px-4 btn-sm" style={{ borderRadius: "0px" }} data-bs-dismiss="modal">Close</button>
+              <button type="button" className="btn btn-secondary px-4 btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
         </div>

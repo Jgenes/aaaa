@@ -168,7 +168,7 @@ function OtpVerification() {
         </button>
       </form>
 
-      <div className="text-center mt-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+      <div className="text-center mt-4">
         <span className="text-muted">Didn&apos;t receive the code? </span>
         <button
           type="button"

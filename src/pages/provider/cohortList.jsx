@@ -117,12 +117,12 @@ export default function CohortList() {
         const enrolled = row.enrolled_students || 0;
         const percentage = capacity > 0 ? (enrolled / capacity) * 100 : 0;
         return (
-          <div className="w-100 pr-3">
+          <div className="w-100 pe-3">
             <div className="d-flex justify-content-between mb-1 small">
               <span>{enrolled}/{capacity}</span>
               <span className={remaining < 5 ? "text-danger fw-bold" : "text-muted"}>{remaining} left</span>
             </div>
-            <div className="progress" style={{ height: "6px", borderRadius: "10px" }}>
+            <div className="progress" style={{ height: "6px", }}>
               <div 
                 className={`progress-bar ${percentage >= 90 ? "bg-danger" : percentage >= 70 ? "bg-warning" : "bg-primary"}`} 
                 style={{ width: `${Math.min(percentage, 100)}%` }} 
@@ -216,7 +216,7 @@ export default function CohortList() {
         {showModal && selectedCohort && (
           <div className="modal fade show d-block th-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cohort-details-title">
             <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "20px" }}>
+              <div className="modal-content border-0 shadow-lg">
                 <div className="modal-body p-4">
                   <div className="d-flex justify-content-between align-items-start mb-4">
                     <div>

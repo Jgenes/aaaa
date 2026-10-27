@@ -63,7 +63,7 @@ export default function Learning() {
             <p>Pick up where you left off and keep your streak going.</p>
 
             <div className="th-learning-tabs">
-              <span className="is-active" aria-current="page">
+              <span className="is-active">
                 My courses
               </span>
               <span>Certifications</span>

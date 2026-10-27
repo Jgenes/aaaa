@@ -102,7 +102,7 @@ export default function AdminReports() {
                 ) : (
                     <>
                         {activeTab === 'finance' ? (
-                            <div className="animate__animated animate__fadeIn">
+                            <div className="">
                                 {/* Finance Cards */}
                                 <div className="row mb-4">
                                     <div className="col-md-4">
@@ -153,7 +153,7 @@ export default function AdminReports() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="animate__animated animate__fadeIn">
+                            <div className="">
                                 {/* Enrollment Summary Card */}
                                 <div className="row mb-4">
                                     <div className="col-md-4">

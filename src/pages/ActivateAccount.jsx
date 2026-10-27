@@ -48,7 +48,7 @@ export default function ActivateAccount() {
           {state === "loading" && (
             <>
               <div className="spinner-border mb-3" role="status" aria-hidden="true"></div>
-              <h1 className="mb-2" style={{ fontSize: "var(--th-fs-xl)" }}>
+              <h1 className="mb-2">
                 Activating your account
               </h1>
               <p className="text-muted mb-0">
@@ -73,7 +73,7 @@ export default function ActivateAccount() {
               >
                 <i className="bi bi-check-lg"></i>
               </span>
-              <h1 className="mb-2" style={{ fontSize: "var(--th-fs-xl)" }}>
+              <h1 className="mb-2">
                 Account activated
               </h1>
               <p className="text-muted mb-4">
@@ -98,7 +98,7 @@ export default function ActivateAccount() {
               >
                 <i className="bi bi-exclamation-triangle"></i>
               </span>
-              <h1 className="mb-2" style={{ fontSize: "var(--th-fs-xl)" }}>
+              <h1 className="mb-2">
                 Activation failed
               </h1>
               <p className="text-muted mb-4">{message}</p>

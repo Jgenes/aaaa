@@ -227,7 +227,7 @@ export default function EditCohort() {
 
           {/* Actions */}
           <div className="d-flex gap-3 mt-4">
-            <button type="button" className="btn btn-light px-4 fw-bold" style={{ borderRadius: "10px" }} onClick={() => navigate(-1)}>
+            <button type="button" className="btn btn-light px-4 fw-bold" onClick={() => navigate(-1)}>
               Cancel
             </button>
             <button type="submit" className="btn-update d-flex align-items-center justify-content-center gap-2" disabled={submitting}>

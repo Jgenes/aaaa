@@ -69,7 +69,7 @@ export default function ProviderDashboard() {
       selector: (row) => row.mode,
       sortable: true,
       cell: (row) => (
-        <span className="badge bg-light text-dark border px-2 py-1" style={{ borderRadius: "6px" }}>
+        <span className="badge bg-light text-dark border px-2 py-1">
           {row.mode}
         </span>
       ),

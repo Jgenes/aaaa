@@ -179,7 +179,7 @@ export default function Transactions() {
                               "N/A"}
                           </td>
                           <td>
-                            <code style={{ fontSize: "var(--th-fs-xs)" }}>
+                            <code>
                               {payment.reference}
                             </code>
                           </td>
@@ -217,7 +217,7 @@ export default function Transactions() {
                         >
                           {paid ? "Paid" : "Pending"}
                         </span>
-                        <strong style={{ fontSize: "var(--th-fs-base)" }}>
+                        <strong>
                           Tsh {new Intl.NumberFormat().format(payment.amount)}
                         </strong>
                       </div>
@@ -232,7 +232,6 @@ export default function Transactions() {
                       </h2>
                       <p
                         className="text-muted mb-1"
-                        style={{ fontSize: "var(--th-fs-xs)" }}
                       >
                         Cohort:{" "}
                         {payment.cohort?.intake_name ||
@@ -240,7 +239,7 @@ export default function Transactions() {
                           payment.cohort?.intake?.name ||
                           "N/A"}
                       </p>
-                      <p className="text-muted mb-3" style={{ fontSize: "var(--th-fs-xs)" }}>
+                      <p className="text-muted mb-3">
                         Ref: {payment.reference}
                       </p>
                       <button

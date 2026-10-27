@@ -143,7 +143,7 @@ export default function RegisterTenant() {
             placeholder="Enter phone number"
             inputProps={{ id: "tenant-phone", autoComplete: "tel" }}
             containerStyle={{ width: "100%" }}
-            buttonStyle={{ borderRadius: "10px 0 0 10px", background: "#f7f9fc" }}
+            buttonStyle={{ background: "#f7f9fc" }}
           />
           {errors.phone && <p className="invalid-feedback d-block">{errors.phone}</p>}
         </div>

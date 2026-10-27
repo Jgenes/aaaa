@@ -1,5 +1,6 @@
 /* ============================================================
-   TrainHub TZ — Base layer: typography, layout rhythm, a11y
+   TrainHub TZ — Base layer
+   Typography, rhythm, layout primitives, accessibility helpers.
    ============================================================ */
 
 *,
@@ -23,7 +24,7 @@ body {
   background-color: var(--th-surface);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* clip (not hidden) so the sticky header keeps working */
+  /* clip (not hidden) keeps the sticky header working */
   overflow-x: clip;
 }
 
@@ -31,7 +32,7 @@ body {
   isolation: isolate;
 }
 
-/* ---------- Headings ---------- */
+/* ---------- Display typography ---------- */
 h1,
 h2,
 h3,
@@ -47,21 +48,24 @@ h6,
   font-family: var(--th-font-display);
   color: var(--th-ink);
   font-weight: 700;
-  letter-spacing: -0.018em;
+  letter-spacing: var(--th-track-tight);
   line-height: var(--th-lh-snug);
-  margin-bottom: var(--th-space-3);
+  margin: 0 0 var(--th-space-3);
+  text-wrap: balance;
 }
 
 h1,
 .h1 {
   font-size: var(--th-fs-4xl);
-  letter-spacing: -0.028em;
-  line-height: var(--th-lh-tight);
+  letter-spacing: var(--th-track-display);
+  line-height: 1.06;
 }
 
 h2,
 .h2 {
-  font-size: clamp(1.5rem, 1.15rem + 1.1vw, 2rem);
+  font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  letter-spacing: -0.028em;
+  line-height: 1.12;
 }
 
 h3,
@@ -86,6 +90,7 @@ h6,
 
 p {
   margin-bottom: var(--th-space-4);
+  text-wrap: pretty;
 }
 
 p:last-child {
@@ -105,23 +110,23 @@ b {
 
 /* ---------- Links ---------- */
 a {
-  color: var(--th-primary);
+  color: var(--th-link);
   text-decoration: none;
-  transition: color var(--th-dur-fast) var(--th-ease);
+  transition: color var(--th-dur) var(--th-ease);
 }
 
 a:hover {
-  color: var(--th-navy-900);
+  color: var(--th-navy-800);
 }
 
 /* ---------- Focus visibility (keyboard only) ---------- */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--th-primary);
+  outline: 2px solid var(--th-navy-700);
   outline-offset: 2px;
   border-radius: var(--th-radius-xs);
 }
 
-/* ---------- Images & media ---------- */
+/* ---------- Media ---------- */
 img,
 svg,
 video {
@@ -135,15 +140,14 @@ img {
 
 /* ---------- Selection ---------- */
 ::selection {
-  background: var(--th-blue-100);
+  background: var(--th-orange-100);
   color: var(--th-navy-900);
 }
 
-/* ---------- Scrollbar (subtle, desktop only) ---------- */
 @media (hover: hover) and (pointer: fine) {
   * {
     scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
+    scrollbar-color: #c4bdb0 transparent;
   }
 }
 
@@ -155,11 +159,14 @@ img {
   width: 100%;
   max-width: var(--th-container);
   margin-inline: auto;
-  padding-inline: clamp(1rem, 0.4rem + 2vw, 2rem);
+  padding-inline: var(--th-gutter);
 }
 
 .th-container-wide {
+  width: 100%;
   max-width: var(--th-container-wide);
+  margin-inline: auto;
+  padding-inline: var(--th-gutter);
 }
 
 .th-section {
@@ -167,71 +174,137 @@ img {
 }
 
 .th-section-tight {
-  padding-block: clamp(2rem, 1.2rem + 2.6vw, 3.25rem);
+  padding-block: var(--th-section-y-tight);
 }
 
+/* Warm paper band — used to alternate sections */
 .th-surface-alt {
-  background:
-    radial-gradient(120% 120% at 12% 0%, #ffffff 0%, rgba(255, 255, 255, 0) 55%),
-    var(--th-surface-sunken);
+  background: var(--th-paper);
   border-block: 1px solid var(--th-line);
 }
 
-/* Section heading block */
+.th-surface-sunken {
+  background: var(--th-surface-sunken);
+}
+
+/* ---------- Section heading block ---------- */
 .th-section-head {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: var(--th-space-4);
-  margin-bottom: clamp(1.5rem, 1rem + 1.6vw, 2.5rem);
+  gap: var(--th-space-4) var(--th-space-8);
+  padding-top: var(--th-space-5);
+  border-top: 1px solid var(--th-line);
+  margin-bottom: clamp(1.75rem, 1.2rem + 2vw, 3rem);
 }
 
 .th-section-head > div {
-  max-width: 62ch;
+  max-width: 60ch;
 }
 
+.th-section-head--plain {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* Micro label above headings */
 .th-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.6rem;
   font-family: var(--th-font-sans);
-  font-size: var(--th-fs-xs);
+  font-size: var(--th-fs-2xs);
   font-weight: 700;
-  letter-spacing: 0.09em;
+  letter-spacing: var(--th-track-label);
   text-transform: uppercase;
-  color: var(--th-primary);
-  margin-bottom: var(--th-space-2);
+  color: var(--th-muted);
+  margin-bottom: var(--th-space-3);
 }
 
 .th-eyebrow::before {
   content: "";
-  width: 18px;
+  width: 22px;
   height: 2px;
-  border-radius: 2px;
-  background: var(--th-orange-500);
+  border-radius: 0;
+  background: var(--th-accent);
+}
+
+.th-eyebrow--center::before {
+  display: none;
 }
 
 .th-section-title {
-  font-size: clamp(1.5rem, 1.15rem + 1.05vw, 2rem);
-  margin-bottom: var(--th-space-2);
+  font-size: clamp(1.75rem, 1.3rem + 1.5vw, 2.5rem);
+  letter-spacing: -0.028em;
+  line-height: 1.12;
+  margin-bottom: var(--th-space-3);
 }
 
 .th-section-lead {
   color: var(--th-muted);
-  font-size: var(--th-fs-base);
+  font-size: var(--th-fs-md);
   line-height: var(--th-lh-relaxed);
   margin-bottom: 0;
-  max-width: 68ch;
+  max-width: var(--th-measure);
 }
 
-/* Divider */
+/* Display headline — hero scale */
+.th-display {
+  font-family: var(--th-font-display);
+  font-size: var(--th-fs-display);
+  font-weight: 700;
+  letter-spacing: var(--th-track-display);
+  line-height: 1.03;
+  color: var(--th-ink);
+  margin-bottom: var(--th-space-5);
+  text-wrap: balance;
+}
+
+/* Underline accent for a word inside a headline */
+.th-mark {
+  position: relative;
+  display: inline;
+  color: var(--th-ink);
+  background: linear-gradient(var(--th-accent), var(--th-accent)) 0 92% / 100% 3px
+    no-repeat;
+  padding-bottom: 0.06em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 .th-divider {
   height: 1px;
   background: var(--th-line);
   border: 0;
   margin-block: var(--th-space-6);
   opacity: 1;
+}
+
+/* Numbered/ledger list used for editorial feature rows */
+.th-ledger {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--th-line);
+}
+
+.th-ledger > li {
+  display: flex;
+  gap: var(--th-space-4);
+  padding-block: var(--th-space-4);
+  border-bottom: 1px solid var(--th-line);
+}
+
+.th-ledger__index {
+  flex: none;
+  width: 2.5rem;
+  font-family: var(--th-font-display);
+  font-size: var(--th-fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--th-track-label);
+  color: var(--th-accent);
+  padding-top: 0.2rem;
 }
 
 /* ============================================================
@@ -261,7 +334,6 @@ img {
   outline-offset: 2px;
 }
 
-/* Respect reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -277,7 +349,7 @@ img {
   }
 }
 
-/* Legacy helpers used across older pages */
+/* ---------- Legacy helpers still referenced by older pages ---------- */
 .vh-90 {
   min-height: 90vh;
 }
@@ -294,12 +366,12 @@ img {
   background-color: var(--th-surface-muted);
 }
 
-/* Bootstrap container fine-tuning */
+/* ---------- Bootstrap container tuning ---------- */
 .container {
   max-width: var(--th-container);
-  padding-inline: clamp(1rem, 0.4rem + 2vw, 2rem);
+  padding-inline: var(--th-gutter);
 }
 
 .container-fluid {
-  padding-inline: clamp(1rem, 0.4rem + 2vw, 1.5rem);
+  padding-inline: var(--th-gutter);
 }

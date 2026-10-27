@@ -43,7 +43,7 @@
   background-color: var(--th-primary);
   border: 1px solid var(--th-primary);
   color: #fff;
-  border-radius: var(--th-radius-md);
+  border-radius: var(--th-radius-sm);
   font-size: var(--th-fs-sm);
   font-weight: 600;
   padding: 0.5rem 0.95rem;
@@ -69,7 +69,7 @@
   background-color: var(--th-primary-hover);
   border-color: var(--th-primary-hover);
   color: #fff;
-  box-shadow: 0 6px 14px -8px rgba(18, 74, 143, 0.6);
+  box-shadow: none;
 }
 
 .btn-outline-custom,
@@ -78,7 +78,7 @@
   background-color: transparent;
   border: 1px solid var(--th-line-strong);
   color: var(--th-primary);
-  border-radius: var(--th-radius-md);
+  border-radius: var(--th-radius-sm);
   font-size: var(--th-fs-sm);
   font-weight: 600;
   padding: 0.5rem 0.95rem;
@@ -99,7 +99,7 @@
 .vvb,
 .btnAA,
 .f {
-  border-radius: var(--th-radius-md);
+  border-radius: var(--th-radius-sm);
   font-size: var(--th-fs-sm);
   font-weight: 600;
 }
@@ -176,14 +176,14 @@
 }
 
 .bd-placeholder-img {
-  border-radius: var(--th-radius-md);
+  border-radius: var(--th-radius-sm);
 }
 
 .enroll-btn {
   background-color: var(--th-primary);
   border: 1px solid var(--th-primary);
   color: #fff;
-  border-radius: var(--th-radius-md);
+  border-radius: var(--th-radius-sm);
   font-weight: 600;
   font-size: var(--th-fs-sm);
   padding: 0.6rem 1.1rem;

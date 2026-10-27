@@ -1,56 +1,63 @@
 /* ============================================================
-   TrainHub TZ — Design tokens
-   Single source of truth for colour, type, spacing, elevation.
+   TrainHub TZ — Design tokens (v2, editorial)
+   Warm paper canvas, ink-navy actions, hairline structure,
+   tight display type, restrained radii.
    ============================================================ */
 
 :root {
   /* ---------- Brand ---------- */
-  --th-navy-950: #071b33;
-  --th-navy-900: #0a2547;
-  --th-navy-800: #0d2f5a;
-  --th-navy-700: #124a8f; /* primary — sampled from wordmark */
-  --th-navy-600: #1858a8;
-  --th-navy-500: #1f6cc9;
+  --th-navy-950: #071322;
+  --th-navy-900: #0b1d33; /* ink — primary action */
+  --th-navy-800: #12263f;
+  --th-navy-700: #124a8f; /* brand blue from the wordmark */
+  --th-navy-600: #1a5ea8;
   --th-blue-400: #4d90e0;
   --th-blue-100: #e3edfa;
   --th-blue-50: #f1f6fd;
 
   --th-green-700: #276b3e;
-  --th-green-600: #358a50; /* sampled from “TZ” */
+  --th-green-600: #358a50;
   --th-green-100: #e4f3e9;
 
-  --th-orange-600: #d88413;
-  --th-orange-500: #f0a02a; /* sampled from the mark */
-  --th-orange-100: #fdf1de;
+  --th-orange-700: #a85710;
+  --th-orange-600: #c96a15;
+  --th-orange-500: #e07a1f; /* accent — AA on paper */
+  --th-orange-100: #fbeadf;
 
   /* ---------- Semantic colour ---------- */
-  --th-primary: var(--th-navy-700);
-  --th-primary-hover: var(--th-navy-800);
-  --th-primary-active: var(--th-navy-900);
+  --th-primary: var(--th-navy-900);
+  --th-primary-hover: #16273c;
+  --th-primary-active: #050f1c;
   --th-primary-soft: var(--th-blue-50);
   --th-primary-soft-border: #cfdff5;
-  --th-accent: var(--th-green-600);
-  --th-accent-hover: var(--th-green-700);
-  --th-highlight: var(--th-orange-500);
+  --th-accent: var(--th-orange-500);
+  --th-accent-hover: var(--th-orange-600);
+  --th-accent-soft: var(--th-orange-100);
+  --th-link: var(--th-navy-700);
 
-  --th-ink: #0f1c2e; /* headings */
-  --th-text: #33445c; /* body copy */
-  --th-muted: #4d5b70; /* secondary copy */
-  --th-subtle: #5f6b7c; /* meta / captions */
-  --th-line: #e3e9f1; /* hairline borders */
-  --th-line-strong: #cfd8e5;
+  --th-ink: #0b1d33;
+  --th-text: #2c3a4d;
+  --th-muted: #566274;
+  --th-subtle: #59657a;
+  --th-placeholder: #6a7484;
+
+  --th-line: #e2ded5;
+  --th-line-strong: #cdc7bb;
+  --th-line-cool: #e3e8ef;
+
   --th-surface: #ffffff;
-  --th-placeholder: #5f6b7c;
-  --th-surface-sunken: #f7f9fc;
-  --th-surface-muted: #f1f5fa;
+  --th-paper: #f6f4ef; /* warm canvas */
+  --th-paper-deep: #efece4;
+  --th-surface-sunken: #f8f8f6;
+  --th-surface-muted: #f1f0ec;
   --th-invert: #ffffff;
 
-  --th-success: #1f7a4d;
-  --th-success-soft: #e7f5ec;
+  --th-success: #1c6b43;
+  --th-success-soft: #e7f3ec;
   --th-warning: #8a5400;
   --th-warning-soft: #fdf3e2;
-  --th-danger: #b42318;
-  --th-danger-soft: #fdeceb;
+  --th-danger: #a8271c;
+  --th-danger-soft: #fceceb;
   --th-info: #134e8e;
   --th-info-soft: #e8f1fb;
 
@@ -58,7 +65,7 @@
   --th-font-sans: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue",
     Arial, sans-serif;
   --th-font-display: "Plus Jakarta Sans", "Inter", "Segoe UI", system-ui,
-    sans-serif;
+    -apple-system, sans-serif;
 
   --th-fs-2xs: 0.6875rem; /* 11px */
   --th-fs-xs: 0.75rem; /* 12px */
@@ -66,15 +73,22 @@
   --th-fs-base: 0.9375rem; /* 15px */
   --th-fs-md: 1rem; /* 16px */
   --th-fs-lg: 1.125rem; /* 18px */
-  --th-fs-xl: 1.375rem; /* 22px */
+  --th-fs-xl: 1.3125rem; /* 21px */
   --th-fs-2xl: 1.625rem; /* 26px */
-  --th-fs-3xl: 2rem; /* 32px */
-  --th-fs-4xl: clamp(2.125rem, 1.4rem + 2.2vw, 3.125rem);
+  --th-fs-3xl: 2.125rem; /* 34px */
+  --th-fs-4xl: clamp(2.125rem, 1.55rem + 2.1vw, 3rem); /* 34 → 48 */
+  --th-fs-display: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem); /* 40 → 68 */
 
-  --th-lh-tight: 1.15;
-  --th-lh-snug: 1.3;
-  --th-lh-normal: 1.55;
-  --th-lh-relaxed: 1.7;
+  --th-lh-tight: 1.02;
+  --th-lh-snug: 1.2;
+  --th-lh-normal: 1.6;
+  --th-lh-relaxed: 1.72;
+
+  --th-track-display: -0.035em;
+  --th-track-tight: -0.018em;
+  --th-track-label: 0.16em;
+
+  --th-measure: 66ch;
 
   /* ---------- Spacing (4px base) ---------- */
   --th-space-1: 0.25rem;
@@ -88,55 +102,55 @@
   --th-space-12: 3rem;
   --th-space-16: 4rem;
   --th-space-20: 5rem;
+  --th-space-24: 6rem;
 
-  --th-section-y: clamp(2.75rem, 1.6rem + 4.4vw, 5rem);
+  --th-section-y: clamp(3.5rem, 2.25rem + 5vw, 7rem);
+  --th-section-y-tight: clamp(2.5rem, 1.75rem + 3vw, 4.5rem);
 
-  /* ---------- Radii ---------- */
-  --th-radius-xs: 6px;
-  --th-radius-sm: 8px;
-  --th-radius-md: 10px;
-  --th-radius-lg: 14px;
-  --th-radius-xl: 20px;
+  /* ---------- Radii — restrained ---------- */
+  --th-radius-xs: 2px;
+  --th-radius-sm: 4px;
+  --th-radius-md: 6px;
+  --th-radius-lg: 10px;
+  --th-radius-xl: 14px;
   --th-radius-pill: 999px;
 
   /* ---------- Elevation ---------- */
-  --th-shadow-xs: 0 1px 2px rgba(15, 28, 46, 0.06);
-  --th-shadow-sm: 0 1px 3px rgba(15, 28, 46, 0.07),
-    0 1px 2px rgba(15, 28, 46, 0.04);
-  --th-shadow-md: 0 6px 16px -6px rgba(15, 28, 46, 0.14),
-    0 2px 6px -2px rgba(15, 28, 46, 0.06);
-  --th-shadow-lg: 0 20px 40px -20px rgba(15, 28, 46, 0.28),
-    0 8px 16px -12px rgba(15, 28, 46, 0.12);
-  --th-ring: 0 0 0 3px rgba(18, 74, 143, 0.22);
-  --th-ring-danger: 0 0 0 3px rgba(180, 35, 24, 0.2);
+  --th-shadow-xs: 0 1px 2px rgba(11, 29, 51, 0.05);
+  --th-shadow-sm: 0 2px 6px -2px rgba(11, 29, 51, 0.08);
+  --th-shadow-md: 0 12px 28px -18px rgba(11, 29, 51, 0.22);
+  --th-shadow-lg: 0 32px 64px -40px rgba(11, 29, 51, 0.32);
+  --th-shadow-overlay: 0 24px 60px -24px rgba(11, 29, 51, 0.28);
 
-  /* ---------- Motion ---------- */
+  /* ---------- Focus + motion ---------- */
+  --th-ring: 0 0 0 3px rgba(18, 74, 143, 0.28);
+  --th-ring-invert: 0 0 0 3px rgba(224, 122, 31, 0.5);
+  --th-dur: 160ms;
+  --th-dur-slow: 280ms;
   --th-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --th-dur-fast: 120ms;
-  --th-dur: 180ms;
-  --th-dur-slow: 320ms;
 
   /* ---------- Layout ---------- */
   --th-container: 1180px;
-  --th-container-wide: 1320px;
-  --th-header-h: 70px;
-  --th-sidebar-w: 264px;
+  --th-container-wide: 1280px;
+  --th-gutter: clamp(1.15rem, 0.6rem + 2vw, 2.5rem);
+  --th-header-h: 72px;
+  --th-sidebar-w: 268px;
 
   /* ---------- Bootstrap bridge ---------- */
   --bs-primary: var(--th-primary);
-  --bs-primary-rgb: 18, 74, 143;
+  --bs-primary-rgb: 11, 29, 51;
   --bs-body-color: var(--th-text);
-  --bs-body-bg: #ffffff;
+  --bs-body-bg: var(--th-surface);
   --bs-body-font-family: var(--th-font-sans);
   --bs-body-font-size: 0.9375rem;
-  --bs-link-color: var(--th-primary);
+  --bs-link-color: var(--th-link);
   --bs-link-color-rgb: 18, 74, 143;
-  --bs-link-hover-color: var(--th-navy-900);
+  --bs-link-hover-color: var(--th-navy-800);
   --bs-border-color: var(--th-line);
-  --bs-border-radius: 10px;
-  --bs-border-radius-sm: 8px;
-  --bs-border-radius-lg: 14px;
+  --bs-border-radius: 6px;
+  --bs-border-radius-sm: 4px;
+  --bs-border-radius-lg: 10px;
   --bs-heading-color: var(--th-ink);
   --bs-secondary-color: var(--th-muted);
-  --bs-body-line-height: 1.55;
+  --bs-body-line-height: 1.6;
 }

@@ -102,7 +102,7 @@ export default function Training() {
                 </li>
               </ol>
             </nav>
-            <h1 className="mb-2" style={{ fontSize: "clamp(1.6rem, 1.3rem + 1.3vw, 2.1rem)" }}>
+            <h1 className="mb-2">
               Training catalogue
             </h1>
             <p className="th-section-lead">

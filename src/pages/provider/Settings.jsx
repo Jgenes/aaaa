@@ -4,7 +4,6 @@ import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import { toast, ToastContainer } from "react-toastify";
 
 export default function ProviderSettings() {
-  const [email, setEmail] = useState("");
   const [passwords, setPasswords] = useState({
     current_password: "",
     password: "",
@@ -17,14 +16,14 @@ export default function ProviderSettings() {
     setLoading(true);
     try {
       await api.put("/provider/settings/password", passwords);
-      toast.success("Password imebadilishwa!");
+      toast.success("Password updated successfully.");
       setPasswords({
         current_password: "",
         password: "",
         password_confirmation: "",
       });
     } catch (err) {
-      toast.error(err.response?.data?.message || "Imefeli kubadili password");
+      toast.error(err.response?.data?.message || "Could not update the password.");
     } finally {
       setLoading(false);
     }
@@ -36,11 +35,11 @@ export default function ProviderSettings() {
       <div className="row">
         {/* Password Update Card */}
         <div className="col-md-6">
-          <div className="card border-0 shadow-sm p-4">
-            <h6 className="fw-bold mb-3">Change Password</h6>
+          <div className="card p-4">
+            <h2 className="section-header mb-3">Change password</h2>
             <form onSubmit={handlePasswordUpdate}>
               <div className="mb-3">
-                <label className="form-label small text-muted fw-bold" htmlFor="current_password">
+                <label className="form-label" htmlFor="current_password">
                   CURRENT PASSWORD
                 </label>
                 <input id="current_password"
@@ -57,7 +56,7 @@ export default function ProviderSettings() {
                 />
               </div>
               <div className="mb-3">
-                <label className="form-label small text-muted fw-bold" htmlFor="new_password">
+                <label className="form-label" htmlFor="new_password">
                   NEW PASSWORD
                 </label>
                 <input id="new_password"
@@ -71,7 +70,7 @@ export default function ProviderSettings() {
                 />
               </div>
               <div className="mb-4">
-                <label className="form-label small text-muted fw-bold" htmlFor="confirm_new_password">
+                <label className="form-label" htmlFor="confirm_new_password">
                   CONFIRM NEW PASSWORD
                 </label>
                 <input id="confirm_new_password"
@@ -89,10 +88,10 @@ export default function ProviderSettings() {
               </div>
               <button
                 type="submit"
-                className="btn btn-primary w-100 fw-bold vvb"
+                className="btn btn-primary w-100"
                 disabled={loading}
               >
-                {loading ? "Updating..." : "Update Password"}
+                {loading ? "Updating…" : "Update password"}
               </button>
             </form>
           </div>
@@ -100,9 +99,9 @@ export default function ProviderSettings() {
 
         {/* Account Info/Safety Tip */}
         <div className="col-md-6 mt-4 mt-md-0">
-          <div className="card border-0 shadow-sm p-4 h-100 bg-light">
-            <h6 className="fw-bold text-dark">Security Tips</h6>
-            <ul className="small text-muted mt-3">
+          <div className="card p-4 h-100">
+            <h2 className="section-header">Security tips</h2>
+            <ul className="text-muted mt-3 ps-3">
               <li>
                 Use a strong password with a mix of letters, numbers, and
                 special characters.
@@ -116,7 +115,7 @@ export default function ProviderSettings() {
                 notifications and updates.
               </li>
             </ul>
-            <div className="mt-auto p-3 border rounded bg-white">
+            <div className="mt-auto p-3 border rounded th-panel-muted">
               <small className="d-block text-muted">
                 Two-Factor Authentication
               </small>

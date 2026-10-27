@@ -74,11 +74,11 @@ export default function AdminDashboard() {
               {
                 label: "Revenue (TZS)",
                 data: data.revenueChart.values,
-                borderColor: "#358a50",
-                backgroundColor: "rgba(53, 138, 80, 0.10)",
+                borderColor: "#e07a1f",
+                backgroundColor: "rgba(224, 122, 31, 0.12)",
                 tension: 0.35,
                 fill: true,
-                pointBackgroundColor: "#358a50",
+                pointBackgroundColor: "#e07a1f",
                 pointBorderColor: "#ffffff",
                 pointBorderWidth: 2,
                 pointRadius: 4,
@@ -154,14 +154,14 @@ export default function AdminDashboard() {
                       titleFont: { family: "Inter", size: 13, weight: "600" },
                       bodyFont: { family: "Inter", size: 12 },
                       padding: 10,
-                      cornerRadius: 8,
+                      cornerRadius: 4,
                       displayColors: false,
                     },
                   },
                   scales: {
                     y: {
                       beginAtZero: true,
-                      grid: { color: "#eef2f7" },
+                      grid: { color: "#eceae4" },
                       border: { display: false },
                       ticks: { color: "#5f6b7c", font: { family: "Inter", size: 11 } },
                     },
@@ -183,7 +183,6 @@ export default function AdminDashboard() {
             style={{
               background: "linear-gradient(160deg, var(--th-navy-900) 0%, #124a8f 100%)",
               color: "#fff",
-              borderRadius: "var(--th-radius-lg)",
               padding: "clamp(1.5rem, 1.2rem + 1vw, 2rem)",
             }}
             aria-labelledby="top-course-title"

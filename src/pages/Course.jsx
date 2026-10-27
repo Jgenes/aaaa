@@ -380,7 +380,7 @@ export default function Course() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                      <p className="text-muted mb-0 small">
                         Skills for this training will be published soon.
                       </p>
                     )}
@@ -396,11 +396,7 @@ export default function Course() {
                     {course.requirements?.length > 0 ? (
                       <ul className="list-unstyled mb-0 d-flex flex-column gap-2">
                         {course.requirements.map((req, i) => (
-                          <li
-                            key={i}
-                            className="d-flex align-items-start gap-2"
-                            style={{ fontSize: "var(--th-fs-sm)" }}
-                          >
+                          <li key={i} className="d-flex align-items-start gap-2 small">
                             <i
                               className="bi bi-arrow-right-short text-primary mt-1"
                               aria-hidden="true"
@@ -410,7 +406,7 @@ export default function Course() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                      <p className="text-muted mb-0 small">
                         No prerequisites listed for this training.
                       </p>
                     )}
@@ -435,18 +431,13 @@ export default function Course() {
             {/* --------------------------------------------- Enrolment panel */}
             <aside className="col-lg-4">
               <div className="th-enroll-panel">
-                <p className="th-enroll-panel__label">Cohort enrolment</p>
+                <p className="th-enroll-panel__label">Course fee</p>
                 <p className="th-enroll-panel__value">
-                  {cohort?.remaining_seats ?? "—"}{" "}
-                  <span
-                    style={{
-                      fontFamily: "var(--th-font-sans)",
-                      fontSize: "var(--th-fs-sm)",
-                      fontWeight: 500,
-                      color: "var(--th-muted)",
-                    }}
-                  >
-                    seats left
+                  {cohort?.price ? `TZS ${Number(cohort.price).toLocaleString()}` : "Fee on request"}
+                </p>
+                <p className="th-enroll-panel__seats">
+                  <span className="th-status th-status--info">
+                    {cohort?.remaining_seats ?? "—"} of {cohort?.capacity ?? "—"} seats left
                   </span>
                 </p>
 
@@ -458,10 +449,6 @@ export default function Course() {
                   <li>
                     <span>Enrolment deadline</span>
                     <strong>{formatDate(cohort?.registration_deadline)}</strong>
-                  </li>
-                  <li>
-                    <span>Capacity</span>
-                    <strong>{cohort?.capacity ?? "—"} learners</strong>
                   </li>
                   <li>
                     <span>Delivery</span>
@@ -476,19 +463,20 @@ export default function Course() {
                 </ul>
 
                 {status.disabled || !cohort ? (
-                  <button type="button" className="btn btn-primary w-100" disabled>
+                  <button type="button" className="btn btn-primary w-100 mt-4" disabled>
                     {status.text}
                   </button>
                 ) : (
-                  <Link to={`/checkout/${courseId}/${cohort.id}`} className="btn btn-primary w-100">
+                  <Link
+                    to={`/checkout/${courseId}/${cohort.id}`}
+                    className="btn btn-primary w-100 mt-4"
+                  >
                     {status.text}
+                    <i className="bi bi-arrow-right" aria-hidden="true"></i>
                   </Link>
                 )}
 
-                <p
-                  className="text-muted mt-3 mb-0 text-center"
-                  style={{ fontSize: "var(--th-fs-xs)" }}
-                >
+                <p className="th-enroll-panel__note">
                   Secure checkout · Instant invoice · Verified certificate
                 </p>
               </div>
@@ -499,11 +487,10 @@ export default function Course() {
 
       {previewVideo && (
         <div
-          className="modal show d-block"
+          className="modal show d-block th-modal-backdrop"
           role="dialog"
           aria-modal="true"
           aria-label="Lesson preview"
-          style={{ background: "rgba(7, 27, 51, 0.85)", zIndex: 2000 }}
           onClick={(event) => {
             if (event.target === event.currentTarget) setPreviewVideo(null);
           }}

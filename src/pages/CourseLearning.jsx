@@ -127,7 +127,6 @@ export default function CourseLearning() {
               type="button"
               className="btn btn-link btn-sm p-0"
               onClick={() => setShowReviewModal(true)}
-              style={{ fontSize: "var(--th-fs-xs)" }}
             >
               <i className="bi bi-star-fill me-1" aria-hidden="true"></i>
               Rate this course
@@ -136,7 +135,7 @@ export default function CourseLearning() {
 
           <div className="d-none d-md-block" style={{ width: 180 }}>
             <div className="d-flex justify-content-between mb-1">
-              <span className="text-muted" style={{ fontSize: "var(--th-fs-2xs)" }}>
+              <span className="text-muted">
                 Progress
               </span>
               <span style={{ fontSize: "var(--th-fs-2xs)", fontWeight: 700 }}>{progress}%</span>
@@ -193,7 +192,7 @@ export default function CourseLearning() {
 
             <div className="bg-white border-bottom p-4">
               <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-                <h1 className="mb-0" style={{ fontSize: "var(--th-fs-xl)" }}>
+                <h1 className="mb-0">
                   {activeLesson?.title || "Select a lesson"}
                 </h1>
 
@@ -245,11 +244,11 @@ export default function CourseLearning() {
               <div className="tab-content">
                 {activeTab === "overview" && (
                   <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview">
-                    <p className="text-muted mb-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+                    <p className="text-muted mb-4">
                       {activeLesson?.description || "No description provided for this session."}
                     </p>
                     <div className="th-panel-muted">
-                      <h2 className="mb-2" style={{ fontSize: "var(--th-fs-base)" }}>
+                      <h2 className="mb-2">
                         Lesson notes
                       </h2>
                       <div
@@ -286,7 +285,7 @@ export default function CourseLearning() {
                         })}
                       </ul>
                     ) : (
-                      <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                      <p className="text-muted mb-0">
                         No downloadable resources for this session.
                       </p>
                     )}
@@ -313,7 +312,7 @@ export default function CourseLearning() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                      <p className="text-muted mb-0">
                         No additional links for this session.
                       </p>
                     )}

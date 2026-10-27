@@ -1,16 +1,16 @@
 /* ============================================================
    TrainHub TZ — provider workspace surfaces
-   Page-level classes for the provider dashboard screens.
-   Loaded once; individual pages must not ship <style> blocks.
+   Page-level classes for provider screens. Loaded once;
+   individual pages must not ship <style> blocks.
    ============================================================ */
 
 /* ---------- Page chrome ---------- */
 .page-header {
   background: var(--th-surface);
   border: 1px solid var(--th-line);
-  border-radius: var(--th-radius-lg);
+  border-radius: var(--th-radius-md);
   padding: var(--th-space-5) var(--th-space-6);
-  margin-bottom: var(--th-space-6);
+  margin-bottom: var(--th-space-5);
 }
 
 .page-header h1,
@@ -33,7 +33,7 @@
   gap: var(--th-space-3);
   background: var(--th-surface);
   border: 1px solid var(--th-line);
-  border-radius: var(--th-radius-lg);
+  border-radius: var(--th-radius-md);
   padding: var(--th-space-3) var(--th-space-4);
   margin-bottom: var(--th-space-4);
 }
@@ -43,7 +43,7 @@
 .action-section {
   background: var(--th-surface);
   border: 1px solid var(--th-line);
-  border-radius: var(--th-radius-lg);
+  border-radius: var(--th-radius-md);
   padding: var(--th-space-4) var(--th-space-5);
   margin-bottom: var(--th-space-4);
 }
@@ -57,7 +57,7 @@
 
 .search-icon {
   position: absolute;
-  left: 0.75rem;
+  left: 0.8rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--th-placeholder);
@@ -67,15 +67,9 @@
 
 .search-input,
 .search-control {
-  padding-left: 2.15rem;
-  min-height: 40px;
+  padding-left: 2.25rem;
+  min-height: 42px;
   font-size: var(--th-fs-sm);
-}
-
-.search-input:focus,
-.search-control:focus {
-  border-color: var(--th-primary);
-  box-shadow: var(--th-ring);
 }
 
 /* ---------- Tables ---------- */
@@ -83,7 +77,7 @@
 .table-container {
   background: var(--th-surface);
   border: 1px solid var(--th-line);
-  border-radius: var(--th-radius-lg);
+  border-radius: var(--th-radius-md);
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -93,17 +87,18 @@
   margin-bottom: 0;
 }
 
-/* ---------- Status pills (cohorts, courses) ---------- */
+/* ---------- Status pills ---------- */
 .status-badge,
 .status-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--th-radius-pill);
+  padding: 0.22rem 0.55rem;
+  border-radius: var(--th-radius-xs);
   font-size: var(--th-fs-2xs);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   line-height: 1.5;
   border: 1px solid transparent;
 }
@@ -111,13 +106,13 @@
 .status-open {
   background: var(--th-success-soft);
   color: var(--th-success);
-  border-color: #bfe3cd;
+  border-color: #c6e3d2;
 }
 
 .status-full {
   background: var(--th-warning-soft);
   color: var(--th-warning);
-  border-color: #f0d9ae;
+  border-color: #ecd9b7;
 }
 
 .status-closed {
@@ -131,11 +126,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--th-radius-sm);
-  border: 1px solid transparent;
-  font-size: 0.85rem;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--th-radius-xs);
+  border: 1px solid var(--th-line);
+  background: var(--th-surface);
+  font-size: 0.8rem;
   line-height: 1;
   transition:
     background-color var(--th-dur) var(--th-ease),
@@ -148,27 +144,24 @@
 }
 
 .btn-view {
-  background: var(--th-blue-50);
-  color: var(--th-primary);
+  color: var(--th-navy-700);
 }
 
 .btn-edit {
-  background: var(--th-orange-100);
-  color: #8a5400;
+  color: var(--th-orange-700);
 }
 
 .btn-delete {
-  background: var(--th-danger-soft);
   color: var(--th-danger);
 }
 
-/* ---------- Detail lists (enrollment modal) ---------- */
+/* ---------- Detail lists ---------- */
 .detail-label {
   font-size: var(--th-fs-2xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--th-muted);
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--th-track-label);
+  color: var(--th-muted);
   margin-bottom: 2px;
 }
 
@@ -179,10 +172,10 @@
 }
 
 .section-divider {
-  border-left: 3px solid var(--th-primary);
+  border-left: 2px solid var(--th-accent);
   padding-left: var(--th-space-3);
   margin: var(--th-space-4) 0 var(--th-space-3);
-  color: var(--th-primary);
+  color: var(--th-ink);
   font-weight: 700;
   font-size: var(--th-fs-sm);
 }
@@ -194,13 +187,13 @@
 .info-card {
   background: var(--th-surface);
   border: 1px solid var(--th-line);
-  border-radius: var(--th-radius-lg);
+  border-radius: var(--th-radius-md);
   padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
 }
 
 .form-card,
 .edit-card {
-  box-shadow: var(--th-shadow-sm);
+  box-shadow: var(--th-shadow-xs);
 }
 
 .form-section {
@@ -215,12 +208,12 @@
   display: flex;
   align-items: center;
   gap: var(--th-space-2);
-  font-size: var(--th-fs-xs);
+  font-size: var(--th-fs-2xs);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--th-track-label);
   text-transform: uppercase;
-  color: var(--th-primary);
-  padding-bottom: var(--th-space-2);
+  color: var(--th-muted);
+  padding-bottom: var(--th-space-3);
   margin-bottom: var(--th-space-4);
   border-bottom: 1px solid var(--th-line);
 }
@@ -239,20 +232,16 @@
   display: block;
   font-size: var(--th-fs-2xs);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--th-track-label);
   text-transform: uppercase;
   color: var(--th-muted);
   margin-bottom: var(--th-space-2);
 }
 
-.custom-input {
-  border-radius: var(--th-radius-sm);
-}
-
 .section-card {
-  background: var(--th-surface-sunken);
+  background: var(--th-paper);
   border: 1px solid var(--th-line);
-  border-radius: var(--th-radius-lg);
+  border-radius: var(--th-radius-md);
   padding: var(--th-space-5);
   margin-bottom: var(--th-space-4);
 }
@@ -261,32 +250,34 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: var(--th-fs-xs);
+  font-size: var(--th-fs-2xs);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--th-primary);
+  color: var(--th-navy-700);
   background: none;
   border: 0;
   padding: 0.25rem 0;
 }
 
 .add-btn:hover {
-  color: var(--th-primary-hover);
+  color: var(--th-ink);
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .badge-section {
   display: inline-flex;
   align-items: center;
-  background: var(--th-info-soft);
-  color: var(--th-info);
+  background: var(--th-surface);
+  color: var(--th-muted);
+  border: 1px solid var(--th-line-strong);
   font-size: var(--th-fs-2xs);
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--th-track-label);
   text-transform: uppercase;
-  padding: 0.25rem 0.7rem;
-  border-radius: var(--th-radius-pill);
+  padding: 0.22rem 0.55rem;
+  border-radius: var(--th-radius-xs);
 }
 
 .image-preview-box {
@@ -297,8 +288,8 @@
   height: 200px;
   overflow: hidden;
   border: 1px dashed var(--th-line-strong);
-  border-radius: var(--th-radius-md);
-  background: var(--th-surface-sunken);
+  border-radius: var(--th-radius-sm);
+  background: var(--th-paper);
   color: var(--th-muted);
 }
 
@@ -313,14 +304,15 @@
   width: 100%;
   height: clamp(180px, 30vw, 320px);
   object-fit: cover;
-  border-radius: var(--th-radius-lg);
+  border-radius: var(--th-radius-md);
+  border: 1px solid var(--th-line);
 }
 
 .outcome-item {
-  background: var(--th-surface-sunken);
-  border-left: 3px solid var(--th-primary);
-  border-radius: var(--th-radius-sm);
-  padding: 0.75rem 1.1rem;
+  background: var(--th-paper);
+  border-left: 2px solid var(--th-accent);
+  border-radius: var(--th-radius-xs);
+  padding: 0.7rem 1rem;
   margin-bottom: var(--th-space-2);
   font-size: var(--th-fs-sm);
   color: var(--th-text);
@@ -329,24 +321,100 @@
 .skill-badge {
   display: inline-flex;
   align-items: center;
-  background: var(--th-blue-50);
-  color: var(--th-primary);
-  border: 1px solid var(--th-primary-soft-border);
-  border-radius: var(--th-radius-pill);
-  padding: 0.3rem 0.8rem;
+  background: var(--th-surface);
+  color: var(--th-text);
+  border: 1px solid var(--th-line-strong);
+  border-radius: var(--th-radius-xs);
+  padding: 0.28rem 0.65rem;
   font-size: var(--th-fs-xs);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .lesson-card {
   background: var(--th-surface);
   border: 1px solid var(--th-line);
-  border-radius: var(--th-radius-md);
+  border-radius: var(--th-radius-sm);
   transition: border-color var(--th-dur) var(--th-ease);
 }
 
 .lesson-card:hover {
-  border-color: var(--th-primary);
+  border-color: var(--th-line-strong);
+}
+
+/* ---------- Legacy provider action buttons ---------- */
+.btn-add,
+.btn-add-cohort,
+.btn-submit,
+.btn-update,
+.btn-navy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  font-family: var(--th-font-sans);
+  font-size: var(--th-fs-sm);
+  font-weight: 600;
+  color: #fff;
+  background: var(--th-primary);
+  border: 1px solid var(--th-primary);
+  border-radius: var(--th-radius-sm);
+  transition: background-color var(--th-dur) var(--th-ease);
+}
+
+.btn-add:hover,
+.btn-add-cohort:hover,
+.btn-submit:hover:not(:disabled),
+.btn-update:hover:not(:disabled),
+.btn-navy:hover:not(:disabled) {
+  background: var(--th-primary-hover);
+  border-color: var(--th-primary-hover);
+  color: #fff;
+}
+
+.btn-submit,
+.btn-update {
+  width: 100%;
+  padding-block: 0.8rem;
+}
+
+.btn-submit:disabled,
+.btn-update:disabled,
+.btn-navy:disabled {
+  opacity: 0.6;
+}
+
+/* Custom input alias used by the course builder */
+.custom-input {
+  border-radius: var(--th-radius-sm);
+}
+
+/* Dashed upload zone */
+.border-dashed {
+  border-style: dashed !important;
+}
+
+/* Learning progress wrapper */
+.prof-prog-container {
+  display: flex;
+  align-items: center;
+  gap: var(--th-space-3);
+  margin-top: var(--th-space-3);
+}
+
+/* ---------- Shared modal backdrop ---------- */
+.th-modal-backdrop {
+  background: rgba(7, 19, 34, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+/* ---------- Narrow content columns ---------- */
+.th-form-narrow {
+  max-width: 800px;
+}
+
+.th-page-narrow {
+  max-width: 1000px;
 }
 
 /* ---------- Responsive ---------- */
@@ -376,19 +444,4 @@
   .lesson-card {
     transition: none;
   }
-}
-
-/* ---------- Shared modal backdrop ---------- */
-.th-modal-backdrop {
-  background: rgba(7, 27, 51, 0.55);
-  backdrop-filter: blur(2px);
-}
-
-/* Narrow content columns inside the dashboard shell */
-.th-form-narrow {
-  max-width: 800px;
-}
-
-.th-page-narrow {
-  max-width: 1000px;
 }

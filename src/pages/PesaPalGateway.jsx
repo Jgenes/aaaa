@@ -56,10 +56,10 @@ export default function PesaPalGateway() {
       <main id="main-content" className="th-container-wide flex-grow-1 py-4">
         <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
           <div>
-            <h1 className="mb-1" style={{ fontSize: "var(--th-fs-xl)" }}>
+            <h1 className="mb-1">
               Secure payment
             </h1>
-            <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+            <p className="text-muted mb-0">
               {courseName ? `Paying for: ${courseName}` : "Complete your payment below."}
             </p>
           </div>
@@ -83,7 +83,7 @@ export default function PesaPalGateway() {
                 role="status"
               >
                 <div className="spinner-border" aria-hidden="true"></div>
-                <p className="mt-3 text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                <p className="mt-3 text-muted mb-0">
                   Connecting to the payment server…
                 </p>
               </div>
@@ -106,7 +106,6 @@ export default function PesaPalGateway() {
 
         <p
           className="text-center text-muted mt-3 mb-0"
-          style={{ fontSize: "var(--th-fs-xs)" }}
         >
           If you encounter any issues, please contact support before cancelling.
         </p>
