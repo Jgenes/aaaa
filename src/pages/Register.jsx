@@ -5,6 +5,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/bootstrap.css";
 import api from "../api/axio";
 import AuthLayout from "../components/AuthLayout";
+import AuthField from "../components/AuthField";
 
 const INITIAL_ERRORS = {};
 
@@ -71,146 +72,145 @@ export default function Register() {
     }
   };
 
+  const passwordToggle = (
+    <button
+      type="button"
+      className="th-field__trailing"
+      onClick={() => setShowPassword((prev) => !prev)}
+      aria-label={showPassword ? "Hide password" : "Show password"}
+      aria-pressed={showPassword}
+      aria-controls="register-password"
+    >
+      <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true"></i>
+    </button>
+  );
+
   return (
     <AuthLayout
+      eyebrow="New learner account"
       title="Create your account"
-      subtitle="Register as a learner and start your first cohort in minutes."
+      subtitle="Register once, then enrol in any cohort on TrainHub TZ. We'll email you a link to activate the account."
       asideTitle="Learn with confidence, grow with evidence."
+      asideLead="A single account tracks every cohort, certificate and payment across providers."
+      points={[
+        {
+          title: "One profile, every provider",
+          text: "Browse and enrol across all accredited institutions in one place.",
+        },
+        {
+          title: "Transparent cohort dates",
+          text: "See start dates, deadlines and remaining seats before you pay.",
+        },
+        {
+          title: "Records you can share",
+          text: "Certificates and payment history stay in your dashboard.",
+        },
+      ]}
     >
-      <form onSubmit={handleRegister} noValidate>
-        <div className="mb-3">
-          <label className="form-label" htmlFor="register-name">
-            Full name
-          </label>
-          <div className="field-icon">
-            <i className="bi bi-person field-icon__adornment" aria-hidden="true"></i>
-            <input
-              id="register-name"
-              type="text"
-              autoComplete="name"
-              className={`form-control ${errors.fullname ? "is-invalid" : ""}`}
-              placeholder="e.g. Amina Juma"
-              value={fullname}
-              onChange={(e) => {
-                setFullname(e.target.value);
-                clearError("fullname");
-              }}
-              aria-invalid={Boolean(errors.fullname)}
-            />
-          </div>
-          {errors.fullname && <p className="invalid-feedback d-block">{errors.fullname}</p>}
-        </div>
+      <form className="th-auth__form" onSubmit={handleRegister} noValidate>
+        <fieldset className="th-auth__group">
+          <legend className="th-auth__legend">Your details</legend>
 
-        <div className="mb-3">
-          <label className="form-label" htmlFor="register-email">
-            Email address
-          </label>
-          <div className="field-icon">
-            <i className="bi bi-envelope field-icon__adornment" aria-hidden="true"></i>
-            <input
-              id="register-email"
-              type="email"
-              autoComplete="email"
-              className={`form-control ${errors.email ? "is-invalid" : ""}`}
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                clearError("email");
-              }}
-              aria-invalid={Boolean(errors.email)}
-            />
-          </div>
-          {errors.email && <p className="invalid-feedback d-block">{errors.email}</p>}
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label" htmlFor="register-phone">
-            Phone number
-          </label>
-          <PhoneInput
-            country="tz"
-            value={phone}
-            onChange={(value) => {
-              setPhone("+" + value);
-              clearError("phone");
+          <AuthField
+            id="register-name"
+            label="Full name"
+            icon="bi-person"
+            autoComplete="name"
+            placeholder="e.g. Amina Juma"
+            value={fullname}
+            onChange={(e) => {
+              setFullname(e.target.value);
+              clearError("fullname");
             }}
-            placeholder="Enter phone number"
-            inputProps={{ id: "register-phone", autoComplete: "tel" }}
-            containerStyle={{ width: "100%" }}
-            buttonStyle={{ background: "var(--th-surface-sunken)" }}
+            error={errors.fullname}
           />
-          {errors.phone && <p className="invalid-feedback d-block">{errors.phone}</p>}
-        </div>
 
-        <div className="mb-3">
-          <label className="form-label" htmlFor="register-password">
-            Password
-          </label>
-          <div className="field-icon">
-            <i className="bi bi-lock field-icon__adornment" aria-hidden="true"></i>
-            <input
-              id="register-password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              className={`form-control ${errors.password ? "is-invalid" : ""}`}
-              placeholder="At least 6 characters"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                clearError("password");
-              }}
-              aria-invalid={Boolean(errors.password)}
-              aria-describedby="password-hint"
-              style={{ paddingRight: "2.75rem" }}
-            />
-            <button
-              type="button"
-              className="field-icon__button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              aria-pressed={showPassword}
-            >
-              <i
-                className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
-                aria-hidden="true"
-              ></i>
-            </button>
-          </div>
-          <p className="form-text" id="password-hint">
-            Use a mix of letters and numbers you don&apos;t use elsewhere.
-          </p>
-          {errors.password && <p className="invalid-feedback d-block">{errors.password}</p>}
-        </div>
+          <AuthField
+            id="register-email"
+            label="Email address"
+            type="email"
+            icon="bi-envelope"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearError("email");
+            }}
+            error={errors.email}
+          />
 
-        <div className="mb-4">
-          <label className="form-label" htmlFor="register-confirm">
-            Confirm password
-          </label>
-          <div className="field-icon">
-            <i className="bi bi-shield-lock field-icon__adornment" aria-hidden="true"></i>
-            <input
-              id="register-confirm"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              className={`form-control ${errors.confirmPassword ? "is-invalid" : ""}`}
-              placeholder="Re-enter your password"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                clearError("confirmPassword");
-              }}
-              aria-invalid={Boolean(errors.confirmPassword)}
-            />
+          <div className={`th-field${errors.phone ? " th-field--invalid" : ""}`}>
+            <label className="th-field__label" htmlFor="register-phone">
+              Phone number
+            </label>
+            <div className="th-field__control th-field__control--plain">
+              <PhoneInput
+                country="tz"
+                value={phone}
+                onChange={(value) => {
+                  setPhone("+" + value);
+                  clearError("phone");
+                }}
+                placeholder="Enter phone number"
+                inputProps={{
+                  id: "register-phone",
+                  autoComplete: "tel",
+                  "aria-invalid": errors.phone ? true : undefined,
+                  "aria-describedby": errors.phone ? "register-phone-error" : undefined,
+                }}
+                containerClass="th-phone"
+                dropdownClass="th-phone__dropdown"
+              />
+            </div>
+            {errors.phone && (
+              <p className="th-field__error" id="register-phone-error">
+                <i className="bi bi-exclamation-circle" aria-hidden="true" />
+                {errors.phone}
+              </p>
+            )}
           </div>
-          {errors.confirmPassword && (
-            <p className="invalid-feedback d-block">{errors.confirmPassword}</p>
-          )}
-        </div>
+        </fieldset>
+
+        <fieldset className="th-auth__group">
+          <legend className="th-auth__legend">Secure your account</legend>
+
+          <AuthField
+            id="register-password"
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            icon="bi-lock"
+            autoComplete="new-password"
+            placeholder="At least 6 characters"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              clearError("password");
+            }}
+            error={errors.password}
+            hint="Use at least 6 characters, mixing letters and numbers."
+            trailing={passwordToggle}
+          />
+
+          <AuthField
+            id="register-confirm"
+            label="Confirm password"
+            type={showPassword ? "text" : "password"}
+            icon="bi-shield-lock"
+            autoComplete="new-password"
+            placeholder="Re-enter your password"
+            value={confirmPassword}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              clearError("confirmPassword");
+            }}
+            error={errors.confirmPassword}
+          />
+        </fieldset>
 
         <button
           type="submit"
-          className={`btn btn-primary w-100 ${loading ? "is-loading" : ""}`}
+          className={`btn btn-primary btn-lg w-100 ${loading ? "is-loading" : ""}`}
           disabled={loading}
         >
           {loading ? "Creating account…" : "Create account"}
@@ -218,7 +218,8 @@ export default function Register() {
       </form>
 
       <p className="th-auth__foot">
-        Already have an account? <Link to="/login">Log in</Link>
+        <span>Already have an account?</span>
+        <Link to="/login">Log in</Link>
       </p>
     </AuthLayout>
   );

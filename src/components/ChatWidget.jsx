@@ -14,6 +14,10 @@ const PHONE_HREF = "tel:+255745732935";
 const WHATSAPP_HREF = "https://wa.me/255745732935";
 const EMAIL = "info@traininghub.co.tz";
 
+// Focused flows: the launcher would sit on top of the submit button on small
+// screens, and an auth form is not a good place to upsell support.
+const HIDDEN_PREFIXES = ["/login", "/register", "/otp-verification", "/activate-account"];
+
 const CHANNELS = [
   {
     icon: "bi-whatsapp",
@@ -42,6 +46,7 @@ export default function ChatWidget() {
   const toggleRef = useRef(null);
   const closeRef = useRef(null);
   const location = useLocation();
+  const hidden = HIDDEN_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
 
   // Close when the route changes
   useEffect(() => {
@@ -81,6 +86,8 @@ export default function ChatWidget() {
       document.removeEventListener("mousedown", onPointerDown);
     };
   }, [open]);
+
+  if (hidden) return null;
 
   return (
     <div className="th-chat">
