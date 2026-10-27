@@ -90,22 +90,6 @@ export default function Register() {
       eyebrow="New learner account"
       title="Create your account"
       subtitle="Register once, then enrol in any cohort on TrainHub TZ. We'll email you a link to activate the account."
-      asideTitle="Learn with confidence, grow with evidence."
-      asideLead="A single account tracks every cohort, certificate and payment across providers."
-      points={[
-        {
-          title: "One profile, every provider",
-          text: "Browse and enrol across all accredited institutions in one place.",
-        },
-        {
-          title: "Transparent cohort dates",
-          text: "See start dates, deadlines and remaining seats before you pay.",
-        },
-        {
-          title: "Records you can share",
-          text: "Certificates and payment history stay in your dashboard.",
-        },
-      ]}
     >
       <form className="th-auth__form" onSubmit={handleRegister} noValidate>
         <fieldset className="th-auth__group">

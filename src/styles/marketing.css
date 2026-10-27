@@ -1701,17 +1701,12 @@
    Auth pages — shared shell for login, register, OTP, provider sign-up
    ------------------------------------------------------------ */
 .th-auth {
-  display: grid;
-  grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
-  min-height: min(calc(100dvh - var(--th-header-h)), 54rem);
-  background: var(--th-paper);
-}
-
-.th-auth__panel {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: min(calc(100dvh - var(--th-header-h)), 54rem);
   padding: clamp(1.5rem, 1rem + 4vw, 4rem);
+  background: var(--th-paper);
 }
 
 .th-auth__card {
@@ -2003,111 +1998,6 @@
 .th-field--invalid .th-phone .form-control,
 .th-field--invalid .th-phone .flag-dropdown {
   border-color: var(--th-danger);
-}
-
-/* Ink story column ------------------------------------------- */
-.th-auth__aside {
-  order: -1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--th-space-8);
-  padding: clamp(2rem, 1.4rem + 4vw, 4.5rem);
-  background: var(--th-navy-950);
-  color: rgba(255, 255, 255, 0.74);
-  position: relative;
-  overflow: hidden;
-}
-
-.th-auth__aside::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 3px;
-  background: var(--th-accent);
-}
-
-.th-auth__aside-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--th-space-5);
-  max-width: 32rem;
-}
-
-.th-auth__aside-eyebrow {
-  margin: 0;
-  font-size: var(--th-fs-2xs);
-  font-weight: 700;
-  letter-spacing: var(--th-track-label);
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.th-auth__aside-title {
-  margin: 0;
-  font-family: var(--th-font-display);
-  font-size: clamp(1.5rem, 1.25rem + 1.3vw, 2.15rem);
-  line-height: var(--th-lh-snug);
-  letter-spacing: -0.03em;
-  color: #fff;
-  max-width: 20ch;
-}
-
-.th-auth__aside-lead {
-  margin: 0;
-  font-size: var(--th-fs-sm);
-  line-height: var(--th-lh-relaxed);
-  color: rgba(255, 255, 255, 0.7);
-  max-width: 42ch;
-}
-
-.th-auth__points {
-  list-style: none;
-  display: grid;
-  gap: var(--th-space-4);
-  margin: var(--th-space-2) 0 0;
-  padding: var(--th-space-5) 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-.th-auth__points li {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--th-space-4);
-}
-
-.th-auth__point-index {
-  flex: none;
-  font-size: var(--th-fs-2xs);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--th-orange-500);
-  padding-top: 0.15rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.th-auth__point-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.th-auth__point-title {
-  font-size: var(--th-fs-sm);
-  font-weight: 600;
-  color: #fff;
-}
-
-.th-auth__point-text {
-  font-size: var(--th-fs-xs);
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.th-auth__aside-note {
-  font-size: var(--th-fs-xs);
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.45);
 }
 
 /* OTP input group */
@@ -2601,31 +2491,12 @@
   }
 
   .th-auth {
-    grid-template-columns: minmax(0, 1fr);
     min-height: 0;
-  }
-
-  .th-auth__panel {
     padding-block: clamp(1.75rem, 1.2rem + 3vw, 3rem);
   }
 
   .th-auth__card {
-    max-width: 32rem;
-  }
-
-  .th-auth__aside {
-    order: 2;
-    gap: var(--th-space-6);
-    padding-block: var(--th-space-10);
-  }
-
-  .th-auth__aside-body {
-    gap: var(--th-space-4);
-    max-width: none;
-  }
-
-  .th-auth__aside-title {
-    max-width: none;
+    max-width: 30rem;
   }
 
   .th-quote {
@@ -2724,7 +2595,7 @@
     padding: var(--th-space-5);
   }
 
-  .th-auth__panel {
+  .th-auth {
     padding-inline: var(--th-space-4);
   }
 
