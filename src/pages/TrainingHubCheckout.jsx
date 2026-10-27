@@ -1,9 +1,25 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import api from "../api/axio";
-import "../App.css";
+
+const TZ_DATA = {
+  Arusha: ["Arusha City", "Arumeru", "Karatu", "Monduli", "Ngorongoro"],
+  "Dar es Salaam": ["Ilala", "Kinondoni", "Temeke", "Kigamboni", "Ubungo"],
+  Dodoma: ["Dodoma City", "Bahi", "Chamwino", "Kondoa", "Mpwapwa"],
+  Mwanza: ["Ilemela", "Nyamagana", "Magu", "Sengerema"],
+  Tanga: ["Tanga City", "Handeni", "Korogwe", "Lushoto", "Muheza", "Pangani"],
+};
+
+const formatTzPhone = (number) => {
+  if (!number) return "";
+  let cleaned = number.toString().replace(/\D/g, "");
+  if (cleaned.startsWith("0")) return "255" + cleaned.substring(1);
+  if (cleaned.startsWith("7") || cleaned.startsWith("6")) return "255" + cleaned;
+  return cleaned;
+};
 
 export default function TrainingHubCheckout() {
   const { courseId, cohortId } = useParams();
@@ -11,8 +27,9 @@ export default function TrainingHubCheckout() {
   const [loading, setLoading] = useState(true);
   const [course, setCourse] = useState(null);
   const [cohort, setCohort] = useState(null);
+  const [requestingOtp, setRequestingOtp] = useState(false);
 
-  // --- OTP STATES ---
+  // OTP modal state
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpValue, setOtpValue] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -29,22 +46,6 @@ export default function TrainingHubCheckout() {
     country: "Tanzania",
     postalCode: "",
   });
-
-  const tzData = {
-    Arusha: ["Arusha City", "Arumeru", "Karatu", "Monduli", "Ngorongoro"],
-    "Dar es Salaam": ["Ilala", "Kinondoni", "Temeke", "Kigamboni", "Ubungo"],
-    Dodoma: ["Dodoma City", "Bahi", "Chamwino", "Kondoa", "Mpwapwa"],
-    Mwanza: ["Ilemela", "Nyamagana", "Magu", "Sengerema"],
-    Tanga: ["Tanga City", "Handeni", "Korogwe", "Lushoto", "Muheza", "Pangani"],
-  };
-
-  const formatTzPhone = (number) => {
-    if (!number) return "";
-    let cleaned = number.toString().replace(/\D/g, "");
-    if (cleaned.startsWith("0")) return "255" + cleaned.substring(1);
-    if (cleaned.startsWith("7") || cleaned.startsWith("6")) return "255" + cleaned;
-    return cleaned;
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,33 +84,33 @@ export default function TrainingHubCheckout() {
     fetchData();
   }, [courseId, cohortId, navigate]);
 
-  // STEP 1: Omba OTP
   const handleRequestOtp = async () => {
     try {
-      setLoading(true);
-      await api.post("/payment/send-otp", {}, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-      });
+      setRequestingOtp(true);
+      await api.post(
+        "/payment/send-otp",
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
       setShowOtpModal(true);
     } catch (err) {
-      alert("Error sending OTP. Please try again.");
+      toast.error("Error sending the verification code. Please try again.");
     } finally {
-      setLoading(false);
+      setRequestingOtp(false);
     }
   };
 
-  // STEP 2: Verify & Pay
   const handleVerifyAndPay = async () => {
     try {
       setIsVerifying(true);
       const token = localStorage.getItem("token");
 
-      // Verify OTP kwanza
-      await api.post("/payment/verify-otp", { otp: otpValue }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post(
+        "/payment/verify-otp",
+        { otp: otpValue },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      // Ikishapita, endelea na initiate transaction
       const paymentData = {
         course_id: courseId,
         cohort_id: cohortId,
@@ -134,220 +135,404 @@ export default function TrainingHubCheckout() {
           state: { url: res.data.redirect_url, courseName: course?.title },
         });
       } else {
-        alert("Backend Error: " + (res.data.message || "Unknown error"));
+        toast.error("We could not start the payment: " + (res.data.message || "unknown error"));
       }
     } catch (error) {
-      alert(error.response?.data?.message || "Invalid OTP code.");
+      toast.error(error.response?.data?.message || "Invalid verification code.");
     } finally {
       setIsVerifying(false);
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="text-center py-5 mt-5">
-        <div className="spinner-border text-primary"></div>
-        <p>Processing...</p>
-      </div>
+      <>
+        <NavBar />
+        <main id="main-content" className="th-container-wide th-section">
+          <div className="row g-4" aria-hidden="true">
+            <div className="col-lg-7">
+              <div className="th-skeleton" style={{ height: 420 }} />
+            </div>
+            <div className="col-lg-5">
+              <div className="th-skeleton" style={{ height: 260 }} />
+            </div>
+          </div>
+          <p className="visually-hidden" role="status">
+            Loading checkout…
+          </p>
+        </main>
+        <Footer />
+      </>
     );
+  }
+
+  const price = cohort?.price?.toLocaleString() ?? "—";
 
   return (
     <>
       <NavBar />
-      <div className="container my-5">
-        <div className="row g-4">
-          <div className="col-md-7">
-            <div className="card shadow-sm border-0">
-              <div className="card-body p-4">
-                <h4 className="mb-4" style={{ color: "#111827", fontSize: "15px" }}>
-                  Billing Information
-                </h4>
+
+      <main id="main-content">
+        <section className="th-page-hero">
+          <div className="th-container-wide">
+            <nav aria-label="Breadcrumb">
+              <ol className="breadcrumb mb-2">
+                <li className="breadcrumb-item">
+                  <Link to="/trainings">Trainings</Link>
+                </li>
+                <li className="breadcrumb-item">
+                  <Link to={`/course/${courseId}`}>{course?.title || "Training"}</Link>
+                </li>
+                <li className="breadcrumb-item active" aria-current="page">
+                  Checkout
+                </li>
+              </ol>
+            </nav>
+            <h1 className="mb-2" style={{ fontSize: "clamp(1.5rem, 1.25rem + 1.1vw, 2rem)" }}>
+              Checkout
+            </h1>
+            <p className="th-section-lead">
+              Confirm your details and complete payment securely with PesaPal.
+            </p>
+          </div>
+        </section>
+
+        <div className="th-container-wide th-section-tight">
+          <div className="row g-4">
+            <div className="col-lg-7">
+              <form
+                className="th-panel"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  handleRequestOtp();
+                }}
+              >
+                <h2 className="mb-1" style={{ fontSize: "var(--th-fs-lg)" }}>
+                  Billing information
+                </h2>
+                <p className="text-muted mb-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+                  This appears on your invoice and receipt.
+                </p>
 
                 <div className="mb-3">
-                  <label className="form-label fw-medium">Full Name</label>
-                  <input type="text" className="form-control bg-light" value={userInfo.name} readOnly />
-                </div>
-
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">Email Address</label>
-                    <input type="email" className="form-control bg-light" value={userInfo.email} readOnly />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">Phone (255...)</label>
-                    <input
-                      type="tel"
-                      className="form-control"
-                      value={userInfo.phone}
-                      onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <h6 style={{ color: "#111827", fontSize: "15px" }} className="mt-4 mb-3 border-bottom pb-2">
-                  Work Details (Optional)
-                </h6>
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">Organization Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={userInfo.organizationName}
-                      onChange={(e) => setUserInfo({ ...userInfo, organizationName: e.target.value })}
-                      placeholder="e.g. Google"
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">Your Position</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={userInfo.position}
-                      onChange={(e) => setUserInfo({ ...userInfo, position: e.target.value })}
-                      placeholder="e.g. Manager"
-                    />
-                  </div>
-                </div>
-
-                <h6 style={{ color: "#111827", fontSize: "15px" }} className="mt-4 mb-3 border-bottom pb-2">
-                  Address Information
-                </h6>
-                <div className="mb-3">
-                  <label className="form-label fw-medium">Street Address</label>
+                  <label className="form-label" htmlFor="checkout-name">
+                    Full name
+                  </label>
                   <input
+                    id="checkout-name"
                     type="text"
                     className="form-control"
-                    value={userInfo.street}
-                    onChange={(e) => setUserInfo({ ...userInfo, street: e.target.value })}
-                    placeholder="Mwai Kibaki Road"
+                    value={userInfo.name}
+                    readOnly
                   />
                 </div>
 
                 <div className="row">
                   <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">Region</label>
+                    <label className="form-label" htmlFor="checkout-email">
+                      Email address
+                    </label>
+                    <input
+                      id="checkout-email"
+                      type="email"
+                      className="form-control"
+                      value={userInfo.email}
+                      readOnly
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label" htmlFor="checkout-phone">
+                      Phone (255…)
+                    </label>
+                    <input
+                      id="checkout-phone"
+                      type="tel"
+                      className="form-control"
+                      value={userInfo.phone}
+                      onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })}
+                      autoComplete="tel"
+                    />
+                  </div>
+                </div>
+
+                <h3
+                  className="mt-4 mb-3 pb-2"
+                  style={{
+                    fontSize: "var(--th-fs-base)",
+                    borderBottom: "1px solid var(--th-line)",
+                  }}
+                >
+                  Work details <span className="text-muted fw-normal">(optional)</span>
+                </h3>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label" htmlFor="checkout-org">
+                      Organisation
+                    </label>
+                    <input
+                      id="checkout-org"
+                      type="text"
+                      className="form-control"
+                      value={userInfo.organizationName}
+                      onChange={(e) =>
+                        setUserInfo({ ...userInfo, organizationName: e.target.value })
+                      }
+                      placeholder="e.g. NMB Bank"
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label" htmlFor="checkout-position">
+                      Position
+                    </label>
+                    <input
+                      id="checkout-position"
+                      type="text"
+                      className="form-control"
+                      value={userInfo.position}
+                      onChange={(e) => setUserInfo({ ...userInfo, position: e.target.value })}
+                      placeholder="e.g. Operations Manager"
+                    />
+                  </div>
+                </div>
+
+                <h3
+                  className="mt-2 mb-3 pb-2"
+                  style={{
+                    fontSize: "var(--th-fs-base)",
+                    borderBottom: "1px solid var(--th-line)",
+                  }}
+                >
+                  Billing address
+                </h3>
+
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="checkout-street">
+                    Street address
+                  </label>
+                  <input
+                    id="checkout-street"
+                    type="text"
+                    className="form-control"
+                    value={userInfo.street}
+                    onChange={(e) => setUserInfo({ ...userInfo, street: e.target.value })}
+                    placeholder="e.g. Mwai Kibaki Road"
+                    autoComplete="street-address"
+                  />
+                </div>
+
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label" htmlFor="checkout-region">
+                      Region
+                    </label>
                     <select
+                      id="checkout-region"
                       className="form-select"
                       value={userInfo.region}
-                      onChange={(e) => setUserInfo({ ...userInfo, region: e.target.value, city: "" })}
+                      onChange={(e) =>
+                        setUserInfo({ ...userInfo, region: e.target.value, city: "" })
+                      }
                     >
-                      <option value="">Select Region</option>
-                      {Object.keys(tzData).sort().map((reg) => (
-                        <option key={reg} value={reg}>{reg}</option>
-                      ))}
+                      <option value="">Select region</option>
+                      {Object.keys(TZ_DATA)
+                        .sort()
+                        .map((reg) => (
+                          <option key={reg} value={reg}>
+                            {reg}
+                          </option>
+                        ))}
                     </select>
                   </div>
                   <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">City / District</label>
+                    <label className="form-label" htmlFor="checkout-city">
+                      City / district
+                    </label>
                     <select
+                      id="checkout-city"
                       className="form-select"
                       value={userInfo.city}
                       disabled={!userInfo.region}
                       onChange={(e) => setUserInfo({ ...userInfo, city: e.target.value })}
                     >
-                      <option value="">Select City</option>
-                      {userInfo.region && tzData[userInfo.region].map((city) => (
-                        <option key={city} value={city}>{city}</option>
-                      ))}
+                      <option value="">Select city</option>
+                      {userInfo.region &&
+                        TZ_DATA[userInfo.region].map((city) => (
+                          <option key={city} value={city}>
+                            {city}
+                          </option>
+                        ))}
                     </select>
                   </div>
                 </div>
 
                 <div className="row">
                   <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">Country</label>
-                    <input className="form-control bg-light" value="Tanzania" readOnly />
+                    <label className="form-label" htmlFor="checkout-country">
+                      Country
+                    </label>
+                    <input
+                      id="checkout-country"
+                      className="form-control"
+                      value="Tanzania"
+                      readOnly
+                    />
                   </div>
                   <div className="col-md-6 mb-3">
-                    <label className="form-label fw-medium">Postal Code</label>
+                    <label className="form-label" htmlFor="checkout-postal">
+                      Postal code
+                    </label>
                     <input
+                      id="checkout-postal"
                       type="text"
                       className="form-control"
                       value={userInfo.postalCode}
                       onChange={(e) => setUserInfo({ ...userInfo, postalCode: e.target.value })}
                       placeholder="e.g. 11101"
+                      autoComplete="postal-code"
                     />
                   </div>
                 </div>
 
-                {/* Badala ya handlePayNow, tunaita handleRequestOtp */}
-                <button className="btn btn-primary w-100 mt-4 shadow-sm checkOutBtn" onClick={handleRequestOtp}>
-                  Pay Now
+                <button
+                  type="submit"
+                  className={`btn btn-primary w-100 btn-lg ${requestingOtp ? "is-loading" : ""}`}
+                  disabled={requestingOtp}
+                >
+                  {requestingOtp ? "Sending code…" : "Pay now"}
                 </button>
-              </div>
+                <p
+                  className="text-muted text-center mt-3 mb-0"
+                  style={{ fontSize: "var(--th-fs-xs)" }}
+                >
+                  <i className="bi bi-shield-lock me-1" aria-hidden="true"></i>
+                  We&apos;ll email a 6-digit code to confirm this purchase.
+                </p>
+              </form>
             </div>
-          </div>
 
-          <div className="col-md-5">
-            <div className="card shadow-sm border-0 bg-light">
-              <div className="card-body p-4">
-                <h5 className="mb-3 border-bottom pb-2" style={{ fontSize: "15px", color: "#111827" }}>
-                  Order Summary
-                </h5>
+            <div className="col-lg-5">
+              <aside className="th-enroll-panel" aria-labelledby="summary-title">
+                <h2
+                  className="mb-3 pb-2"
+                  id="summary-title"
+                  style={{
+                    fontSize: "var(--th-fs-base)",
+                    borderBottom: "1px solid var(--th-line)",
+                  }}
+                >
+                  Order summary
+                </h2>
+
                 <div className="mb-4">
-                  <h6 className="mb-1" style={{ fontSize: "15px", color: "#111827", fontWeight: "600" }}>
+                  <h3 className="mb-1" style={{ fontSize: "var(--th-fs-base)", fontWeight: 700 }}>
                     {course?.title || "Course"}
-                  </h6>
-                  <p className="small text-muted mb-0">Cohort: {cohort?.intake_name || "Loading..."}</p>
+                  </h3>
+                  <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                    Cohort: {cohort?.intake_name || "—"}
+                  </p>
                 </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Price</span>
-                  <strong>{cohort?.price?.toLocaleString()} TZS</strong>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Tax (0%)</span>
-                  <strong>0 TZS</strong>
-                </div>
-                <hr />
-                <div className="d-flex justify-content-between align-items-center">
-                  <span style={{ fontSize: "15px", color: "#111827" }} className="fw-bold">Total</span>
-                  <span className="fw-bold fs-5 text-primary">
-                    <span style={{ fontSize: "13px", color: "#111827" }}>{cohort?.price?.toLocaleString()} TZS</span>
+
+                <ul className="th-enroll-panel__list">
+                  <li>
+                    <span>Price</span>
+                    <strong>{price} TZS</strong>
+                  </li>
+                  <li>
+                    <span>Tax (0%)</span>
+                    <strong>0 TZS</strong>
+                  </li>
+                </ul>
+
+                <hr className="th-divider my-3" />
+
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <span style={{ fontWeight: 700, color: "var(--th-ink)" }}>Total</span>
+                  <span
+                    style={{
+                      fontFamily: "var(--th-font-display)",
+                      fontSize: "var(--th-fs-xl)",
+                      fontWeight: 700,
+                      color: "var(--th-navy-900)",
+                    }}
+                  >
+                    {price} TZS
                   </span>
                 </div>
-              </div>
+
+                <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-xs)" }}>
+                  Payments are processed by PesaPal. You will receive an invoice and receipt by
+                  email once payment completes.
+                </p>
+              </aside>
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* --- MODAL YA OTP (Inafuata style yako) --- */}
       {showOtpModal && (
-        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div
+          className="modal show d-block"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="otp-modal-title"
+          style={{ background: "rgba(7, 27, 51, 0.6)", zIndex: 2000 }}
+        >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 shadow-lg p-3">
-              <div className="modal-header border-0 pb-0">
-                <h5 className="fw-bold" style={{ fontSize: "17px" }}>Verify Your Payment</h5>
-                <button type="button" className="btn-close" onClick={() => setShowOtpModal(false)}></button>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h2 className="modal-title" id="otp-modal-title">
+                  Verify your payment
+                </h2>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close verification"
+                  onClick={() => setShowOtpModal(false)}
+                ></button>
               </div>
-              <div className="modal-body text-center py-4">
-                <p className="text-muted mb-4" style={{ fontSize: "14px" }}>
-                  We've sent a 6-digit verification code to your email. Please enter it below to confirm your purchase.
+              <div className="modal-body text-center">
+                <p className="text-muted mb-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+                  We&apos;ve sent a 6-digit verification code to your email. Enter it below to
+                  confirm your purchase.
                 </p>
+                <label className="form-label" htmlFor="checkout-otp">
+                  Verification code
+                </label>
                 <input
+                  id="checkout-otp"
                   type="text"
-                  className="form-control form-control-lg text-center fw-bold"
-                  style={{ letterSpacing: "10px", fontSize: "24px", border: "2px solid #eee" }}
+                  inputMode="numeric"
                   maxLength="6"
+                  className="form-control form-control-lg text-center fw-bold"
+                  style={{ letterSpacing: "0.5em", fontSize: "var(--th-fs-xl)" }}
                   value={otpValue}
-                  onChange={(e) => setOtpValue(e.target.value)}
+                  onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ""))}
                   placeholder="000000"
+                  autoComplete="one-time-code"
                 />
               </div>
-              <div className="modal-footer border-0 pt-0">
-                <button 
-                  className="btn btn-primary w-100 py-2 fw-bold" 
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-outline-dark"
+                  onClick={() => setShowOtpModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-primary ${isVerifying ? "is-loading" : ""}`}
                   onClick={handleVerifyAndPay}
                   disabled={otpValue.length < 6 || isVerifying}
                 >
-                  {isVerifying ? "Verifying..." : "Confirm & Proceed"}
+                  {isVerifying ? "Verifying…" : "Confirm & proceed"}
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
       <Footer />
     </>
   );

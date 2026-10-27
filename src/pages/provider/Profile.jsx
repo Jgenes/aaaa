@@ -100,17 +100,17 @@ export default function ProviderProfile() {
           <div className="col-lg-8">
             <div className="card border-0 shadow-sm mb-4">
               <div className="card-header bg-white py-3">
-                <h6 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>
+                <h6 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>
                   Business Identity & Registration
                 </h6>
               </div>
               <div className="card-body">
                 <div className="row g-3">
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="legal_name">
                       LEGAL NAME
                     </label>
-                    <input
+                    <input id="legal_name"
                       type="text"
                       className="form-control"
                       value={formData.legal_name || ""}
@@ -121,10 +121,10 @@ export default function ProviderProfile() {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="brand_name">
                       BRAND NAME
                     </label>
-                    <input
+                    <input id="brand_name"
                       type="text"
                       className="form-control"
                       value={formData.brand_name || ""}
@@ -134,10 +134,10 @@ export default function ProviderProfile() {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="provider_type">
                       PROVIDER TYPE
                     </label>
-                    <input
+                    <input id="provider_type"
                       type="text"
                       className="form-control bg-light"
                       value={formData.provider_type || ""}
@@ -146,10 +146,10 @@ export default function ProviderProfile() {
                     <small className="text-muted">Provider type is set from your account and cannot be changed here.</small>
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="tin_number">
                       TIN NUMBER
                     </label>
-                    <input
+                    <input id="tin_number"
                       type="text"
                       className="form-control"
                       value={formData.tin || ""}
@@ -159,10 +159,10 @@ export default function ProviderProfile() {
                     />
                   </div>
                   <div className="col-12">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="website_url">
                       WEBSITE URL
                     </label>
-                    <input
+                    <input id="website_url"
                       type="url"
                       className="form-control"
                       placeholder="https://example.com"
@@ -179,17 +179,17 @@ export default function ProviderProfile() {
             {/* Section 2: Location */}
             <div className="card border-0 shadow-sm mb-4">
               <div className="card-header bg-white py-3">
-                <h6 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>
+                <h6 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>
                   Location Details
                 </h6>
               </div>
               <div className="card-body">
                 <div className="row g-3">
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="country">
                       COUNTRY
                     </label>
-                    <input
+                    <input id="country"
                       type="text"
                       className="form-control"
                       value={formData.country || ""}
@@ -199,10 +199,10 @@ export default function ProviderProfile() {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="region">
                       REGION
                     </label>
-                    <input
+                    <input id="region"
                       type="text"
                       className="form-control"
                       value={formData.region || ""}
@@ -213,10 +213,10 @@ export default function ProviderProfile() {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="district">
                       DISTRICT
                     </label>
-                    <input
+                    <input id="district"
                       type="text"
                       className="form-control"
                       value={formData.district || ""}
@@ -226,10 +226,10 @@ export default function ProviderProfile() {
                     />
                   </div>
                   <div className="col-12">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="physical_address">
                       PHYSICAL ADDRESS
                     </label>
-                    <textarea
+                    <textarea id="physical_address"
                       className="form-control"
                       rows="2"
                       value={formData.physical_address || ""}
@@ -242,10 +242,10 @@ export default function ProviderProfile() {
                     ></textarea>
                   </div>
                   <div className="col-12">
-                    <label className="form-label small fw-bold text-muted">
+                    <label className="form-label small fw-bold text-muted" htmlFor="location_map_url_or_embed">
                       LOCATION MAP (URL or embed)
                     </label>
-                    <input
+                    <input id="location_map_url_or_embed"
                       type="text"
                       className="form-control"
                       placeholder="https://maps.example.com/..."
@@ -264,16 +264,16 @@ export default function ProviderProfile() {
           <div className="col-lg-4">
             <div className="card border-0 shadow-sm mb-4 border-top border-primary border-4">
               <div className="card-header bg-white py-3">
-                <h6 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>
+                <h6 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>
                   Primary Contact Person
                 </h6>
               </div>
               <div className="card-body">
                 <div className="mb-3">
-                  <label className="form-label small fw-bold text-muted">
+                  <label className="form-label small fw-bold text-muted" htmlFor="full_name">
                     FULL NAME
                   </label>
-                  <input
+                  <input id="full_name"
                     type="text"
                     className="form-control bg-light"
                     value={formData.contact_name || ""}
@@ -283,8 +283,8 @@ export default function ProviderProfile() {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label small fw-bold text-muted">ROLE</label>
-                  <input
+                  <label className="form-label small fw-bold text-muted" htmlFor="role">ROLE</label>
+                  <input id="role"
                     type="text"
                     className="form-control bg-light"
                     value={formData.contact_role || ""}
@@ -292,10 +292,10 @@ export default function ProviderProfile() {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label small fw-bold text-muted">
+                  <label className="form-label small fw-bold text-muted" htmlFor="phone_number">
                     PHONE NUMBER
                   </label>
-                  <input
+                  <input id="phone_number"
                     type="text"
                     className="form-control bg-light"
                     value={formData.contact_phone || ""}
@@ -308,10 +308,10 @@ export default function ProviderProfile() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="form-label small fw-bold text-muted">
+                  <label className="form-label small fw-bold text-muted" htmlFor="official_email">
                     OFFICIAL EMAIL
                   </label>
-                  <input
+                  <input id="official_email"
                     type="email"
                     className="form-control bg-light"
                     value={formData.contact_email || ""}

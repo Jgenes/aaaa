@@ -91,8 +91,8 @@ function NewReleaseCourses() {
                   <a href="/course">
                     <button
                       style={{
-                        backgroundColor: "#0a2e67",
-                        borderColor: "#0a2e67",
+                        backgroundColor: "var(--th-primary)",
+                        borderColor: "var(--th-primary)",
                         fontSize: "12px",
                       }}
                       className="btn btn-primary mt-auto enrollmentButton"

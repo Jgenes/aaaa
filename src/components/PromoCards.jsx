@@ -8,7 +8,7 @@ export default function PromoCards() {
         <div
           className="promo-card left"
           style={{
-            background: "linear-gradient(90deg, #0a2e67 0%, #0048b3 100%)",
+            background: "linear-gradient(90deg, var(--th-primary) 0%, #0048b3 100%)",
           }}
         >
           <div style={styles.textContent}>
@@ -135,7 +135,7 @@ const styles = {
   },
   btnWhite: {
     background: "#fff",
-    color: "#0a2e67",
+    color: "var(--th-primary)",
     border: "none",
     padding: "12px 24px",
     borderRadius: "6px",
@@ -144,7 +144,7 @@ const styles = {
     cursor: "pointer",
   },
   btnBlue: {
-    background: "#0a2e67",
+    background: "var(--th-primary)",
     color: "#fff",
     border: "none",
     padding: "12px 24px",
@@ -196,7 +196,7 @@ const styles = {
     position: "absolute",
     bottom: "30px",
     left: "15%",
-    background: "#0a2e67",
+    background: "var(--th-primary)",
     color: "#fff",
     padding: "15px",
     borderRadius: "50%",

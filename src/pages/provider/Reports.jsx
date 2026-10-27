@@ -81,8 +81,8 @@ const handleDownload = async (type, format) => {
       {/* Filters */}
       <div className="row mb-4 g-2">
         <div className="col-md-6">
-          <label className="small fw-bold text-muted">Select Training:</label>
-          <select 
+          <label className="small fw-bold text-muted" htmlFor="select_training">Select Training:</label>
+          <select id="select_training" 
             className="form-select shadow-sm" 
             value={selectedCourse} 
             onChange={(e) => setSelectedCourse(e.target.value)}
@@ -94,8 +94,8 @@ const handleDownload = async (type, format) => {
           </select>
         </div>
         <div className="col-md-6">
-          <label className="small fw-bold text-muted">PERIOD:</label>
-          <select 
+          <label className="small fw-bold text-muted" htmlFor="period">PERIOD:</label>
+          <select id="period" 
             className="form-select shadow-sm" 
             value={period} 
             onChange={(e) => setPeriod(e.target.value)}

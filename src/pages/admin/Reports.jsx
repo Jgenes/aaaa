@@ -42,7 +42,7 @@ export default function AdminReports() {
 
     return (
         <AdminDashboardLayout title="Performance Reports">
-            <div className="container-fluid mt-4">
+            <div>
                 
                 {/* --- FILTERS (Style Yako Ile Ile) --- */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
@@ -59,12 +59,12 @@ export default function AdminReports() {
                             ))}
                         </div>
 
-                        <select className="form-select form-select-sm shadow-sm border-0" style={{width: '180px'}} value={providerId} onChange={(e) => setProviderId(e.target.value)}>
+                        <select className="form-select form-select-sm shadow-sm border-0" aria-label="Filter by provider" style={{width: '180px'}} value={providerId} onChange={(e) => setProviderId(e.target.value)}>
                             <option value="">All Providers</option>
                             {options.providers?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
 
-                        <select className="form-select form-select-sm shadow-sm border-0" style={{width: '180px'}} value={courseId} onChange={(e) => setCourseId(e.target.value)}>
+                        <select className="form-select form-select-sm shadow-sm border-0" aria-label="Filter by course" style={{width: '180px'}} value={courseId} onChange={(e) => setCourseId(e.target.value)}>
                             <option value="">All Courses</option>
                             {options.courses?.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
                         </select>
@@ -132,15 +132,15 @@ export default function AdminReports() {
                                                     <AreaChart data={data.revenue}>
                                                         <defs>
                                                             <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#0d6efd" stopOpacity={0.1}/>
-                                                                <stop offset="95%" stopColor="#0d6efd" stopOpacity={0}/>
+                                                                <stop offset="5%" stopColor="var(--th-primary)" stopOpacity={0.1}/>
+                                                                <stop offset="95%" stopColor="var(--th-primary)" stopOpacity={0}/>
                                                             </linearGradient>
                                                         </defs>
-                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--th-line)" />
                                                         <XAxis dataKey="label" axisLine={false} tickLine={false} />
                                                         <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `TSh ${val/1000}k`} />
                                                         <Tooltip />
-                                                        <Area type="monotone" dataKey="total_amount" stroke="#0d6efd" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                                                        <Area type="monotone" dataKey="total_amount" stroke="var(--th-primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                                                     </AreaChart>
                                                 </ResponsiveContainer>
                                             </div>

@@ -40,10 +40,10 @@ export default function ProviderSettings() {
             <h6 className="fw-bold mb-3">Change Password</h6>
             <form onSubmit={handlePasswordUpdate}>
               <div className="mb-3">
-                <label className="form-label small text-muted fw-bold">
+                <label className="form-label small text-muted fw-bold" htmlFor="current_password">
                   CURRENT PASSWORD
                 </label>
-                <input
+                <input id="current_password"
                   type="password"
                   className="form-control"
                   value={passwords.current_password}
@@ -57,10 +57,10 @@ export default function ProviderSettings() {
                 />
               </div>
               <div className="mb-3">
-                <label className="form-label small text-muted fw-bold">
+                <label className="form-label small text-muted fw-bold" htmlFor="new_password">
                   NEW PASSWORD
                 </label>
-                <input
+                <input id="new_password"
                   type="password"
                   className="form-control"
                   value={passwords.password}
@@ -71,10 +71,10 @@ export default function ProviderSettings() {
                 />
               </div>
               <div className="mb-4">
-                <label className="form-label small text-muted fw-bold">
+                <label className="form-label small text-muted fw-bold" htmlFor="confirm_new_password">
                   CONFIRM NEW PASSWORD
                 </label>
-                <input
+                <input id="confirm_new_password"
                   type="password"
                   className="form-control"
                   value={passwords.password_confirmation}

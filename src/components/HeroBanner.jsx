@@ -26,7 +26,7 @@ function HeroBanner() {
       <div
         className="row align-items-center text-white p-4 p-md-5"
         style={{
-          backgroundColor: "#0a2e67",
+          backgroundColor: "var(--th-primary)",
           borderRadius: "28px",
           minHeight: "420px",
         }}

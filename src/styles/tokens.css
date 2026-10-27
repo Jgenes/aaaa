@@ -1,0 +1,142 @@
+/* ============================================================
+   TrainHub TZ — Design tokens
+   Single source of truth for colour, type, spacing, elevation.
+   ============================================================ */
+
+:root {
+  /* ---------- Brand ---------- */
+  --th-navy-950: #071b33;
+  --th-navy-900: #0a2547;
+  --th-navy-800: #0d2f5a;
+  --th-navy-700: #124a8f; /* primary — sampled from wordmark */
+  --th-navy-600: #1858a8;
+  --th-navy-500: #1f6cc9;
+  --th-blue-400: #4d90e0;
+  --th-blue-100: #e3edfa;
+  --th-blue-50: #f1f6fd;
+
+  --th-green-700: #276b3e;
+  --th-green-600: #358a50; /* sampled from “TZ” */
+  --th-green-100: #e4f3e9;
+
+  --th-orange-600: #d88413;
+  --th-orange-500: #f0a02a; /* sampled from the mark */
+  --th-orange-100: #fdf1de;
+
+  /* ---------- Semantic colour ---------- */
+  --th-primary: var(--th-navy-700);
+  --th-primary-hover: var(--th-navy-800);
+  --th-primary-active: var(--th-navy-900);
+  --th-primary-soft: var(--th-blue-50);
+  --th-primary-soft-border: #cfdff5;
+  --th-accent: var(--th-green-600);
+  --th-accent-hover: var(--th-green-700);
+  --th-highlight: var(--th-orange-500);
+
+  --th-ink: #0f1c2e; /* headings */
+  --th-text: #33445c; /* body copy */
+  --th-muted: #4d5b70; /* secondary copy */
+  --th-subtle: #5f6b7c; /* meta / captions */
+  --th-line: #e3e9f1; /* hairline borders */
+  --th-line-strong: #cfd8e5;
+  --th-surface: #ffffff;
+  --th-placeholder: #5f6b7c;
+  --th-surface-sunken: #f7f9fc;
+  --th-surface-muted: #f1f5fa;
+  --th-invert: #ffffff;
+
+  --th-success: #1f7a4d;
+  --th-success-soft: #e7f5ec;
+  --th-warning: #8a5400;
+  --th-warning-soft: #fdf3e2;
+  --th-danger: #b42318;
+  --th-danger-soft: #fdeceb;
+  --th-info: #134e8e;
+  --th-info-soft: #e8f1fb;
+
+  /* ---------- Typography ---------- */
+  --th-font-sans: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue",
+    Arial, sans-serif;
+  --th-font-display: "Plus Jakarta Sans", "Inter", "Segoe UI", system-ui,
+    sans-serif;
+
+  --th-fs-2xs: 0.6875rem; /* 11px */
+  --th-fs-xs: 0.75rem; /* 12px */
+  --th-fs-sm: 0.8125rem; /* 13px */
+  --th-fs-base: 0.9375rem; /* 15px */
+  --th-fs-md: 1rem; /* 16px */
+  --th-fs-lg: 1.125rem; /* 18px */
+  --th-fs-xl: 1.375rem; /* 22px */
+  --th-fs-2xl: 1.625rem; /* 26px */
+  --th-fs-3xl: 2rem; /* 32px */
+  --th-fs-4xl: clamp(2.125rem, 1.4rem + 2.2vw, 3.125rem);
+
+  --th-lh-tight: 1.15;
+  --th-lh-snug: 1.3;
+  --th-lh-normal: 1.55;
+  --th-lh-relaxed: 1.7;
+
+  /* ---------- Spacing (4px base) ---------- */
+  --th-space-1: 0.25rem;
+  --th-space-2: 0.5rem;
+  --th-space-3: 0.75rem;
+  --th-space-4: 1rem;
+  --th-space-5: 1.25rem;
+  --th-space-6: 1.5rem;
+  --th-space-8: 2rem;
+  --th-space-10: 2.5rem;
+  --th-space-12: 3rem;
+  --th-space-16: 4rem;
+  --th-space-20: 5rem;
+
+  --th-section-y: clamp(2.75rem, 1.6rem + 4.4vw, 5rem);
+
+  /* ---------- Radii ---------- */
+  --th-radius-xs: 6px;
+  --th-radius-sm: 8px;
+  --th-radius-md: 10px;
+  --th-radius-lg: 14px;
+  --th-radius-xl: 20px;
+  --th-radius-pill: 999px;
+
+  /* ---------- Elevation ---------- */
+  --th-shadow-xs: 0 1px 2px rgba(15, 28, 46, 0.06);
+  --th-shadow-sm: 0 1px 3px rgba(15, 28, 46, 0.07),
+    0 1px 2px rgba(15, 28, 46, 0.04);
+  --th-shadow-md: 0 6px 16px -6px rgba(15, 28, 46, 0.14),
+    0 2px 6px -2px rgba(15, 28, 46, 0.06);
+  --th-shadow-lg: 0 20px 40px -20px rgba(15, 28, 46, 0.28),
+    0 8px 16px -12px rgba(15, 28, 46, 0.12);
+  --th-ring: 0 0 0 3px rgba(18, 74, 143, 0.22);
+  --th-ring-danger: 0 0 0 3px rgba(180, 35, 24, 0.2);
+
+  /* ---------- Motion ---------- */
+  --th-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --th-dur-fast: 120ms;
+  --th-dur: 180ms;
+  --th-dur-slow: 320ms;
+
+  /* ---------- Layout ---------- */
+  --th-container: 1180px;
+  --th-container-wide: 1320px;
+  --th-header-h: 70px;
+  --th-sidebar-w: 264px;
+
+  /* ---------- Bootstrap bridge ---------- */
+  --bs-primary: var(--th-primary);
+  --bs-primary-rgb: 18, 74, 143;
+  --bs-body-color: var(--th-text);
+  --bs-body-bg: #ffffff;
+  --bs-body-font-family: var(--th-font-sans);
+  --bs-body-font-size: 0.9375rem;
+  --bs-link-color: var(--th-primary);
+  --bs-link-color-rgb: 18, 74, 143;
+  --bs-link-hover-color: var(--th-navy-900);
+  --bs-border-color: var(--th-line);
+  --bs-border-radius: 10px;
+  --bs-border-radius-sm: 8px;
+  --bs-border-radius-lg: 14px;
+  --bs-heading-color: var(--th-ink);
+  --bs-secondary-color: var(--th-muted);
+  --bs-body-line-height: 1.55;
+}

@@ -31,7 +31,7 @@ const CourseHero = () => {
     return <p className="text-center py-5">Loading course details...</p>;
   if (!course) return <p className="text-center py-5">Course not found</p>;
 
-  const { title, description, banner, mode, provider, selectedCohort } = course;
+  const { title, description, banner, provider, selectedCohort } = course;
 
   const providerLogo = provider?.logo
     ? `http://localhost:8000/storage/${provider.logo}`

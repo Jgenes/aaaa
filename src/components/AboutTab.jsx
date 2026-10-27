@@ -6,10 +6,6 @@ export default function ProgramTabs({ courseId, cohortId }) {
   const [course, setCourse] = useState(null);
   const [previewVideo, setPreviewVideo] = useState(null);
 
-  useEffect(() => {
-    fetchCourseContent();
-  }, [courseId, cohortId]);
-
   const fetchCourseContent = async () => {
     try {
       const res = await api.get(`/training/${courseId}`);
@@ -23,10 +19,15 @@ export default function ProgramTabs({ courseId, cohortId }) {
     }
   };
 
+  useEffect(() => {
+    fetchCourseContent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId, cohortId]);
+
   if (!course)
     return <p className="text-center py-5">Loading course content...</p>;
 
-  const { selectedCohort, curriculum, requirements, description } = course;
+  const { curriculum, requirements, description } = course;
 
   return (
     <div className="container mt-5">
@@ -43,7 +44,7 @@ export default function ProgramTabs({ courseId, cohortId }) {
                 data-bs-target={section.unlocked ? `#section${index}` : ""}
                 style={{
                   cursor: section.unlocked ? "pointer" : "not-allowed",
-                  backgroundColor: "#f8f9fa",
+                  backgroundColor: "var(--th-surface-sunken)",
                 }}
                 title={!section.unlocked ? "Complete enrollment to unlock" : ""}
               >
@@ -126,6 +127,7 @@ export default function ProgramTabs({ courseId, cohortId }) {
                 <h6 className="modal-title">Preview Lesson</h6>
                 <button
                   className="btn-close"
+                  aria-label="Close lesson preview"
                   onClick={() => setPreviewVideo(null)}
                 ></button>
               </div>

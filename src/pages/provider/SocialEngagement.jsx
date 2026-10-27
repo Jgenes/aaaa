@@ -109,16 +109,16 @@ export default function SocialEngagement() {
                                             <button className='btnAA' onClick={() => shareCourse('instagram', course)} style={getBtnStyle('#E4405F')} title="Instagram"><FaInstagram /></button>
                                             <button className='btnAA' onClick={() => shareCourse('linkedin', course)} style={getBtnStyle('#0A66C2')} title="LinkedIn"><FaLinkedinIn /></button>
                                             <button className='btnAA' onClick={() => shareCourse('whatsapp', course)} style={getBtnStyle('#25D366')} title="WhatsApp"><FaWhatsapp /></button>
-                                            <button className='btnAA' onClick={() => shareCourse('copy', course)} style={getBtnStyle('#6c757d')} title="Copy Link"><FaCopy /></button>
+                                            <button className='btnAA' onClick={() => shareCourse('copy', course)} style={getBtnStyle('var(--th-muted)')} title="Copy Link"><FaCopy /></button>
                                         </div>
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '10px' }}>
-                                        <div style={{ flex: 1, textAlign: 'center', background: '#fbfbfb', padding: '8px', borderRadius: '8px', border: '1px solid #f0f0f0' }}>
+                                        <div style={{ flex: 1, textAlign: 'center', background: '#fbfbfb', padding: '8px', borderRadius: '8px', border: '1px solid var(--th-line)' }}>
                                             <div style={{ fontSize: '10px', color: '#999' }}>STATUS</div>
                                             <div style={{ fontSize: '12px', color: '#28a745' }}>{course.status || 'Active'}</div>
                                         </div>
-                                        <div style={{ flex: 1, textAlign: 'center', background: '#fbfbfb', padding: '8px', borderRadius: '8px', border: '1px solid #f0f0f0' }}>
+                                        <div style={{ flex: 1, textAlign: 'center', background: '#fbfbfb', padding: '8px', borderRadius: '8px', border: '1px solid var(--th-line)' }}>
                                             <div style={{ fontSize: '10px', color: '#999' }}>COHORT</div>
                                             <div style={{ fontSize: '12px', color: '#333' }}>{course.cohorts_count || 1} Active</div>
                                         </div>

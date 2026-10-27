@@ -98,11 +98,11 @@ export default function ProviderCohorts() {
 
   return (
     <ProviderDashboardLayout title="Cohorts">
-      <div className="container mt-4">
+      <div>
         <div className="d-flex justify-content-between mb-2">
           <h5>Cohorts List</h5>
           <div className="d-flex gap-2">
-            <input
+            <input aria-label="Search cohorts"
               type="text"
               placeholder="Search..."
               className="form-control w-auto"
@@ -130,8 +130,8 @@ export default function ProviderCohorts() {
 
         {showModal && selectedCohort && (
           <div
-            className="modal fade show d-block"
-            style={{ background: "#00000080" }}
+            className="modal fade show d-block th-modal-backdrop"
+            
           >
             <div className="modal-dialog modal-lg modal-dialog-scrollable">
               <div className="modal-content">
@@ -139,6 +139,7 @@ export default function ProviderCohorts() {
                   <h5 className="modal-title">{selectedCohort.intakeName}</h5>
                   <button
                     className="btn-close"
+                    aria-label="Close cohort details"
                     onClick={() => setShowModal(false)}
                   />
                 </div>

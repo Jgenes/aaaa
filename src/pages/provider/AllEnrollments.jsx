@@ -3,6 +3,7 @@ import api from "../../api/axio";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
 
+import { tableStyles } from "../../lib/tableStyles";
 export default function ProviderEnrollments() {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +98,7 @@ export default function ProviderEnrollments() {
         <div className="col-md-3 mb-2">
           <div className="card border-0 shadow-sm p-3 border-start border-primary border-4" style={{ borderRadius: "0px" }}>
             <small className="text-muted fw-bold d-block text-uppercase" style={{ letterSpacing: "0.5px", fontSize: "10px" }}>Total Students</small>
-            <h4 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>{enrollments.length}</h4>
+            <h4 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>{enrollments.length}</h4>
           </div>
         </div>
       </div>
@@ -105,16 +106,16 @@ export default function ProviderEnrollments() {
       {/* Table Card */}
       <div className="card border-0 shadow-sm" style={{ borderRadius: "5px" }}>
         <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-          <h6 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>Enrollment List</h6>
+          <h6 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>Enrollment List</h6>
           
           {/* Square Search Bar */}
-          <input
+          <input aria-label="Search trainee"
             type="text"
             className="form-control form-control-sm shadow-none"
             style={{ 
                 width: "250px", 
                 borderRadius: "5px", // Sharp corners
-                border: "1px solid #d1d5db" 
+                border: "1px solid var(--th-line-strong)" 
             }}
             placeholder="Search trainee..."
             value={filterText}
@@ -131,10 +132,7 @@ export default function ProviderEnrollments() {
             noDataComponent={<div className="p-4 text-muted">Hakuna data iliyopatikana.</div>}
             highlightOnHover
             responsive
-            customStyles={{ 
-                headCells: { style: { color: "#0a2e67", fontWeight: "bold", fontSize: "12px", textTransform: "uppercase" } },
-                cells: { style: { fontSize: "13px" } }
-            }}
+            customStyles={tableStyles}
           />
         </div>
       </div>
@@ -144,7 +142,7 @@ export default function ProviderEnrollments() {
         <div className="modal-dialog modal-lg modal-dialog-centered">
           <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "0px" }}>
             <div className="modal-header bg-light border-0" style={{ borderRadius: "0px" }}>
-              <h5 className="modal-title fw-bold" style={{ color: "#0a2e67" }}>
+              <h5 className="modal-title fw-bold" style={{ color: "var(--th-primary)" }}>
                 <i className="bi bi-person-badge me-2"></i>
                 Trainee Profile
               </h5>
@@ -155,9 +153,9 @@ export default function ProviderEnrollments() {
               {selectedStudent ? (
                 <div className="row g-4">
                   <div className="col-12">
-                    <div className="p-3 border-start border-4 border-primary" style={{ backgroundColor: "#f0f8ff" }}>
+                    <div className="p-3 border-start border-4 border-primary" style={{ backgroundColor: "var(--th-blue-50)" }}>
                       <small className="text-uppercase text-muted fw-bold" style={{ fontSize: "11px" }}>Enrolled Course</small>
-                      <h5 className="fw-bold mb-1" style={{ color: "#0a2e67" }}>{selectedStudent.course?.title}</h5>
+                      <h5 className="fw-bold mb-1" style={{ color: "var(--th-primary)" }}>{selectedStudent.course?.title}</h5>
                       <span className="badge bg-primary px-3 shadow-sm" style={{ borderRadius: "2px" }}>
                         {selectedStudent.cohort?.intake_name}
                       </span>
@@ -200,7 +198,7 @@ export default function ProviderEnrollments() {
                       </div>
                       <div className="text-end">
                         <small className="text-muted d-block" style={{ fontSize: "11px" }}>Amount Paid</small>
-                        <h4 className="fw-bold mb-0" style={{ color: "#0a2e67" }}>
+                        <h4 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>
                           Tsh {new Intl.NumberFormat().format(selectedStudent.amount || 0)}
                         </h4>
                       </div>

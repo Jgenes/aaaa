@@ -42,7 +42,7 @@ export default function AdminReports() {
 
     return (
         <AdminDashboardLayout title="Performance Reports">
-            <div className="container-fluid mt-4">
+            <div>
                 
                 {/* --- FILTERS --- */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
@@ -53,8 +53,8 @@ export default function AdminReports() {
                                     key={p.id}
                                     className="btn btn-sm px-4 border-0"
                                     style={period === p.id 
-                                        ? { backgroundColor: '#0a2e67', color: 'white', transition: '0.5s', fontSize: '13px' } 
-                                        : { fontSize: '13px', transition: '0.5s', backgroundColor: 'transparent', color: '#6c757d' }
+                                        ? { backgroundColor: 'var(--th-primary)', color: 'white', transition: '0.5s', fontSize: '13px' } 
+                                        : { fontSize: '13px', transition: '0.5s', backgroundColor: 'transparent', color: 'var(--th-muted)' }
                                     }
                                     onClick={() => setPeriod(p.id)}
                                 >
@@ -63,12 +63,12 @@ export default function AdminReports() {
                             ))}
                         </div>
 
-                        <select className="form-select form-select-sm shadow-sm border-0" style={{width: '180px'}} value={providerId} onChange={(e) => setProviderId(e.target.value)}>
+                        <select className="form-select form-select-sm shadow-sm border-0" aria-label="Filter by provider" style={{width: '180px'}} value={providerId} onChange={(e) => setProviderId(e.target.value)}>
                             <option value="">All Providers</option>
                             {options.providers?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
 
-                        <select className="form-select form-select-sm shadow-sm border-0" style={{width: '180px'}} value={courseId} onChange={(e) => setCourseId(e.target.value)}>
+                        <select className="form-select form-select-sm shadow-sm border-0" aria-label="Filter by course" style={{width: '180px'}} value={courseId} onChange={(e) => setCourseId(e.target.value)}>
                             <option value="">All Courses</option>
                             {options.courses?.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
                         </select>
@@ -91,8 +91,8 @@ export default function AdminReports() {
                         <button 
                             className="nav-link border-0 fw-bold rounded" 
                             style={activeTab === 'finance' 
-                                ? { backgroundColor: '#0a2e67', color: 'white', transition: '0.5s', fontSize: '13px' } 
-                                : { fontSize: '13px', transition: '0.5s', backgroundColor: 'transparent', color: '#6c757d' }
+                                ? { backgroundColor: 'var(--th-primary)', color: 'white', transition: '0.5s', fontSize: '13px' } 
+                                : { fontSize: '13px', transition: '0.5s', backgroundColor: 'transparent', color: 'var(--th-muted)' }
                             }
                             onClick={() => setActiveTab('finance')}
                         >
@@ -103,8 +103,8 @@ export default function AdminReports() {
                         <button 
                             className="nav-link border-0 fw-bold rounded" 
                             style={activeTab === 'enrollment' 
-                                ? { backgroundColor: '#0a2e67', color: 'white', transition: '0.5s', fontSize: '13px' } 
-                                : { fontSize: '13px', transition: '0.5s', backgroundColor: 'transparent', color: '#6c757d' }
+                                ? { backgroundColor: 'var(--th-primary)', color: 'white', transition: '0.5s', fontSize: '13px' } 
+                                : { fontSize: '13px', transition: '0.5s', backgroundColor: 'transparent', color: 'var(--th-muted)' }
                             }
                             onClick={() => setActiveTab('enrollment')}
                         >
@@ -115,7 +115,7 @@ export default function AdminReports() {
 
                 {loading ? (
                     <div className="text-center py-5">
-                        <div className="spinner-border" style={{ color: '#0a2e67' }} role="status"></div>
+                        <div className="spinner-border" style={{ color: 'var(--th-primary)' }} role="status"></div>
                     </div>
                 ) : (
                     <>
@@ -125,7 +125,7 @@ export default function AdminReports() {
                                     <div className="col-md-4">
                                         <div className="card border-0 shadow-sm p-3">
                                             <div className="d-flex align-items-center gap-3">
-                                                <div className="p-3 rounded-circle" style={{ backgroundColor: '#e6efff', color: '#0a2e67' }}>
+                                                <div className="p-3 rounded-circle" style={{ backgroundColor: 'var(--th-blue-50)', color: 'var(--th-primary)' }}>
                                                     <DollarSign size={24} />
                                                 </div>
                                                 <div>
@@ -148,15 +148,15 @@ export default function AdminReports() {
                                                     <AreaChart data={data.revenue}>
                                                         <defs>
                                                             <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#0a2e67" stopOpacity={0.1}/>
-                                                                <stop offset="95%" stopColor="#0a2e67" stopOpacity={0}/>
+                                                                <stop offset="5%" stopColor="var(--th-primary)" stopOpacity={0.1}/>
+                                                                <stop offset="95%" stopColor="var(--th-primary)" stopOpacity={0}/>
                                                             </linearGradient>
                                                         </defs>
-                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--th-line)" />
                                                         <XAxis dataKey="label" axisLine={false} tickLine={false} />
                                                         <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `TSh ${val/1000}k`} />
                                                         <Tooltip />
-                                                        <Area type="monotone" dataKey="total_amount" stroke="#0a2e67" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                                                        <Area type="monotone" dataKey="total_amount" stroke="var(--th-primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                                                     </AreaChart>
                                                 </ResponsiveContainer>
                                             </div>
@@ -174,7 +174,7 @@ export default function AdminReports() {
                                     <div className="col-md-4">
                                         <div className="card border-0 shadow-sm p-3">
                                             <div className="d-flex align-items-center gap-3">
-                                                <div className="p-3 rounded-circle" style={{ backgroundColor: '#e6f4ea', color: '#198754' }}>
+                                                <div className="p-3 rounded-circle" style={{ backgroundColor: 'var(--th-success-soft)', color: 'var(--th-success)' }}>
                                                     <Users size={24} />
                                                 </div>
                                                 <div>
@@ -209,14 +209,14 @@ export default function AdminReports() {
                                                                 <tr key={index}>
                                                                     <td className="fw-semibold">{item.course_name}</td>
                                                                     <td className="text-center">
-                                                                        <span className="badge rounded-pill px-3" style={{ backgroundColor: '#e6efff', color: '#0a2e67' }}>
+                                                                        <span className="badge rounded-pill px-3" style={{ backgroundColor: 'var(--th-blue-50)', color: 'var(--th-primary)' }}>
                                                                             {item.student_count} Students
                                                                         </span>
                                                                     </td>
                                                                     <td className="text-end">
                                                                         <div className="d-flex align-items-center justify-content-end gap-2">
                                                                             <div className="progress w-50" style={{height: '6px'}}>
-                                                                                <div className="progress-bar" style={{width: `${percentage}%`, backgroundColor: '#198754'}}></div>
+                                                                                <div className="progress-bar" style={{width: `${percentage}%`, backgroundColor: 'var(--th-success)'}}></div>
                                                                             </div>
                                                                             <span className="small text-muted">{percentage}%</span>
                                                                         </div>

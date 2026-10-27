@@ -6,12 +6,6 @@ import api from "../api/axio";
 const CourseMetaBar = ({ courseId, cohortId }) => {
   const [cohort, setCohort] = useState(null);
 
-  useEffect(() => {
-    if (courseId && cohortId) {
-      fetchCohort();
-    }
-  }, [courseId, cohortId]);
-
   const fetchCohort = async () => {
     try {
       const res = await api.get(`/training/${courseId}`);
@@ -27,6 +21,13 @@ const CourseMetaBar = ({ courseId, cohortId }) => {
       console.error("Failed to load cohort", err);
     }
   };
+
+  useEffect(() => {
+    if (courseId && cohortId) {
+      fetchCohort();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId, cohortId]);
 
   if (!cohort) {
     return <p className="text-center py-3">Loading course info...</p>;

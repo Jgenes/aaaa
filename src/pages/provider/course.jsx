@@ -8,6 +8,7 @@ import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import api from "../../api/axio";
 import "react-toastify/dist/ReactToastify.css";
 
+import { tableStyles } from "../../lib/tableStyles";
 export default function ProviderDashboard() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,31 +50,6 @@ export default function ProviderDashboard() {
   );
 
   // Custom Styles kufuata Design System yetu
-  const customStyles = {
-    headCells: {
-      style: {
-        backgroundColor: "#f8fafc",
-        color: "#0a2e67",
-        fontWeight: "700",
-        fontSize: "13px",
-        textTransform: "uppercase",
-        borderBottom: "2px solid #edf2f7",
-      },
-    },
-    cells: {
-      style: {
-        fontSize: "14px",
-        color: "#4a5568",
-      },
-    },
-    pagination: {
-      style: {
-        borderTop: "1px solid #edf2f7",
-        color: "#0a2e67",
-        fontWeight: "600",
-      },
-    },
-  };
 
   const columns = [
     {
@@ -107,7 +83,7 @@ export default function ProviderDashboard() {
         return (
           <span className="fw-bold" style={{ 
             fontSize: "12px", 
-            color: status === "ACTIVE" || status === "OPEN" ? "#2ecc71" : "#95a5a6" 
+            color: status === "ACTIVE" || status === "OPEN" ? "var(--th-success)" : "#95a5a6" 
           }}>
             ● {status || "N/A"}
           </span>
@@ -143,19 +119,11 @@ export default function ProviderDashboard() {
     <ProviderDashboardLayout title="Training Management">
       <ToastContainer position="top-right" theme="colored" />
       
-      <style>{`
-        .table-container { background: #fff; border-radius: 12px; border: 1px solid #edf2f7; overflow: hidden; }
-        .action-section { background: #fff; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; border: 1px solid #edf2f7; }
-        .search-input { border-radius: 8px; border: 1px solid #e2e8f0; padding-left: 35px; height: 40px; font-size: 14px; transition: 0.3s; }
-        .search-input:focus { border-color: #0a2e67; box-shadow: 0 0 0 3px rgba(10,46,103,0.1); outline: none; }
-        .btn-add { background: #0a2e67; color: white; border-radius: 8px; padding: 8px 18px; font-weight: 600; border: none; font-size: 14px; transition: 0.3s; }
-        .btn-add:hover { background: #082452; transform: translateY(-1px); }
-      `}</style>
 
-      <div className="container py-4">
+      <div>
         {/* Header Area */}
         <div className="mb-4">
-          <h4 className="fw-bold" style={{ color: "#0a2e67" }}>My Training Programs</h4>
+          <h4 className="fw-bold" style={{ color: "var(--th-primary)" }}>My Training Programs</h4>
           <p className="text-muted small">Manage your courses, intakes, and enrollments in one place.</p>
         </div>
 
@@ -164,7 +132,7 @@ export default function ProviderDashboard() {
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div className="position-relative">
               <FaSearch className="position-absolute top-50 translate-middle-y ms-3 text-muted" size={13} />
-              <input
+              <input aria-label="Find training or category"
                 type="text"
                 className="form-control search-input"
                 placeholder="Find training or category..."
@@ -187,7 +155,7 @@ export default function ProviderDashboard() {
             pagination
             highlightOnHover
             responsive
-            customStyles={customStyles}
+            customStyles={tableStyles}
             progressPending={loading}
             noDataComponent={
               <div className="p-5 text-center text-muted">

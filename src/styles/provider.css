@@ -1,0 +1,394 @@
+/* ============================================================
+   TrainHub TZ — provider workspace surfaces
+   Page-level classes for the provider dashboard screens.
+   Loaded once; individual pages must not ship <style> blocks.
+   ============================================================ */
+
+/* ---------- Page chrome ---------- */
+.page-header {
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-lg);
+  padding: var(--th-space-5) var(--th-space-6);
+  margin-bottom: var(--th-space-6);
+}
+
+.page-header h1,
+.page-header .page-header__title {
+  font-size: var(--th-fs-xl);
+  margin-bottom: var(--th-space-1);
+}
+
+.page-header__sub {
+  color: var(--th-muted);
+  font-size: var(--th-fs-sm);
+  margin-bottom: 0;
+}
+
+.th-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--th-space-3);
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-lg);
+  padding: var(--th-space-3) var(--th-space-4);
+  margin-bottom: var(--th-space-4);
+}
+
+/* ---------- Search ---------- */
+.search-card,
+.action-section {
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-lg);
+  padding: var(--th-space-4) var(--th-space-5);
+  margin-bottom: var(--th-space-4);
+}
+
+.search-wrapper,
+.search-input-group {
+  position: relative;
+  max-width: 22rem;
+  flex: 1 1 15rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--th-placeholder);
+  pointer-events: none;
+  display: inline-flex;
+}
+
+.search-input,
+.search-control {
+  padding-left: 2.15rem;
+  min-height: 40px;
+  font-size: var(--th-fs-sm);
+}
+
+.search-input:focus,
+.search-control:focus {
+  border-color: var(--th-primary);
+  box-shadow: var(--th-ring);
+}
+
+/* ---------- Tables ---------- */
+.table-wrapper,
+.table-container {
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-lg);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.table-wrapper .table,
+.table-container .table {
+  margin-bottom: 0;
+}
+
+/* ---------- Status pills (cohorts, courses) ---------- */
+.status-badge,
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--th-radius-pill);
+  font-size: var(--th-fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  border: 1px solid transparent;
+}
+
+.status-open {
+  background: var(--th-success-soft);
+  color: var(--th-success);
+  border-color: #bfe3cd;
+}
+
+.status-full {
+  background: var(--th-warning-soft);
+  color: var(--th-warning);
+  border-color: #f0d9ae;
+}
+
+.status-closed {
+  background: var(--th-surface-muted);
+  color: var(--th-muted);
+  border-color: var(--th-line-strong);
+}
+
+/* ---------- Row actions ---------- */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--th-radius-sm);
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition:
+    background-color var(--th-dur) var(--th-ease),
+    border-color var(--th-dur) var(--th-ease),
+    color var(--th-dur) var(--th-ease);
+}
+
+.action-btn:hover {
+  border-color: currentColor;
+}
+
+.btn-view {
+  background: var(--th-blue-50);
+  color: var(--th-primary);
+}
+
+.btn-edit {
+  background: var(--th-orange-100);
+  color: #8a5400;
+}
+
+.btn-delete {
+  background: var(--th-danger-soft);
+  color: var(--th-danger);
+}
+
+/* ---------- Detail lists (enrollment modal) ---------- */
+.detail-label {
+  font-size: var(--th-fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--th-muted);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.detail-value {
+  font-size: var(--th-fs-sm);
+  color: var(--th-ink);
+  font-weight: 600;
+}
+
+.section-divider {
+  border-left: 3px solid var(--th-primary);
+  padding-left: var(--th-space-3);
+  margin: var(--th-space-4) 0 var(--th-space-3);
+  color: var(--th-primary);
+  font-weight: 700;
+  font-size: var(--th-fs-sm);
+}
+
+/* ---------- Forms ---------- */
+.form-card,
+.edit-card,
+.form-section,
+.info-card {
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-lg);
+  padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+}
+
+.form-card,
+.edit-card {
+  box-shadow: var(--th-shadow-sm);
+}
+
+.form-section {
+  margin-bottom: var(--th-space-4);
+}
+
+.form-section.shadow-sm {
+  box-shadow: none;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--th-space-2);
+  font-size: var(--th-fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--th-primary);
+  padding-bottom: var(--th-space-2);
+  margin-bottom: var(--th-space-4);
+  border-bottom: 1px solid var(--th-line);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--th-space-2);
+  font-size: var(--th-fs-md);
+  font-weight: 700;
+  color: var(--th-ink);
+  margin-bottom: var(--th-space-4);
+}
+
+.form-label-custom {
+  display: block;
+  font-size: var(--th-fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--th-muted);
+  margin-bottom: var(--th-space-2);
+}
+
+.custom-input {
+  border-radius: var(--th-radius-sm);
+}
+
+.section-card {
+  background: var(--th-surface-sunken);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-lg);
+  padding: var(--th-space-5);
+  margin-bottom: var(--th-space-4);
+}
+
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--th-fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--th-primary);
+  background: none;
+  border: 0;
+  padding: 0.25rem 0;
+}
+
+.add-btn:hover {
+  color: var(--th-primary-hover);
+  text-decoration: underline;
+}
+
+.badge-section {
+  display: inline-flex;
+  align-items: center;
+  background: var(--th-info-soft);
+  color: var(--th-info);
+  font-size: var(--th-fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--th-radius-pill);
+}
+
+.image-preview-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border: 1px dashed var(--th-line-strong);
+  border-radius: var(--th-radius-md);
+  background: var(--th-surface-sunken);
+  color: var(--th-muted);
+}
+
+.image-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- Course preview (provider) ---------- */
+.course-banner {
+  width: 100%;
+  height: clamp(180px, 30vw, 320px);
+  object-fit: cover;
+  border-radius: var(--th-radius-lg);
+}
+
+.outcome-item {
+  background: var(--th-surface-sunken);
+  border-left: 3px solid var(--th-primary);
+  border-radius: var(--th-radius-sm);
+  padding: 0.75rem 1.1rem;
+  margin-bottom: var(--th-space-2);
+  font-size: var(--th-fs-sm);
+  color: var(--th-text);
+}
+
+.skill-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--th-blue-50);
+  color: var(--th-primary);
+  border: 1px solid var(--th-primary-soft-border);
+  border-radius: var(--th-radius-pill);
+  padding: 0.3rem 0.8rem;
+  font-size: var(--th-fs-xs);
+  font-weight: 600;
+}
+
+.lesson-card {
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-md);
+  transition: border-color var(--th-dur) var(--th-ease);
+}
+
+.lesson-card:hover {
+  border-color: var(--th-primary);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 767.98px) {
+  .page-header {
+    padding: var(--th-space-4);
+  }
+
+  .search-wrapper,
+  .search-input-group {
+    max-width: none;
+    width: 100%;
+  }
+
+  .section-card {
+    padding: var(--th-space-4);
+  }
+
+  .th-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-btn,
+  .lesson-card {
+    transition: none;
+  }
+}
+
+/* ---------- Shared modal backdrop ---------- */
+.th-modal-backdrop {
+  background: rgba(7, 27, 51, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+/* Narrow content columns inside the dashboard shell */
+.th-form-narrow {
+  max-width: 800px;
+}
+
+.th-page-narrow {
+  max-width: 1000px;
+}

@@ -99,7 +99,7 @@ export default function ProviderReview() {
             name: 'Action',
             cell: row => (
                 <button
-                style={{backgroundColor: '#0a2e67', color:'white', fontSize:'13px', transition: '0.2s'}}
+                style={{backgroundColor: 'var(--th-primary)', color:'white', fontSize:'13px', transition: '0.2s'}}
                     className="btn btn-sm btn-outline-primary f"
                     data-bs-toggle="modal"
                     data-bs-target="#providerModal"
@@ -139,6 +139,7 @@ export default function ProviderReview() {
                             <button
                                 type="button"
                                 className="btn-close btn-close-white"
+                                aria-label="Close dialog"
                                 data-bs-dismiss="modal"
                                 disabled={actionType !== null}
                             ></button>
@@ -146,20 +147,20 @@ export default function ProviderReview() {
 
                         <div className="modal-body bg-light">
                             {selectedProvider && (
-                                <div className="container-fluid">
+                                <div>
                                     <div className="row g-4">
                                         {/* Business Info */}
                                         <div className="col-md-4">
                                             <div className="card h-100 border-0 shadow-sm">
-                                                <div className="card-header bg-white fw-bold" style={{color: '#111827'}}>Business Identity</div>
+                                                <div className="card-header bg-white fw-bold" style={{color: 'var(--th-ink)'}}>Business Identity</div>
                                                 <div className="card-body">
-                                                    <label className="text-muted small d-block">Legal Name</label>
+                                                    <div className="detail-label">Legal Name</div>
                                                     <p className="fw-bold mb-3">{selectedProvider.legal_name}</p>
-                                                    <label className="text-muted small d-block">Brand Name</label>
+                                                    <div className="detail-label">Brand Name</div>
                                                     <p className="fw-bold mb-3">{selectedProvider.brand_name || 'N/A'}</p>
-                                                    <label className="text-muted small d-block">TIN Number</label>
+                                                    <div className="detail-label">TIN Number</div>
                                                     <p className="fw-bold mb-3 text-danger">{selectedProvider.tin || 'Not Provided'}</p>
-                                                    <label className="text-muted small d-block">Reg Reference</label>
+                                                    <div className="detail-label">Reg Reference</div>
                                                     <p className="fw-bold mb-3">{selectedProvider.registration_ref || 'N/A'}</p>
                                                 </div>
                                             </div>
@@ -168,11 +169,11 @@ export default function ProviderReview() {
                                         {/* Location */}
                                         <div className="col-md-4">
                                             <div className="card h-100 border-0 shadow-sm">
-                                                <div className="card-header bg-white fw-bold " style={{color: '#111827'}}>Location Details</div>
+                                                <div className="card-header bg-white fw-bold " style={{color: 'var(--th-ink)'}}>Location Details</div>
                                                 <div className="card-body">
-                                                    <label className="text-muted small d-block">Country & Region</label>
+                                                    <div className="detail-label">Country & Region</div>
                                                     <p className="fw-bold mb-3">{selectedProvider.country}, {selectedProvider.region}</p>
-                                                    <label className="text-muted small d-block">Physical Address</label>
+                                                    <div className="detail-label">Physical Address</div>
                                                     <p className="fw-bold mb-3">{selectedProvider.physical_address || 'N/A'}</p>
                                                 </div>
                                             </div>
@@ -181,11 +182,11 @@ export default function ProviderReview() {
                                         {/* Contact */}
                                         <div className="col-md-4">
                                             <div className="card h-100 border-0 shadow-sm">
-                                                <div className="card-header bg-white fw-bold " style={{color: '#111827'}}>Contact Person</div>
+                                                <div className="card-header bg-white fw-bold " style={{color: 'var(--th-ink)'}}>Contact Person</div>
                                                 <div className="card-body">
-                                                    <label className="text-muted small d-block">Full Name</label>
+                                                    <div className="detail-label">Full Name</div>
                                                     <p className="fw-bold mb-3">{selectedProvider.contact_name}</p>
-                                                    <label className="text-muted small d-block">Official Email</label>
+                                                    <div className="detail-label">Official Email</div>
                                                     <p className="fw-bold mb-3 text-primary">{selectedProvider.contact_email}</p>
                                                 </div>
                                             </div>
@@ -195,7 +196,7 @@ export default function ProviderReview() {
                                         <div className="col-12 mt-4">
                                             <div className="p-3 bg-white rounded shadow-sm border-start border-primary border-4">
                                                 <h6 className="fw-bold mb-2 text-dark">Administrative Decision Note</h6>
-                                                <textarea
+                                                <textarea aria-label="Reason for decision"
                                                     className="form-control border-0 bg-light"
                                                     rows="3"
                                                     value={reason}

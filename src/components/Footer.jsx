@@ -1,141 +1,123 @@
+import { Link } from "react-router-dom";
+import LOGO from "../assets/trainhub-tz-logo.png";
+
+const PLATFORM_LINKS = [
+  { label: "Browse trainings", to: "/trainings" },
+  { label: "My learning", to: "/learning" },
+  { label: "Transactions", to: "/transactions" },
+  { label: "Teach on TrainHub", to: "/tenant-register" },
+  { label: "Log in", to: "/login" },
+];
+
+const COMPANY_LINKS = [
+  { label: "About us", to: "/contact" },
+  { label: "Contact us", to: "/contact" },
+  { label: "Careers", to: "/contact" },
+  { label: "Help and support", to: "/contact" },
+  { label: "Blog", to: "/contact" },
+];
+
+const LEGAL_LINKS = [
+  { label: "Terms of service", to: "/contact" },
+  { label: "Privacy policy", to: "/contact" },
+  { label: "Cookie settings", to: "/contact" },
+  { label: "Accessibility", to: "/contact" },
+  { label: "Sitemap", to: "/contact" },
+];
+
+const SOCIALS = [
+  { icon: "bi-facebook", label: "Facebook" },
+  { icon: "bi-twitter-x", label: "X (Twitter)" },
+  { icon: "bi-instagram", label: "Instagram" },
+  { icon: "bi-linkedin", label: "LinkedIn" },
+];
+
 export default function Footer() {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="footer mt-5 pt-5 pb-3">
-      <div className="container">
-        {/* TOP LINKS */}
-        <div className="row text-white">
-          <div className="col-6 col-md-3 mb-3">
-            <ul className="list-unstyled small">
+    <footer className="site-footer">
+      <div className="th-container-wide">
+        <div className="site-footer__top">
+          <div className="site-footer__brand">
+            <img src={LOGO} alt="TrainHub TZ" width="413" height="127" />
+            <p className="site-footer__tagline">
+              Elevating skills, transforming Tanzania. Accredited, cohort-based
+              professional training delivered by verified providers.
+            </p>
+            <ul className="site-footer__contact">
               <li>
-                <a href="#" className="footer-link">
-                  TrainingHub
-                </a>
+                <i className="bi bi-geo-alt" aria-hidden="true"></i>
+                <span>P.O. Box 123, Upanga, Dar es Salaam</span>
               </li>
               <li>
-                <a href="#" className="footer-link">
-                  Teach on TrainingHub
-                </a>
+                <i className="bi bi-telephone" aria-hidden="true"></i>
+                <a href="tel:+255745732935">+255 745 732 935</a>
               </li>
               <li>
-                <a href="#" className="footer-link">
-                  Get the app
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  About us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Contact us
-                </a>
+                <i className="bi bi-envelope" aria-hidden="true"></i>
+                <a href="mailto:info@traininghub.co.tz">info@traininghub.co.tz</a>
               </li>
             </ul>
           </div>
 
-          <div className="col-6 col-md-3 mb-3">
-            <ul className="list-unstyled small">
-              <li>
-                <a href="#" className="footer-link">
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Help and Support
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Affiliate
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Investors
-                </a>
-              </li>
+          <nav aria-labelledby="footer-platform">
+            <h2 className="site-footer__heading" id="footer-platform">
+              Platform
+            </h2>
+            <ul className="site-footer__links">
+              {PLATFORM_LINKS.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to}>{link.label}</Link>
+                </li>
+              ))}
             </ul>
-          </div>
+          </nav>
 
-          <div className="col-6 col-md-3 mb-3">
-            <ul className="list-unstyled small">
-              <li>
-                <a href="#" className="footer-link">
-                  Terms
-                </a>
-              </li>
-              <li className="mt-3">
-                <a href="#" className="footer-link">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Cookie Settings
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Sitemap
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Accessibility
-                </a>
-              </li>
+          <nav aria-labelledby="footer-company">
+            <h2 className="site-footer__heading" id="footer-company">
+              Company
+            </h2>
+            <ul className="site-footer__links">
+              {COMPANY_LINKS.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to}>{link.label}</Link>
+                </li>
+              ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* LANGUAGE + SOCIAL MEDIA */}
-          <div className="col-6 col-md-3 d-flex flex-column gap-3">
-            <ul className="list-unstyled small">
-              <li>
-                <a href="#" className="footer-link">
-                  P.O.BOX 123 Dar-es-Salaam
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  +255 745 732 935
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  info@traininghub.com
-                </a>
-              </li>
+          <nav aria-labelledby="footer-legal">
+            <h2 className="site-footer__heading" id="footer-legal">
+              Legal
+            </h2>
+            <ul className="site-footer__links">
+              {LEGAL_LINKS.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to}>{link.label}</Link>
+                </li>
+              ))}
             </ul>
-            <div className="d-flex gap-3 footer1">
-              <a href="#" className="footer-social">
-                <i className="bi bi-facebook"></i>
-              </a>
-              <a href="#" className="footer-social">
-                <i className="bi bi-twitter"></i>
-              </a>
-              <a href="#" className="footer-social">
-                <i className="bi bi-instagram"></i>
-              </a>
-              <a href="#" className="footer-social">
-                <i className="bi bi-linkedin"></i>
-              </a>
-            </div>
-          </div>
+          </nav>
         </div>
 
-        {/* BOTTOM ROW */}
-        <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap text-white-50 small">
-          <div style={{ fontSize: "18px", fontWeight: "bold", color: "white" }} className="mb-2">
-            TrainingHub
+        <div className="site-footer__bottom">
+          <p className="mb-0">
+            © {year} TrainHub TZ. All rights reserved. Built for Tanzanian
+            learning institutions and enterprises.
+          </p>
+          <div className="site-footer__socials">
+            {SOCIALS.map((social) => (
+              <a
+                key={social.icon}
+                href="#"
+                aria-label={social.label}
+                onClick={(e) => e.preventDefault()}
+              >
+                <i className={`bi ${social.icon}`} aria-hidden="true"></i>
+              </a>
+            ))}
           </div>
-          <span>© {new Date().getFullYear()} TrainingHub</span>
         </div>
       </div>
     </footer>

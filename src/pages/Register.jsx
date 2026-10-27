@@ -1,25 +1,14 @@
-import React, { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/bootstrap.css";
-import "react-toastify/dist/ReactToastify.css";
-
-import {
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaLock,
-  FaEye,
-  FaEyeSlash,
-} from "react-icons/fa";
-
-import "../App.css";
 import api from "../api/axio";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
+import AuthLayout from "../components/AuthLayout";
 
-function Register() {
+const INITIAL_ERRORS = {};
+
+export default function Register() {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,32 +16,40 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState(INITIAL_ERRORS);
 
   const navigate = useNavigate();
 
-  const handleRegister = async () => {
-    // ✅ Validate fields
-    const missing = [];
-    if (!fullname) missing.push("Full Name");
-    if (!email) missing.push("Email");
-    if (!phone) missing.push("Phone");
-    if (!password) missing.push("Password");
-    if (!confirmPassword) missing.push("Confirm Password");
+  const clearError = (field) => {
+    if (!errors[field]) return;
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
 
-    if (missing.length > 0) {
-      toast.error(`Please fill: ${missing.join(", ")}`);
-      return;
-    }
+  const validate = () => {
+    const next = {};
+    if (!fullname.trim()) next.fullname = "Enter your full name.";
+    if (!email.trim()) next.email = "Enter your email address.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = "Enter a valid email address.";
+    if (!phone) next.phone = "Enter your phone number.";
+    if (!password) next.password = "Choose a password.";
+    else if (password.length < 6) next.password = "Use at least 6 characters.";
+    if (!confirmPassword) next.confirmPassword = "Confirm your password.";
+    else if (password !== confirmPassword) next.confirmPassword = "Passwords do not match.";
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleRegister = async (event) => {
+    event?.preventDefault();
+    if (!validate()) {
+      toast.error("Please check the highlighted fields.");
       return;
     }
 
     setLoading(true);
 
     try {
-      // ✅ POST to tenant-register route
       const response = await api.post("/register", {
         name: fullname,
         email,
@@ -63,10 +60,9 @@ function Register() {
 
       toast.success(
         response.data.message ||
-          "Tenant registered successfully! Check your email to activate your account.",
+          "Account created successfully! Check your email to activate your account."
       );
 
-      // Redirect to login after 2 seconds
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
@@ -76,140 +72,154 @@ function Register() {
   };
 
   return (
-    <>
-      <NavBar />
-      <div className="container py-5">
-        <ToastContainer />
-        <div className="row justify-content-center">
-          <div className="col-md-5">
-            <div className="card shadow-sm border-0">
-              <div className="card-body p-4">
-                <h3 className="text-left fw-bold mb-2 t1">Create an account</h3>
-                <p className="text-left t2">
-                  Create your aaccount & start your journey.
-                </p>
-                <form onSubmit={(e) => e.preventDefault()}>
-                  {/* Full Name + Email */}
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Full Name</label>
-                      <div className="position-relative">
-                        <FaUser className="input-icon" />
-                        <input
-                          type="text"
-                          className="form-control input-with-icon"
-                          placeholder="John Doe"
-                          value={fullname}
-                          onChange={(e) => setFullname(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Email</label>
-                      <div className="position-relative">
-                        <FaEnvelope className="input-icon" />
-                        <input
-                          type="email"
-                          className="form-control input-with-icon"
-                          placeholder="john@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Phone */}
-                  <div className="mb-3">
-                    <label className="form-label">Phone</label>
-                    <div className="position-relative">
-                      <FaPhone className="input-icon" />
-                      <PhoneInput
-                        country="tz"
-                        value={phone}
-                        onChange={(value) => setPhone("+" + value)}
-                        placeholder="Enter phone number"
-                        containerStyle={{ width: "100%" }}
-                        inputStyle={{
-                          width: "100%",
-                          height: "38px",
-                          paddingLeft: "38px",
-                        }}
-                        buttonStyle={{ borderRadius: "0.375rem 0 0 0.375rem" }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div className="mb-4">
-                    <label className="form-label">Password</label>
-                    <div className="position-relative">
-                      <FaLock className="input-icon" />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        className="form-control input-with-icon input-with-icon-right"
-                        placeholder="********"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <span
-                        className="input-icon-right"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Confirm Password */}
-                  <div className="mb-4">
-                    <label className="form-label">Confirm Password</label>
-                    <div className="position-relative">
-                      <FaLock className="input-icon" />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        className="form-control input-with-icon input-with-icon-right"
-                        placeholder="********"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                      />
-                      <span
-                        className="input-icon-right"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Submit */}
-                  <button
-                    type="button"
-                    className="btn btn-primary w-100 py-2 tbutton"
-                    onClick={handleRegister}
-                    disabled={loading}
-                    style={{ fontSize: "13px" }}
-                  >
-                    {loading ? "Creating account..." : "Create Account"}
-                  </button>
-                  <div className="mt-4">
-                    <a href="/login">
-                      <center>
-                        <p style={{ fontSize: "13px", color: "#111827" }}>
-                          Have an account login here...
-                        </p>
-                      </center>
-                    </a>
-                  </div>
-                </form>
-              </div>
-            </div>
+    <AuthLayout
+      title="Create your account"
+      subtitle="Register as a learner and start your first cohort in minutes."
+      asideTitle="Learn with confidence, grow with evidence."
+    >
+      <form onSubmit={handleRegister} noValidate>
+        <div className="mb-3">
+          <label className="form-label" htmlFor="register-name">
+            Full name
+          </label>
+          <div className="field-icon">
+            <i className="bi bi-person field-icon__adornment" aria-hidden="true"></i>
+            <input
+              id="register-name"
+              type="text"
+              autoComplete="name"
+              className={`form-control ${errors.fullname ? "is-invalid" : ""}`}
+              placeholder="e.g. Amina Juma"
+              value={fullname}
+              onChange={(e) => {
+                setFullname(e.target.value);
+                clearError("fullname");
+              }}
+              aria-invalid={Boolean(errors.fullname)}
+            />
           </div>
+          {errors.fullname && <p className="invalid-feedback d-block">{errors.fullname}</p>}
         </div>
-      </div>
-      <Footer />
-    </>
+
+        <div className="mb-3">
+          <label className="form-label" htmlFor="register-email">
+            Email address
+          </label>
+          <div className="field-icon">
+            <i className="bi bi-envelope field-icon__adornment" aria-hidden="true"></i>
+            <input
+              id="register-email"
+              type="email"
+              autoComplete="email"
+              className={`form-control ${errors.email ? "is-invalid" : ""}`}
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearError("email");
+              }}
+              aria-invalid={Boolean(errors.email)}
+            />
+          </div>
+          {errors.email && <p className="invalid-feedback d-block">{errors.email}</p>}
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label" htmlFor="register-phone">
+            Phone number
+          </label>
+          <PhoneInput
+            country="tz"
+            value={phone}
+            onChange={(value) => {
+              setPhone("+" + value);
+              clearError("phone");
+            }}
+            placeholder="Enter phone number"
+            inputProps={{ id: "register-phone", autoComplete: "tel" }}
+            containerStyle={{ width: "100%" }}
+            buttonStyle={{ borderRadius: "10px 0 0 10px", background: "var(--th-surface-sunken)" }}
+          />
+          {errors.phone && <p className="invalid-feedback d-block">{errors.phone}</p>}
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label" htmlFor="register-password">
+            Password
+          </label>
+          <div className="field-icon">
+            <i className="bi bi-lock field-icon__adornment" aria-hidden="true"></i>
+            <input
+              id="register-password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              className={`form-control ${errors.password ? "is-invalid" : ""}`}
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                clearError("password");
+              }}
+              aria-invalid={Boolean(errors.password)}
+              aria-describedby="password-hint"
+              style={{ paddingRight: "2.75rem" }}
+            />
+            <button
+              type="button"
+              className="field-icon__button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+            >
+              <i
+                className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                aria-hidden="true"
+              ></i>
+            </button>
+          </div>
+          <p className="form-text" id="password-hint">
+            Use a mix of letters and numbers you don&apos;t use elsewhere.
+          </p>
+          {errors.password && <p className="invalid-feedback d-block">{errors.password}</p>}
+        </div>
+
+        <div className="mb-4">
+          <label className="form-label" htmlFor="register-confirm">
+            Confirm password
+          </label>
+          <div className="field-icon">
+            <i className="bi bi-shield-lock field-icon__adornment" aria-hidden="true"></i>
+            <input
+              id="register-confirm"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              className={`form-control ${errors.confirmPassword ? "is-invalid" : ""}`}
+              placeholder="Re-enter your password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                clearError("confirmPassword");
+              }}
+              aria-invalid={Boolean(errors.confirmPassword)}
+            />
+          </div>
+          {errors.confirmPassword && (
+            <p className="invalid-feedback d-block">{errors.confirmPassword}</p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          className={`btn btn-primary w-100 ${loading ? "is-loading" : ""}`}
+          disabled={loading}
+        >
+          {loading ? "Creating account…" : "Create account"}
+        </button>
+      </form>
+
+      <p className="th-auth__foot">
+        Already have an account? <Link to="/login">Log in</Link>
+      </p>
+    </AuthLayout>
   );
 }
-
-export default Register;

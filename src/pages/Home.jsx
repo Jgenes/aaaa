@@ -1,42 +1,99 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import PromoCards from "../components/PromoCards";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api/axio";
 import NavBar from "../components/NavBar";
-import Banner1 from "../assets/ict-pic (1).jpg";
-import Banner0 from "../assets/banner0.jpg"; 
 import Footer from "../components/Footer";
-import '../App.css'
+import CourseCard from "../components/CourseCard";
+import HeroImage from "../assets/banner0.jpg";
 
-// Logos asilia
-const LOGO_VOLKSWAGEN = "https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg";
-const LOGO_SAMSUNG = "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg";
-const LOGO_CISCO = "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg";
+const LOGO_VOLKSWAGEN =
+  "https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg";
+const LOGO_SAMSUNG =
+  "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg";
+const LOGO_CISCO =
+  "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg";
 const LOGO_VIMEO = "https://upload.wikimedia.org/wikipedia/commons/9/9c/Vimeo_logo.svg";
-const LOGO_PG = "https://upload.wikimedia.org/wikipedia/commons/8/85/Procter_%26_Gamble_logo.svg";
-const LOGO_ERICSSON = "https://upload.wikimedia.org/wikipedia/commons/0/0e/Ericsson_logo.svg";
+const LOGO_PG =
+  "https://upload.wikimedia.org/wikipedia/commons/8/85/Procter_%26_Gamble_logo.svg";
+const LOGO_ERICSSON =
+  "https://upload.wikimedia.org/wikipedia/commons/0/0e/Ericsson_logo.svg";
+
+const PARTNER_LOGOS = [
+  { src: LOGO_VOLKSWAGEN, alt: "Volkswagen" },
+  { src: LOGO_SAMSUNG, alt: "Samsung" },
+  { src: LOGO_CISCO, alt: "Cisco" },
+  { src: LOGO_VIMEO, alt: "Vimeo" },
+  { src: LOGO_PG, alt: "Procter & Gamble" },
+  { src: LOGO_ERICSSON, alt: "Ericsson" },
+];
+
+const LEARNING_PATHS = [
+  {
+    title: "Software Engineering",
+    text: "Full-stack, mobile and quality engineering tracks",
+    image:
+      "https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=600&q=70",
+  },
+  {
+    title: "Microsoft Excel",
+    text: "Data analysis, reporting and automation",
+    image:
+      "https://images.unsplash.com/photo-1551288049-bbbda536339a?auto=format&fit=crop&w=600&q=70",
+  },
+  {
+    title: "Large Language Models",
+    text: "Applied AI and prompt engineering foundations",
+    image:
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=600&q=70",
+  },
+  {
+    title: "Cloud Computing",
+    text: "Cloud fundamentals, DevOps and infrastructure",
+    image:
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=70",
+  },
+];
+
+const FAQS = [
+  {
+    id: "faq-1",
+    question: "Can I try TrainHub first, to make sure it's right for me?",
+    answer:
+      "Yes, we provide demo sessions and course outlines to help you decide which path fits your career goals perfectly.",
+  },
+  {
+    id: "faq-2",
+    question: "What is included in the Professional Track?",
+    answer:
+      "You get full access to live sessions, recorded materials, hands-on projects, and a verified industry certificate.",
+  },
+  {
+    id: "faq-3",
+    question: "How do I get my certificate?",
+    answer:
+      "Once you complete all modules and pass the final assessment, your certificate will be generated instantly in your profile.",
+  },
+];
 
 export default function Home() {
-  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [providers, setProviders] = useState([]); 
-  const [reviews, setReviews] = useState([]); 
+  const [reviews, setReviews] = useState([]);
+  const [providers, setProviders] = useState([]);
   const [activeTab, setActiveTab] = useState("");
   const [loading, setLoading] = useState(true);
-  
+  const [loadError, setLoadError] = useState(false);
   const [showAllFaqs, setShowAllFaqs] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const courseRes = await api.get("/public-courses").catch(() => ({data: []}));
-        const providerRes = await api.get("/top-providers").catch(() => ({data: []}));
-        const reviewRes = await api.get("/public-reviews").catch(() => ({data: []}));
+        const courseRes = await api.get("/public-courses").catch(() => ({ data: [] }));
+        const providerRes = await api.get("/top-providers").catch(() => ({ data: [] }));
+        const reviewRes = await api.get("/public-reviews").catch(() => ({ data: [] }));
 
         if (courseRes.data) {
-          const processed = courseRes.data.map(c => {
+          const processed = courseRes.data.map((c) => {
             const hasCompletedEnrollment = c.enrollments?.some(
               (enrol) => enrol.status?.toLowerCase() === "completed"
             );
@@ -44,327 +101,526 @@ export default function Home() {
             return {
               ...c,
               isEnrolled: hasCompletedEnrollment,
-              mainCohort: c.cohorts?.find(coh => coh.status?.toUpperCase() === "OPEN") || c.cohorts?.[0]
+              mainCohort:
+                c.cohorts?.find((coh) => coh.status?.toUpperCase() === "OPEN") ||
+                c.cohorts?.[0],
             };
           });
 
           setCourses(processed);
-          const uniqueCats = [...new Set(processed.map(c => c.category))].filter(Boolean);
+          const uniqueCats = [...new Set(processed.map((c) => c.category))].filter(Boolean);
           if (uniqueCats.length > 0) setActiveTab(uniqueCats[0]);
           setCategories(uniqueCats);
         }
-        
+
         setProviders(providerRes.data || []);
         setReviews(reviewRes.data || []);
-
       } catch (err) {
         console.error("Error fetching data:", err);
+        setLoadError(true);
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  const CourseItem = ({ course }) => {
-    const finalImageUrl = course.banner ? `http://localhost:8000/${course.banner}` : Banner1;
-    const isEnrolled = course.isEnrolled || false; 
+  const visibleCourses = useMemo(
+    () => courses.filter((c) => (activeTab ? c.category === activeTab : true)),
+    [courses, activeTab]
+  );
 
-    return (
-      <div className="col-lg-3 col-md-4 col-sm-6 col-12">
-        <div className="card h-100 shadow-sm border-0 course-card-animated" style={{ borderRadius: "15px", overflow: "hidden" }}>
-          <img src={finalImageUrl} className="card-img-top" style={{ height: "160px", objectFit: "cover" }} alt={course.title} onError={(e) => { e.target.src = Banner1; }} />
-          <div className="card-body d-flex flex-column p-3">
-            <h6 className="fw-bold mb-2" style={{ fontSize: "13px", height: "40px", overflow: "hidden" }}>{course.title}</h6>
-            <div className="d-flex align-items-center mb-3">
-              <div className="bg-light rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style={{ width: "30px", height: "30px", fontSize: "12px", border: "1px solid #ddd" }}>
-                {course.provider?.name?.charAt(0) || "T"}
-              </div>
-              <small className="text-muted text-truncate">{course.provider?.name || "Instructor"}</small>
-            </div>
-            
-            <div className="mt-auto">
-              <button 
-                onClick={() => {
-                  if (isEnrolled) {
-                    navigate(`/learning/${course.id}`);
-                  } else {
-                    navigate(`/course/${course.id}`);
-                  }
-                }} 
-                className="btn w-100 d-flex align-items-center justify-content-center custom-enroll-btn" 
-                style={{ 
-                  backgroundColor: "#f8f9fa", 
-                  color: "#000", 
-                  fontSize: "12px", 
-                  borderRadius: "8px", 
-                  padding: "10px", 
-                  border: "1px solid #ddd",
-                  transition: "all 0.3s ease" 
-                }}
-              >
-                {isEnrolled ? "Continue learning" : "Enroll Now"} <i className="bi bi-arrow-right ms-2"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const latestCourses = useMemo(
+    () => [...courses].sort((a, b) => b.id - a.id).slice(0, 4),
+    [courses]
+  );
+
+  const reviewSlides = useMemo(() => {
+    const slides = [];
+    for (let i = 0; i < reviews.length; i += 3) slides.push(reviews.slice(i, i + 3));
+    return slides;
+  }, [reviews]);
+
+  const scrollTo = (id) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
     <>
-      <style>{`
-        /* --- ANIMATION: HOVER LIFT EFFECT --- */
-        .course-card-animated {
-          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-          cursor: pointer;
-        }
-        .course-card-animated:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.08) !important;
-        }
-
-        /* BUTTON HOVER LOGIC */
-        .custom-enroll-btn:hover {
-          background-color: #0a2e67 !important;
-          color: #ffffff !important;
-          border-color: #0a2e67 !important;
-        }
-
-        .provider-carousel-wrapper { position: relative; overflow: hidden; padding: 10px 0; }
-        .provider-carousel { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .provider-card { border-radius: 15px; overflow: hidden; position: relative; min-width: 250px; max-width: 300px; height: 220px; flex: 0 0 auto; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease; }
-        .provider-card:hover { transform: scale(1.02); }
-        .provider-card img { width: 100%; height: 100%; object-fit: cover; }
-        .provider-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: rgba(0,0,0,0.6); color: white; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        .provider-carousel::-webkit-scrollbar { display: none; }
-        
-        .hero-wrapper { position: relative; min-height: 500px; height: auto; padding: 60px 0; overflow: hidden; display: flex; align-items: center; color: white; }
-        .hero-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, #0a2e67 0%, rgba(10, 46, 103, 0.8) 30%, rgba(10, 46, 103, 0.2) 60%, transparent 100%), url(${Banner0}); background-size: cover; background-position: center; z-index: -1; animation: slowZoom 20s infinite alternate; }
-        @keyframes slowZoom { from { transform: scale(1); } to { transform: scale(1.05); } }
-        .hero-title-text { font-size: clamp(26px, 5vw, 42px); }
-        .hero-p-text { font-size: clamp(14px, 2vw, 17px); }
-
-        @media (max-width: 768px) {
-          .hero-wrapper { text-align: center; height: auto; padding: 40px 0; }
-          .hero-bg { background: linear-gradient(180deg, #0a2e67 40%, rgba(10, 46, 103, 0.7) 100%), url(${Banner0}); }
-          .text-start { text-align: center !important; }
-          .d-flex.gap-4 { justify-content: center; flex-wrap: wrap; }
-          .stat-card { min-width: 120px; padding: 10px; }
-          .nav-tabs-custom { display: flex; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
-          .nav-tabs-custom::-webkit-scrollbar { display: none; }
-          .provider-card { height: 240px !important; }
-          .provider-label { padding: 10px !important; bottom: 10px !important; }
-        }
-
-        .hero-badge { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px); padding: 6px 15px; border-radius: 50px; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.3); display: inline-block; }
-        .stat-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; min-width: 140px; }
-        .btn-explore { background-color: #ffffff; color: #0a2e67; border-radius: 8px; padding: 12px 35px; transition: all 0.3s ease; }
-        .btn-explore:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); background-color: #f8f9fa; }
-
-        .nav-tabs-custom .nav-link { color: #6a6f73; font-weight: 700; border: none; cursor: pointer; background: none; margin-right: 15px; }
-        .nav-tabs-custom .nav-link.active { color: #2d2f31 !important; border-bottom: 2px solid #2d2f31 !important; }
-        .trusted-section { background-color: #f8f9fa; padding: 60px 0; border-top: 1px solid #e8ebed; border-bottom: 1px solid #e8ebed; }
-        
-        .testimonial-card { border: 1px solid #d1d7dc; padding: 24px; background: #fff; height: 100%; text-align: left; display: flex; flex-direction: column; overflow: hidden; transition: transform 0.3s ease; }
-        .testimonial-card:hover { transform: scale(1.01); }
-        .quote-icon { font-size: 44px; font-family: Georgia, serif; line-height: 1; margin-bottom: 10px; display: block; color: #000; }
-        .user-info { display: flex; align-items: center; margin-top: auto; }
-        .user-text-avatar { width: 44px; height: 44px; background: #2d2f31; color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; flex-shrink: 0; margin-right: 12px; }
-        
-        .carousel-control-prev-icon, .carousel-control-next-icon { background-color: #0a2e67; border-radius: 50%; padding: 12px; background-size: 60%; }
-
-        .faq-card { border: 1px solid #d1d7dc; border-radius: 8px; padding: 40px; background: #fff; width: 100%; margin: 0 auto; text-align: left; }
-        .faq-title { font-size: 32px; font-weight: 700; color: #2d2f31; margin-bottom: 24px; }
-        .accordion-item { border: none; border-bottom: 1px solid #d1d7dc !important; }
-        .accordion-item:last-child { border-bottom: none !important; }
-        .accordion-button { font-weight: 700; color: #2d2f31 !important; background-color: transparent !important; box-shadow: none !important; padding: 24px 0 !important; font-size: 16px; }
-        .accordion-button::after { background-size: 1rem; }
-        .accordion-body { padding: 0 0 24px 0 !important; color: #2d2f31; font-size: 16px; line-height: 1.5; }
-        .btn-show-faqs { background: none; border: none; font-weight: 700; color: #2d2f31; padding: 20px 0; display: flex; align-items: center; gap: 8px; font-size: 15px; }
-        .btn-show-faqs:hover { text-decoration: underline; }
-      `}</style>
-
       <NavBar />
 
-      <section className="hero-wrapper">
-        <div className="hero-bg"></div>
-        <div className="container">
-          <div className="row">
-            <div className="col-lg-7 text-start">
-              <div className="hero-badge mb-3"><i className="bi bi-star-fill text-warning me-2"></i>Most Trusted Professional Training Platform</div>
-              <h1 className="fw-bold mb-3 hero-title-text" style={{ lineHeight: "1.2" }}>Elevate Your Career with <br /> <span style={{ color: "#4cc9f0" }}>Industry-Standard</span> Training</h1>
-              <p className="lead mb-4 opacity-90 hero-p-text" style={{ maxWidth: "550px", fontWeight: "400" }}>Join over 5,000+ professionals mastering new skills through expert-led courses and real-world projects.</p>
-              <div className="d-flex flex-wrap gap-3 mb-5 justify-content-center justify-content-md-start">
-                <button  style={{ fontSize: "12px" }} className="btn btn-explore fw-bold" onClick={() => document.getElementById("courses-list")?.scrollIntoView({ behavior: "smooth" })}>Browse All Trainings</button>
-                <button className="btn btn-outline-light px-4 border-2" style={{ borderRadius: "8px", fontSize:"13px" }}  onClick={() => document.getElementById("top-training")?.scrollIntoView({ behavior: "smooth" })}>Latest Trainings</button>
-              </div>
-              <div className="d-flex gap-2 gap-md-4">
-                <div className="stat-card flex-fill text-center text-md-start"><h4 className="fw-bold mb-0">150+</h4><small className="opacity-75">Expert Courses</small></div>
-                <div className="stat-card flex-fill text-center text-md-start"><h4 className="fw-bold mb-0">4.8/5</h4><small className="opacity-75">Learner Rating</small></div>
-                <div className="stat-card flex-fill text-center text-md-start"><h4 className="fw-bold mb-0">12k+</h4><small className="opacity-75">Graduates</small></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <main id="main-content">
+        {/* ---------------------------------------------------------- Hero */}
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="th-container-wide hero__grid">
+            <div>
+              <span className="hero__badge">
+                <span className="hero__badge-star">
+                  <i className="bi bi-star-fill" aria-hidden="true"></i>
+                  4.8
+                </span>
+                Most trusted professional training platform in Tanzania
+              </span>
 
-      <div className="container mt-5 mb-5" id="courses-list">
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
-          <div>
-            <h3 className="fw-bold mb-1" style={{fontSize:"clamp(18px, 4vw, 22px)"}}>Skills to transform your career</h3>
-            <p className="text-muted mb-0" style={{fontSize:"14px"}}>Explore our wide range of technical and professional categories.</p>
-          </div>
-         <a href='/trainings'> 
-          <button className="btn btn-link text-decoration-none fw-bold text-dark p-0 text-start viewall">View all</button>
-         </a>
-        </div>
-        <ul className="nav nav-tabs nav-tabs-custom mb-4 border-0">
-          {categories.map((cat) => (
-            <li className="nav-item" key={cat}>
-              <button className={`nav-link ${activeTab === cat ? "active" : ""}`} onClick={() => setActiveTab(cat)}>{cat}</button>
-            </li>
-          ))}
-        </ul>
-        <div className="row g-4 mb-5">
-            {!loading && courses.filter(c => c.category === activeTab).map(course => (
-                <CourseItem key={course.id} course={course} />
-            ))}
-        </div>
-      </div>
+              <h1 className="hero__title" id="hero-title">
+                Elevate your career with{" "}
+                <span className="hero__title-accent">industry-standard</span> training.
+              </h1>
 
-      <div className="trusted-section">
-        <div className="container text-center">
-          <p className="text-muted small mb-5 fw-bold text-uppercase">Partnering with world-class organizations</p>
-          <div className="d-flex flex-wrap justify-content-center align-items-center gap-4 gap-md-5 logo-container px-3 grayscale-logos" style={{ opacity: "0.7" }}>
-            <img src={LOGO_VOLKSWAGEN} alt="VW" style={{ height: "30px" }} /><img src={LOGO_SAMSUNG} alt="Samsung" style={{ height: "18px" }} /><img src={LOGO_CISCO} alt="Cisco" style={{ height: "25px" }} />
-            <img src={LOGO_VIMEO} alt="Vimeo" style={{ height: "18px" }} /><img src={LOGO_PG} alt="PG" style={{ height: "25px" }} /><img src={LOGO_ERICSSON} alt="Ericsson" style={{ height: "20px" }} />
-          </div>
-        </div>
-      </div>
+              <p className="hero__lead">
+                Join over 5,000 professionals mastering new skills through expert-led
+                courses, verified providers and real-world projects — delivered across
+                Tanzania.
+              </p>
 
-      <div className="container mt-5 mb-5">
-        <h3 className="fw-bold mb-4" style={{fontSize:"16px"}}>How learners like you are achieving their goals</h3>
-        <div id="testimonialCarousel" className="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
-          <div className="carousel-inner">
-            {reviews.length > 0 ? (
-              [...Array(Math.ceil(reviews.length / 3))].map((_, idx) => (
-                <div className={`carousel-item ${idx === 0 ? "active" : ""}`} key={idx}>
-                  <div className="row g-4">
-                    {reviews.slice(idx * 3, idx * 3 + 3).map((review) => (
-                      <div className="col-12 col-md-4" key={review.id}>
-                        <div className="testimonial-card">
-                          <span className="quote-icon">“</span>
-                          <p style={{ fontSize:"14px", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>
-                            {review.review}
-                          </p>
-                          <div className="user-info">
-                            <div className="user-text-avatar">
-                              {review.user?.name?.charAt(0) || "U"}
-                            </div>
-                            <div style={{ minWidth: 0 }}>
-                              <h6 className="mb-0 fw-bold text-truncate" style={{fontSize:"14px"}}>{review.user?.name || "Anonymous"}</h6>
-                              <div className="d-flex gap-1 text-warning mb-1" style={{fontSize: "10px"}}>
-                                <i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i>
-                              </div>
-                              <small className="text-muted text-truncate d-block">{review.course?.title || "Learner"}</small>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="carousel-item active">
-                <div className="text-center p-5">Loading testimonials...</div>
-              </div>
-            )}
-          </div>
-          <button className="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev" style={{width: "5%"}}><span className="carousel-control-prev-icon" aria-hidden="true"></span></button>
-          <button className="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next" style={{width: "5%"}}><span className="carousel-control-next-icon" aria-hidden="true"></span></button>
-        </div>
-      </div>
-
-      <div className="container mt-5 mb-5">
-        <h3 className="fw-bold mb-4" id="top-training" style={{fontSize:"16px"}}>Latest Training</h3>
-        <div className="row g-4">
-          {!loading && courses.sort((a,b) => b.id - a.id).slice(0, 4).map(course => (
-            <CourseItem key={`trend-${course.id}`} course={course} />
-          ))}
-        </div>
-      </div>
-
-      <div className="container mt-5 pt-4 mb-5">
-        <div className="row align-items-center mb-4 gap-4 gap-md-0">
-          <div className="col-md-4">
-             <h2 className="fw-bold" style={{fontSize:"clamp(22px, 4vw, 28px)", lineHeight:"1.2"}}>Learn <span className="fst-italic fw-normal">essential</span> career and <span className="fw-bold">life skills</span></h2>
-             <p className="text-muted" style={{fontSize:"14px"}}>Traininghub helps you build in-demand skills fast and advance your career.</p>
-          </div>
-          <div className="col-md-8">
-            <div className="provider-carousel-wrapper">
-              <div className="provider-carousel d-flex overflow-auto">
-                <div className="provider-card me-3 flex-shrink-0"><img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=500" alt="Tech" /><div className="provider-label"><span>Software Engineering</span><i className="bi bi-arrow-right-short fs-4"></i></div></div>
-                <div className="provider-card me-3 flex-shrink-0"><img src="https://images.unsplash.com/photo-1551288049-bbbda536339a?auto=format&fit=crop&w=500" alt="Data" /><div className="provider-label"><span>Microsoft Excel</span><i className="bi bi-arrow-right-short fs-4"></i></div></div>
-                <div className="provider-card me-3 flex-shrink-0"><img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=500" alt="AI" /><div className="provider-label"><span>Large Language Models</span><i className="bi bi-arrow-right-short fs-4"></i></div></div>
-                <div className="provider-card me-3 flex-shrink-0"><img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=500" alt="Cloud" /><div className="provider-label"><span>Cloud Computing</span><i className="bi bi-arrow-right-short fs-4"></i></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mb-5 pb-5 mt-5">
-        <div className="">
-          <div className="accordion accordion-flush" id="homeFaq">
-            <h2 className="faq-title" style={{fontSize:'18px'}}>Frequently asked questions</h2>
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button style={{ fontSize:'14px' }} className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#q1">
-                  Can I try TrainingHub first, to make sure it's right for me?
+              <div className="hero__actions">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => scrollTo("courses-list")}
+                >
+                  Browse all trainings
+                  <i className="bi bi-arrow-right" aria-hidden="true"></i>
                 </button>
-              </h2>
-              <div id="q1" className="accordion-collapse collapse show" data-bs-parent="#homeFaq">
-                <div style={{ fontSize:'14px' }} className="accordion-body">
-                  Yes, we provide demo sessions and course outlines to help you decide which path fits your career goals perfectly.
-                </div>
-              </div>
-            </div>
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button style={{ fontSize:'13px' }} className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q2">
-                  What is included in the Professional Track?
+                <button
+                  type="button"
+                  className="btn btn-outline-dark"
+                  onClick={() => scrollTo("top-training")}
+                >
+                  Latest trainings
                 </button>
-              </h2>
-              <div id="q2" className="accordion-collapse collapse" data-bs-parent="#homeFaq">
-                <div style={{ fontSize:'13px' }} className="accordion-body">
-                  You get full access to live sessions, recorded materials, hands-on projects, and a verified industry certificate.
+              </div>
+
+              <dl className="hero__stats">
+                <div className="hero__stat">
+                  <dt>150+</dt>
+                  <dd>Expert courses</dd>
+                </div>
+                <div className="hero__stat">
+                  <dt>4.8/5</dt>
+                  <dd>Learner rating</dd>
+                </div>
+                <div className="hero__stat">
+                  <dt>12k+</dt>
+                  <dd>Graduates</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="hero__visual">
+              <figure className="hero__figure m-0">
+                <img
+                  src={HeroImage}
+                  alt="Participants taking notes during a TrainHub TZ professional development session in Tanzania"
+                  width="1200"
+                  height="700"
+                />
+                <figcaption className="hero__figure-caption">
+                  <i className="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                  Live cohort training · Dar es Salaam
+                </figcaption>
+              </figure>
+
+              <div className="hero__float hero__float--top">
+                <span className="hero__float-icon">
+                  <i className="bi bi-patch-check-fill" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <strong>Verified providers</strong>
+                  <small>NACTE · VETA · TCU aligned</small>
+                </div>
+              </div>
+
+              <div className="hero__float hero__float--bottom">
+                <span className="hero__float-icon hero__float-icon--orange">
+                  <i className="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <strong>Industry certificate</strong>
+                  <small>Issued on completion</small>
                 </div>
               </div>
             </div>
-            {showAllFaqs && (
-              <div className="accordion-item">
-                <h2 className="accordion-header">
-                  <button style={{ fontSize:'13px' }} className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q4">
-                    How do I get my certificate?
-                  </button>
+          </div>
+        </section>
+
+        {/* -------------------------------------------------- Course catalogue */}
+        <section className="th-section" id="courses-list" aria-labelledby="courses-title">
+          <div className="th-container-wide">
+            <div className="th-section-head">
+              <div>
+                <p className="th-eyebrow">Explore by category</p>
+                <h2 className="th-section-title" id="courses-title">
+                  Skills to transform your career
                 </h2>
-                <div id="q4" className="accordion-collapse collapse" data-bs-parent="#homeFaq">
-                  <div style={{ fontSize:'14px' }} className="accordion-body">
-                    Once you complete all modules and pass the final assessment, your certificate will be generated instantly in your profile.
+                <p className="th-section-lead">
+                  Explore our wide range of technical and professional categories, curated
+                  with accredited training providers.
+                </p>
+              </div>
+              <Link to="/trainings" className="btn btn-outline-dark">
+                View all trainings
+                <i className="bi bi-arrow-right" aria-hidden="true"></i>
+              </Link>
+            </div>
+
+            {categories.length > 0 && (
+              <div className="th-category-bar" role="group" aria-label="Filter courses by category">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    aria-pressed={activeTab === cat}
+                    className={`th-chip ${activeTab === cat ? "is-active" : ""}`}
+                    onClick={() => setActiveTab(cat)}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {loading ? (
+              <div className="course-grid" aria-hidden="true">
+                {[0, 1, 2, 3].map((i) => (
+                  <div className="course-card" key={i}>
+                    <div className="course-card__media th-skeleton" />
+                    <div className="course-card__body">
+                      <div className="th-skeleton" style={{ height: 14, width: "70%" }} />
+                      <div className="th-skeleton" style={{ height: 14, width: "45%" }} />
+                      <div className="th-skeleton" style={{ height: 32, marginTop: 12 }} />
+                    </div>
                   </div>
+                ))}
+              </div>
+            ) : loadError ? (
+              <div className="th-empty">
+                <span className="th-empty__icon">
+                  <i className="bi bi-cloud-slash" aria-hidden="true"></i>
+                </span>
+                <p className="th-empty__title">We couldn&apos;t load the catalogue</p>
+                <p className="th-empty__text">
+                  Please check your connection and refresh the page. If the problem
+                  continues, contact our support team.
+                </p>
+                <div className="d-flex gap-2 justify-content-center flex-wrap">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => window.location.reload()}
+                  >
+                    Refresh page
+                  </button>
+                  <Link to="/contact" className="btn btn-outline-dark">
+                    Contact support
+                  </Link>
                 </div>
+              </div>
+            ) : visibleCourses.length > 0 ? (
+              <div className="course-grid">
+                {visibleCourses.map((course) => (
+                  <CourseCard key={course.id} course={course} />
+                ))}
+              </div>
+            ) : (
+              <div className="th-empty">
+                <span className="th-empty__icon">
+                  <i className="bi bi-journal-x" aria-hidden="true"></i>
+                </span>
+                <p className="th-empty__title">No trainings in this category yet</p>
+                <p className="th-empty__text">
+                  New cohorts are published weekly. Browse the full catalogue or pick another
+                  category to keep exploring.
+                </p>
+                <Link to="/trainings" className="btn btn-primary">
+                  Browse all trainings
+                </Link>
               </div>
             )}
           </div>
-          <button style={{ fontSize:'13px' }} className="btn-show-faqs" onClick={() => setShowAllFaqs(!showAllFaqs)}>
-            {showAllFaqs ? "Show less" : "Show all 8 frequently asked questions"} 
-            <i className={`bi bi-chevron-${showAllFaqs ? 'up' : 'down'}`}></i>
-          </button>
-        </div>
-      </div>
+        </section>
+
+        {/* ------------------------------------------------------- Partners */}
+        <section className="th-section-tight th-surface-alt">
+          <div className="th-container-wide text-center">
+            <p className="th-eyebrow justify-content-center mb-4">
+              Partnering with world-class organisations
+            </p>
+            <div className="th-logos">
+              {PARTNER_LOGOS.map((logo) => (
+                <img key={logo.alt} src={logo.src} alt={logo.alt} loading="lazy" />
+              ))}
+            </div>
+            {providers.length > 0 && (
+              <p className="text-muted mt-4 mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                Trusted by {providers.length} accredited training provider
+                {providers.length === 1 ? "" : "s"} across Tanzania.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* -------------------------------------------------- Testimonials */}
+        <section className="th-section" aria-labelledby="testimonials-title">
+          <div className="th-container-wide">
+            <div className="th-section-head">
+              <div>
+                <p className="th-eyebrow">Learner stories</p>
+                <h2 className="th-section-title" id="testimonials-title">
+                  How learners like you are achieving their goals
+                </h2>
+              </div>
+            </div>
+
+            {reviews.length > 0 ? (
+              <div
+                id="testimonialCarousel"
+                className="carousel slide th-carousel"
+                data-bs-ride="carousel"
+                data-bs-interval="6000"
+              >
+                <div className="carousel-inner">
+                  {reviewSlides.map((slide, idx) => (
+                    <div className={`carousel-item ${idx === 0 ? "active" : ""}`} key={idx}>
+                      <div className="th-quote-grid" style={{ paddingBottom: "0.25rem" }}>
+                        {slide.map((review) => (
+                          <figure className="th-quote m-0" key={review.id}>
+                            <span className="th-quote__mark" aria-hidden="true">
+                              &ldquo;
+                            </span>
+                            <blockquote className="th-quote__text m-0">
+                              {review.review}
+                            </blockquote>
+                            <figcaption className="th-quote__person">
+                              <span className="th-avatar th-avatar--lg" aria-hidden="true">
+                                {review.user?.name?.charAt(0) || "U"}
+                              </span>
+                              <div style={{ minWidth: 0 }}>
+                                <span className="th-quote__name">
+                                  {review.user?.name || "Anonymous"}
+                                </span>
+                                <span className="th-quote__meta">
+                                  {review.course?.title || "Learner"}
+                                </span>
+                                <span className="th-stars" aria-label="Rated 5 out of 5">
+                                  {[0, 1, 2, 3, 4].map((star) => (
+                                    <i className="bi bi-star-fill" key={star} aria-hidden="true" />
+                                  ))}
+                                </span>
+                              </div>
+                            </figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {reviewSlides.length > 1 && (
+                  <>
+                    <button
+                      className="carousel-control-prev"
+                      type="button"
+                      data-bs-target="#testimonialCarousel"
+                      data-bs-slide="prev"
+                    >
+                      <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                      <span className="visually-hidden">Previous testimonials</span>
+                    </button>
+                    <button
+                      className="carousel-control-next"
+                      type="button"
+                      data-bs-target="#testimonialCarousel"
+                      data-bs-slide="next"
+                    >
+                      <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                      <span className="visually-hidden">Next testimonials</span>
+                    </button>
+                    <div className="carousel-indicators">
+                      {reviewSlides.map((_, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          data-bs-target="#testimonialCarousel"
+                          data-bs-slide-to={idx}
+                          className={idx === 0 ? "active" : ""}
+                          aria-label={`Go to testimonial group ${idx + 1}`}
+                        ></button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="th-empty">
+                <span className="th-empty__icon">
+                  <i className="bi bi-chat-quote" aria-hidden="true"></i>
+                </span>
+                <p className="th-empty__title">Learner reviews are on the way</p>
+                <p className="th-empty__text">
+                  Reviews appear here as soon as learners complete their first cohort.
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ------------------------------------------------ Latest trainings */}
+        <section className="th-section-tight" id="top-training" aria-labelledby="latest-title">
+          <div className="th-container-wide">
+            <div className="th-section-head">
+              <div>
+                <p className="th-eyebrow">New on TrainHub</p>
+                <h2 className="th-section-title" id="latest-title">
+                  Latest trainings
+                </h2>
+              </div>
+              <Link to="/trainings" className="btn btn-ghost btn-sm">
+                See everything
+                <i className="bi bi-arrow-right" aria-hidden="true"></i>
+              </Link>
+            </div>
+
+            {latestCourses.length > 0 ? (
+              <div className="course-grid">
+                {latestCourses.map((course) => (
+                  <CourseCard key={`latest-${course.id}`} course={course} />
+                ))}
+              </div>
+            ) : (
+              <div className="th-empty">
+                <span className="th-empty__icon">
+                  <i className="bi bi-calendar-plus" aria-hidden="true"></i>
+                </span>
+                <p className="th-empty__title">New cohorts are being scheduled</p>
+                <p className="th-empty__text">
+                  Check back shortly, or browse the catalogue to find an open cohort.
+                </p>
+                <Link to="/trainings" className="btn btn-primary">
+                  Browse catalogue
+                </Link>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* --------------------------------------------------- Learning paths */}
+        <section className="th-section th-surface-alt" aria-labelledby="paths-title">
+          <div className="th-container-wide">
+            <div className="th-section-head">
+              <div>
+                <p className="th-eyebrow">Career and life skills</p>
+                <h2 className="th-section-title" id="paths-title">
+                  Learn essential career and life skills
+                </h2>
+                <p className="th-section-lead">
+                  TrainingHub helps you build in-demand skills fast and advance your career.
+                </p>
+              </div>
+            </div>
+
+            <div className="course-grid">
+              {LEARNING_PATHS.map((path) => (
+                <Link
+                  key={path.title}
+                  to="/trainings"
+                  className="th-path-card"
+                  aria-label={`Explore ${path.title} trainings`}
+                >
+                  <img src={path.image} alt="" loading="lazy" />
+                  <div className="th-path-card__body">
+                    <h3 className="th-path-card__title">{path.title}</h3>
+                    <p className="th-path-card__text">{path.text}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------------- FAQ */}
+        <section className="th-section" aria-labelledby="faq-title">
+          <div className="th-container-wide">
+            <div className="row g-5">
+              <div className="col-lg-4">
+                <p className="th-eyebrow">Support</p>
+                <h2 className="th-section-title" id="faq-title">
+                  Frequently asked questions
+                </h2>
+                <p className="th-section-lead mb-4">
+                  Everything you need to know about enrolling, learning and getting certified.
+                </p>
+                <Link to="/contact" className="btn btn-outline-dark">
+                  Talk to our team
+                  <i className="bi bi-chat-dots" aria-hidden="true"></i>
+                </Link>
+              </div>
+
+              <div className="col-lg-8">
+                <div className="accordion th-faq" id="homeFaq">
+                  {FAQS.slice(0, showAllFaqs ? FAQS.length : 2).map((faq, index) => (
+                    <div className="accordion-item" key={faq.id}>
+                      <h3 className="accordion-header" id={`${faq.id}-heading`}>
+                        <button
+                          className={`accordion-button ${index > 0 ? "collapsed" : ""}`}
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target={`#${faq.id}`}
+                          aria-expanded={index === 0 ? "true" : "false"}
+                          aria-controls={faq.id}
+                        >
+                          {faq.question}
+                        </button>
+                      </h3>
+                      <div
+                        id={faq.id}
+                        className={`accordion-collapse collapse ${index === 0 ? "show" : ""}`}
+                        aria-labelledby={`${faq.id}-heading`}
+                        data-bs-parent="#homeFaq"
+                      >
+                        <div className="accordion-body">{faq.answer}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="btn btn-link mt-2"
+                  onClick={() => setShowAllFaqs((prev) => !prev)}
+                  aria-expanded={showAllFaqs}
+                >
+                  {showAllFaqs ? "Show fewer questions" : `Show all ${FAQS.length} questions`}
+                  <i
+                    className={`bi bi-chevron-${showAllFaqs ? "up" : "down"}`}
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------------- CTA */}
+        <section className="th-container-wide" style={{ paddingBottom: "var(--th-section-y)" }}>
+          <div className="th-cta">
+            <div>
+              <h2 className="th-cta__title">Bring accredited training to your team</h2>
+              <p className="th-cta__text">
+                Publish cohorts, manage enrolments and issue verifiable certificates. Join
+                Tanzania&apos;s growing network of training providers.
+              </p>
+            </div>
+            <div className="th-cta__actions">
+              <Link to="/tenant-register" className="btn btn-light">
+                Join as provider
+              </Link>
+              <Link to="/trainings" className="btn btn-outline-light">
+                Explore trainings
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
 
       <Footer />
     </>

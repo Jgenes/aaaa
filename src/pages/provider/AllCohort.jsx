@@ -109,7 +109,7 @@ export default function ProviderCohorts() {
     <ProviderDashboardLayout title="Cohort Management">
       <div className="card border-0 shadow-sm mb-4">
         <div className="card-header bg-white py-3">
-          <input 
+          <input aria-label="Search records" 
             type="text" className="form-control" placeholder="Search..." 
             value={search} onChange={(e) => setSearch(e.target.value)} 
           />
@@ -122,7 +122,7 @@ export default function ProviderCohorts() {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Cohort: {selectedCohort?.intake_name || selectedCohort?.name}</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+              <button type="button" className="btn-close" aria-label="Close dialog" data-bs-dismiss="modal"></button>
             </div>
             <div className="modal-body p-0">
               <DataTable columns={studentColumns} data={students} pagination progressPending={fetchingStudents} />

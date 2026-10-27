@@ -1,11 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseContentSidebar from "../components/CourseContentSideBar";
-import ReviewModal from "../components/ReviewModal"; // Hakikisha umetengeneza hii component
+import ReviewModal from "../components/ReviewModal";
 import api from "../api/axio";
-import { toast } from "react-toastify";
+
+const TABS = [
+  { id: "overview", label: "Overview" },
+  { id: "resources", label: "Resources" },
+  { id: "links", label: "Links" },
+];
 
 export default function CourseLearning() {
   const { courseId } = useParams();
@@ -16,7 +22,7 @@ export default function CourseLearning() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showReviewModal, setShowReviewModal] = useState(false); // State mpya ya modal
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const fetchCourseDetails = async (showLoading = true) => {
     if (!courseId || courseId === "undefined") return;
@@ -42,6 +48,7 @@ export default function CourseLearning() {
 
   useEffect(() => {
     fetchCourseDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
   const handleMarkAsComplete = async (lessonId) => {
@@ -52,135 +59,184 @@ export default function CourseLearning() {
       await api.post(
         `/courses/${courseId}/complete-lesson`,
         { lesson_id: lessonId },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success("Somo limekamilika!");
+      toast.success("Lesson completed. Well done!");
 
-      // Vuta data upya
       const res = await api.get(`/courses/${courseId}/learning`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCourse(res.data);
 
-      // Kitaalamu: Kama amefikisha 100%, trigger modal ya review
       if (res.data.progress_percentage === 100) {
         setShowReviewModal(true);
       }
     } catch (error) {
-      toast.error("Imeshindwa kuhifadhi maendeleo yako.");
+      toast.error("We could not save your progress. Please try again.");
     } finally {
       setIsUpdating(false);
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div className="spinner-border text-primary" role="status"></div>
+      <div className="d-flex flex-column align-items-center justify-content-center vh-100 gap-3">
+        <div className="spinner-border" role="status"></div>
+        <p className="text-muted mb-0">Loading your classroom…</p>
       </div>
     );
+  }
+
+  const progress = course?.progress_percentage || 0;
+  const handouts = activeLesson?.handouts || [];
+  const videoLinks = activeLesson?.video_links || [];
 
   return (
     <div className="bg-light min-vh-100">
       <NavBar />
 
-      {/* HEADER SECTION */}
+      {/* Class header */}
       <div
-        className="bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center sticky-top shadow"
-        style={{ zIndex: 1020 }}
+        className="sticky-top"
+        style={{
+          top: "var(--th-header-h)",
+          zIndex: 1020,
+          background: "#fff",
+          borderBottom: "1px solid var(--th-line)",
+        }}
       >
-        <div className="d-flex align-items-center">
+        <div className="th-container-wide py-2 d-flex align-items-center gap-3">
           <button
+            type="button"
             onClick={() => navigate(-1)}
-            className="btn btn-sm btn-outline-light me-3"
+            className="btn btn-sm btn-outline-dark flex-shrink-0"
+            aria-label="Back to my learning"
           >
-            <i className="bi bi-arrow-left"></i>
+            <i className="bi bi-arrow-left" aria-hidden="true"></i>
           </button>
-          <div>
-            <span className="fw-bold d-block">{course?.title}</span>
-            {/* Button ya hiari kutoa review muda wowote */}
-            <button 
-              className="btn btn-sm p-0 text-warning border-0" 
-              onClick={() => setShowReviewModal(true)}
-              style={{ fontSize: '12px' }}
+
+          <div className="flex-grow-1" style={{ minWidth: 0 }}>
+            <span
+              className="d-block text-truncate"
+              style={{ fontWeight: 700, color: "var(--th-ink)", fontSize: "var(--th-fs-sm)" }}
             >
-              <i className="bi bi-star-fill me-1"></i> Rate this course
+              {course?.title}
+            </span>
+            <button
+              type="button"
+              className="btn btn-link btn-sm p-0"
+              onClick={() => setShowReviewModal(true)}
+              style={{ fontSize: "var(--th-fs-xs)" }}
+            >
+              <i className="bi bi-star-fill me-1" aria-hidden="true"></i>
+              Rate this course
             </button>
           </div>
-        </div>
-        <div className="w-25 d-none d-md-block">
-          <small className="text-secondary small">
-            Course Progress: {course?.progress_percentage || 0}%
-          </small>
-          <div className="progress mt-1" style={{ height: "6px" }}>
+
+          <div className="d-none d-md-block" style={{ width: 180 }}>
+            <div className="d-flex justify-content-between mb-1">
+              <span className="text-muted" style={{ fontSize: "var(--th-fs-2xs)" }}>
+                Progress
+              </span>
+              <span style={{ fontSize: "var(--th-fs-2xs)", fontWeight: 700 }}>{progress}%</span>
+            </div>
             <div
-              className="progress-bar bg-success progress-bar-striped progress-bar-animated"
-              style={{ width: `${course?.progress_percentage || 0}%` }}
-            ></div>
+              className="progress"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Course progress"
+            >
+              <div
+                className="progress-bar"
+                style={{ width: `${progress}%`, backgroundColor: "var(--th-accent)" }}
+              ></div>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="container-fluid p-0">
         <div className="row g-0">
-          <div className="col-lg-8 bg-black">
-            {/* VIDEO PLAYER AREA */}
-            <div className="ratio ratio-16x9 shadow-lg bg-dark">
-              {activeLesson?.video_url ? (
-                <video
-                  key={activeLesson.video_url}
-                  controls
-                  controlsList="nodownload"
-                  autoPlay
-                  className="w-100 h-100"
-                >
-                  <source src={activeLesson.video_url} type="video/mp4" />
-                </video>
-              ) : (
-                <div className="d-flex flex-column align-items-center justify-content-center text-white p-5 h-100">
-                  <i className="bi bi-file-earmark-text display-1 mb-3 text-secondary"></i>
-                  <h4>Reading Material Only</h4>
-                </div>
-              )}
+          <div className="col-lg-8">
+            <div style={{ background: "#0b1b2d" }}>
+              <div className="ratio ratio-16x9">
+                {activeLesson?.video_url ? (
+                  <video
+                    key={activeLesson.video_url}
+                    controls
+                    controlsList="nodownload"
+                    autoPlay
+                    className="w-100 h-100"
+                  >
+                    <source src={activeLesson.video_url} type="video/mp4" />
+                  </video>
+                ) : (
+                  <div className="d-flex flex-column align-items-center justify-content-center text-white p-5 h-100 text-center">
+                    <i
+                      className="bi bi-file-earmark-text mb-3"
+                      style={{ fontSize: 42, opacity: 0.6 }}
+                      aria-hidden="true"
+                    ></i>
+                    <h2 style={{ color: "#fff", fontSize: "var(--th-fs-lg)" }}>
+                      Reading material only
+                    </h2>
+                    <p className="mb-0" style={{ fontSize: "var(--th-fs-sm)", opacity: 0.7 }}>
+                      This session has notes instead of a video.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="p-4 bg-white border-bottom min-vh-50">
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <h4 className="fw-bold">
-                  {activeLesson?.title || "Chagua Somo"}
-                </h4>
+            <div className="bg-white border-bottom p-4">
+              <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                <h1 className="mb-0" style={{ fontSize: "var(--th-fs-xl)" }}>
+                  {activeLesson?.title || "Select a lesson"}
+                </h1>
 
                 {activeLesson && (
                   <button
+                    type="button"
                     onClick={() => handleMarkAsComplete(activeLesson.id)}
                     disabled={activeLesson.is_completed || isUpdating}
-                    className={`btn btn-sm ${activeLesson.is_completed ? "btn-success" : "btn-outline-success"}`}
+                    className={`btn ${
+                      activeLesson.is_completed ? "btn-secondary" : "btn-outline-dark"
+                    } btn-sm`}
                   >
                     {isUpdating ? (
-                      <span className="spinner-border spinner-border-sm me-1"></span>
-                    ) : activeLesson.is_completed ? (
-                      <i className="bi bi-check-all me-1"></i>
-                    ) : null}
-                    {activeLesson.is_completed
-                      ? "Completed"
-                      : "Mark as Complete"}
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        aria-hidden="true"
+                      ></span>
+                    ) : (
+                      <i
+                        className={`bi ${
+                          activeLesson.is_completed ? "bi-check-all" : "bi-check2-circle"
+                        }`}
+                        aria-hidden="true"
+                      ></i>
+                    )}
+                    {activeLesson.is_completed ? "Completed" : "Mark as complete"}
                   </button>
                 )}
               </div>
 
-              <ul className="nav nav-tabs mb-4 border-0">
-                {["overview", "resources", "links"].map((tab) => (
-                  <li className="nav-item" key={tab}>
+              <ul className="nav nav-tabs mb-4" role="tablist">
+                {TABS.map((tab) => (
+                  <li className="nav-item" key={tab.id} role="presentation">
                     <button
-                      className={`nav-link border-0 border-bottom border-3 text-capitalize px-4 ${
-                        activeTab === tab
-                          ? "border-primary text-primary fw-bold"
-                          : "text-muted border-transparent"
-                      }`}
-                      onClick={() => setActiveTab(tab)}
+                      type="button"
+                      role="tab"
+                      id={`tab-${tab.id}`}
+                      aria-selected={activeTab === tab.id}
+                      aria-controls={`panel-${tab.id}`}
+                      className={`nav-link ${activeTab === tab.id ? "active" : ""}`}
+                      onClick={() => setActiveTab(tab.id)}
                     >
-                      {tab}
+                      {tab.label}
                     </button>
                   </li>
                 ))}
@@ -188,45 +244,111 @@ export default function CourseLearning() {
 
               <div className="tab-content">
                 {activeTab === "overview" && (
-                  <div className="animate__animated animate__fadeIn">
-                    <p className="text-secondary mb-4">
-                      {activeLesson?.description}
+                  <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview">
+                    <p className="text-muted mb-4" style={{ fontSize: "var(--th-fs-sm)" }}>
+                      {activeLesson?.description || "No description provided for this session."}
                     </p>
-                    <div className="bg-light p-4 rounded border-start border-4 border-primary">
-                      <h6 className="fw-bold">Lesson Notes</h6>
-                      <div style={{ whiteSpace: "pre-wrap" }}>
-                        {activeLesson?.notes || "No notes."}
+                    <div className="th-panel-muted">
+                      <h2 className="mb-2" style={{ fontSize: "var(--th-fs-base)" }}>
+                        Lesson notes
+                      </h2>
+                      <div
+                        className="th-prose"
+                        style={{ whiteSpace: "pre-wrap", marginBottom: 0 }}
+                      >
+                        {activeLesson?.notes || "No notes for this session."}
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {activeTab === "resources" && (
+                  <div role="tabpanel" id="panel-resources" aria-labelledby="tab-resources">
+                    {handouts.length > 0 ? (
+                      <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
+                        {handouts.map((file, index) => {
+                          const href = file.url || file.path || file;
+                          const label = file.name || `Resource ${index + 1}`;
+                          return (
+                            <li key={index}>
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="d-inline-flex align-items-center gap-2"
+                                style={{ fontSize: "var(--th-fs-sm)", fontWeight: 600 }}
+                              >
+                                <i className="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
+                                {label}
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                        No downloadable resources for this session.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === "links" && (
+                  <div role="tabpanel" id="panel-links" aria-labelledby="tab-links">
+                    {videoLinks.length > 0 ? (
+                      <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
+                        {videoLinks.map((link, index) => (
+                          <li key={index}>
+                            <a
+                              href={link}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="d-inline-flex align-items-center gap-2"
+                              style={{ fontSize: "var(--th-fs-sm)", fontWeight: 600 }}
+                            >
+                              <i className="bi bi-link-45deg" aria-hidden="true"></i>
+                              {link}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-muted mb-0" style={{ fontSize: "var(--th-fs-sm)" }}>
+                        No additional links for this session.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div
-            className="col-lg-4 border-start bg-white shadow-sm overflow-auto"
-            style={{ height: "calc(100vh - 65px)" }}
-          >
-            <CourseContentSidebar
-              modules={course?.modules}
-              onLessonSelect={(lesson) => {
-                setActiveLesson(lesson);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              activeLessonTitle={activeLesson?.title}
-            />
+          <div className="col-lg-4 bg-white border-start">
+            <div style={{ position: "sticky", top: "calc(var(--th-header-h) + 58px)" }}>
+              <CourseContentSidebar
+                modules={course?.modules}
+                onLessonSelect={(lesson) => {
+                  setActiveLesson(lesson);
+                  setActiveTab("overview");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                activeLessonTitle={activeLesson?.title}
+              />
+              <div className="p-3 border-top">
+                <Link to="/learning" className="btn btn-outline-dark w-100 btn-sm">
+                  <i className="bi bi-collection-play" aria-hidden="true"></i>
+                  Back to my learning
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
       <Footer />
 
-      {/* MODAL YA REVIEW - Inaonekana pale tu showReviewModal inapokuwa true */}
       {showReviewModal && (
-        <ReviewModal 
-          courseId={courseId} 
-          onClose={() => setShowReviewModal(false)} 
-        />
+        <ReviewModal courseId={courseId} onClose={() => setShowReviewModal(false)} />
       )}
     </div>
   );

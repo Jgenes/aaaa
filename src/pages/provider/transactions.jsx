@@ -3,6 +3,7 @@ import api from "../../api/axio";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
 
+import { tableStyles } from "../../lib/tableStyles";
 export default function ProviderInvoices() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +120,7 @@ await api.post(`/provider/payments/${payment.id}/status`, { status: newStatus })
             <button
               onClick={() => handleDownload(row.reference)}
               className="btn btn-sm text-white d-flex align-items-center"
-              style={{ backgroundColor: "#0a2e67", gap: "5px", fontSize: "13px" }}
+              style={{ backgroundColor: "var(--th-primary)", gap: "5px", fontSize: "13px" }}
             >
               <i className="bi bi-download"></i>
               {isPaid ? "Receipt" : "Invoice"}
@@ -151,7 +152,7 @@ await api.post(`/provider/payments/${payment.id}/status`, { status: newStatus })
     <ProviderDashboardLayout title="Invoices & Receipts">
       <div className="card border-0 shadow-sm p-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
-          <input
+          <input aria-label="Search"
             type="text"
             className="form-control form-control-sm w-25"
             placeholder="Search..."
@@ -166,16 +167,7 @@ await api.post(`/provider/payments/${payment.id}/status`, { status: newStatus })
           progressPending={loading}
           highlightOnHover
           responsive
-          customStyles={{
-            headCells: {
-              style: {
-                backgroundColor: "#f8f9fa",
-                color: "#0a2e67",
-                fontWeight: "bold",
-                fontSize: "14px",
-              },
-            },
-          }}
+          customStyles={tableStyles}
         />
       </div>
     </ProviderDashboardLayout>
