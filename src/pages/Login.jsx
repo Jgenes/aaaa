@@ -54,22 +54,6 @@ export default function Login() {
       eyebrow="Learner account"
       title="Welcome back"
       subtitle="Sign in to continue your training. We'll email you a one-time code to confirm it's you."
-      asideTitle="Skills that move Tanzania forward."
-      asideLead="Join thousands of professionals learning with accredited providers across the country."
-      points={[
-        {
-          title: "Learn from accredited providers",
-          text: "Every training is published by a verified Tanzanian institution.",
-        },
-        {
-          title: "Cohorts, not playlists",
-          text: "Structured intakes with real projects and trainer feedback.",
-        },
-        {
-          title: "Certificates that verify",
-          text: "Finish a cohort and share a certificate anyone can check.",
-        },
-      ]}
     >
       {justActivated && (
         <div className="alert alert-success d-flex align-items-start gap-2" role="status">

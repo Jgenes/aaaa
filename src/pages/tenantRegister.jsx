@@ -6,12 +6,6 @@ import "react-phone-input-2/lib/bootstrap.css";
 import api from "../api/axio";
 import AuthLayout from "../components/AuthLayout";
 
-const PROVIDER_POINTS = [
-  "Publish courses and manage cohorts",
-  "Track enrolments and payments in one dashboard",
-  "Reach learners across Tanzania",
-];
-
 export default function RegisterTenant() {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
@@ -79,8 +73,6 @@ export default function RegisterTenant() {
     <AuthLayout
       title="Become a course provider"
       subtitle="Create a provider account and start publishing accredited trainings."
-      asideTitle="Grow your training business with TrainHub TZ."
-      points={PROVIDER_POINTS}
     >
       <form onSubmit={handleRegister} noValidate>
         <div className="mb-3">

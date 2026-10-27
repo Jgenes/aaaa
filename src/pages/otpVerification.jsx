@@ -118,12 +118,6 @@ function OtpVerification() {
     <AuthLayout
       title="Verify your login"
       subtitle="Enter the 6-digit code we sent to your email address to finish signing in."
-      asideTitle="Secure by design."
-      points={[
-        "One-time codes keep your account safe",
-        "Codes expire shortly after they are issued",
-        "Need help? Our support team is one click away",
-      ]}
     >
       <div
         className="alert alert-info d-flex align-items-start gap-2"
