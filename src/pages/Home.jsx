@@ -190,12 +190,14 @@ export default function Home() {
 
             <div className="hero__visual">
               <figure className="hero__figure m-0">
-                <img
-                  src={HeroImage}
-                  alt="Participants taking notes during a TrainHub TZ professional development session in Tanzania"
-                  width="1200"
-                  height="700"
-                />
+                <span className="hero__figure-media">
+                  <img
+                    src={HeroImage}
+                    alt="Participants taking notes during a TrainHub TZ professional development session in Tanzania"
+                    width="1200"
+                    height="700"
+                  />
+                </span>
                 <figcaption className="hero__figure-caption">
                   <i className="bi bi-geo-alt-fill" aria-hidden="true"></i>
                   Live cohort training · Dar es Salaam
