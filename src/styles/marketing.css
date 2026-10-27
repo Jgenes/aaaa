@@ -443,65 +443,38 @@
   color: var(--th-muted);
 }
 
-/* Visual — circular photo frame */
+/* Visual — framed hero photo */
 .hero__visual {
   position: relative;
-  display: flex;
-  justify-content: center;
 }
 
 .hero__figure {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--th-space-4);
-  width: min(100%, 430px);
   margin: 0;
-}
-
-/* hairline ring sitting just outside the photo */
-.hero__figure::before {
-  content: "";
-  position: absolute;
-  top: calc(-1 * var(--th-space-3));
-  left: 50%;
-  width: calc(100% + var(--th-space-6));
-  aspect-ratio: 1;
-  transform: translateX(-50%);
-  border: 1px solid var(--th-line-strong);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.hero__figure-media {
-  position: relative;
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
+  border-radius: var(--th-radius-md);
   overflow: hidden;
   border: 1px solid var(--th-line);
-  border-radius: 50%;
-  background: var(--th-surface-muted);
+  background: var(--th-surface);
   box-shadow: var(--th-shadow-lg);
 }
 
-.hero__figure-media img {
+.hero__figure img {
   display: block;
   width: 100%;
-  height: 100%;
+  height: clamp(280px, 34vw, 460px);
   object-fit: cover;
 }
 
 .hero__figure-caption {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.45rem;
+  padding: 0.7rem 0.9rem;
   font-size: var(--th-fs-xs);
   font-weight: 500;
   color: var(--th-muted);
-  text-align: center;
+  background: var(--th-surface);
+  border-top: 1px solid var(--th-line);
 }
 
 .hero__figure-caption i {
@@ -529,8 +502,8 @@
 
 .hero__float--bottom {
   position: absolute;
-  right: calc(50% - min(50%, 215px));
-  bottom: 3.75rem;
+  left: calc(-1 * var(--th-space-6));
+  bottom: calc(-1 * var(--th-space-5));
   max-width: 15.5rem;
 }
 
@@ -2175,13 +2148,9 @@
     bottom: calc(100% + 0.75rem);
   }
 
-  .hero__figure {
-    width: min(100%, 380px);
-  }
-
   .hero__float--bottom {
-    right: calc(50% - min(50%, 190px));
-    bottom: 3rem;
+    left: var(--th-space-3);
+    bottom: var(--th-space-3);
   }
 
   .hero__stats {
@@ -2238,12 +2207,8 @@
     background: none;
   }
 
-  .hero__figure {
-    width: min(100%, 320px);
-  }
-
-  .hero__figure::before {
-    display: none;
+  .hero__figure img {
+    height: 260px;
   }
 
   .hero__float {
