@@ -79,7 +79,7 @@ export default function Register() {
       onClick={() => setShowPassword((prev) => !prev)}
       aria-label={showPassword ? "Hide password" : "Show password"}
       aria-pressed={showPassword}
-      aria-controls="register-password"
+      aria-controls="register-password register-confirm"
     >
       <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true"></i>
     </button>
@@ -87,6 +87,7 @@ export default function Register() {
 
   return (
     <AuthLayout
+      wide
       eyebrow="New learner account"
       title="Create your account"
       subtitle="Register once, then enrol in any cohort on TrainHub TZ. We'll email you a link to activate the account."
@@ -95,34 +96,36 @@ export default function Register() {
         <fieldset className="th-auth__group">
           <legend className="th-auth__legend">Your details</legend>
 
-          <AuthField
-            id="register-name"
-            label="Full name"
-            icon="bi-person"
-            autoComplete="name"
-            placeholder="e.g. Amina Juma"
-            value={fullname}
-            onChange={(e) => {
-              setFullname(e.target.value);
-              clearError("fullname");
-            }}
-            error={errors.fullname}
-          />
+          <div className="th-auth__row-fields">
+            <AuthField
+              id="register-name"
+              label="Full name"
+              icon="bi-person"
+              autoComplete="name"
+              placeholder="e.g. Amina Juma"
+              value={fullname}
+              onChange={(e) => {
+                setFullname(e.target.value);
+                clearError("fullname");
+              }}
+              error={errors.fullname}
+            />
 
-          <AuthField
-            id="register-email"
-            label="Email address"
-            type="email"
-            icon="bi-envelope"
-            autoComplete="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              clearError("email");
-            }}
-            error={errors.email}
-          />
+            <AuthField
+              id="register-email"
+              label="Email address"
+              type="email"
+              icon="bi-envelope"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearError("email");
+              }}
+              error={errors.email}
+            />
+          </div>
 
           <div className={`th-field${errors.phone ? " th-field--invalid" : ""}`}>
             <label className="th-field__label" htmlFor="register-phone">
@@ -159,37 +162,40 @@ export default function Register() {
         <fieldset className="th-auth__group">
           <legend className="th-auth__legend">Secure your account</legend>
 
-          <AuthField
-            id="register-password"
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            icon="bi-lock"
-            autoComplete="new-password"
-            placeholder="At least 6 characters"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              clearError("password");
-            }}
-            error={errors.password}
-            hint="Use at least 6 characters, mixing letters and numbers."
-            trailing={passwordToggle}
-          />
+          <div className="th-auth__row-fields">
+            <AuthField
+              id="register-password"
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              icon="bi-lock"
+              autoComplete="new-password"
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                clearError("password");
+              }}
+              error={errors.password}
+              trailing={passwordToggle}
+            />
 
-          <AuthField
-            id="register-confirm"
-            label="Confirm password"
-            type={showPassword ? "text" : "password"}
-            icon="bi-shield-lock"
-            autoComplete="new-password"
-            placeholder="Re-enter your password"
-            value={confirmPassword}
-            onChange={(e) => {
-              setConfirmPassword(e.target.value);
-              clearError("confirmPassword");
-            }}
-            error={errors.confirmPassword}
-          />
+            <AuthField
+              id="register-confirm"
+              label="Confirm password"
+              type={showPassword ? "text" : "password"}
+              icon="bi-shield-lock"
+              autoComplete="new-password"
+              placeholder="Re-enter it"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                clearError("confirmPassword");
+              }}
+              error={errors.confirmPassword}
+            />
+          </div>
+
+          <p className="th-auth__hint">Use at least 6 characters, mixing letters and numbers.</p>
         </fieldset>
 
         <button

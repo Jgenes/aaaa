@@ -107,7 +107,7 @@ export default function Login() {
 
         <div className="th-auth__row">
           <span className="th-auth__helper">Verified with a one-time code</span>
-          <Link to="/contact" className="th-auth__helper-link">
+          <Link to="/forgot-password" className="th-auth__helper-link">
             Forgot password?
           </Link>
         </div>

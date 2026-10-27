@@ -22,6 +22,8 @@ const ROUTES = [
   "/contact",
   "/login",
   "/register",
+  "/forgot-password",
+  "/reset-password",
   "/tenant-register",
   "/otp-verification",
   "/activate-account",
