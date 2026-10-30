@@ -1,7 +1,11 @@
 import axios from "axios";
 
+// Override with VITE_API_BASE_URL when pointing the app at a local/staging API.
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL || "https://api.traininghubtz.co.tz/api";
+
 const api = axios.create({
-  baseURL: "https://api.traininghubtz.co.tz/api",
+  baseURL,
   headers: {
     Accept: "application/json", // ✔ keep this
   },

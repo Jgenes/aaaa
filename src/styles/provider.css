@@ -394,14 +394,6 @@
   border-style: dashed !important;
 }
 
-/* Learning progress wrapper */
-.prof-prog-container {
-  display: flex;
-  align-items: center;
-  gap: var(--th-space-3);
-  margin-top: var(--th-space-3);
-}
-
 /* ---------- Shared modal backdrop ---------- */
 .th-modal-backdrop {
   background: rgba(7, 19, 34, 0.55);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import NavBar from "../components/NavBar";
@@ -13,6 +13,45 @@ const TABS = [
   { id: "links", label: "Links" },
 ];
 
+function formatDuration(duration) {
+  if (duration === null || duration === undefined || duration === "") return "10 min";
+  if (typeof duration === "number" || /^\d+(\.\d+)?$/.test(String(duration).trim())) {
+    return `${duration} min`;
+  }
+  return String(duration);
+}
+
+function fileNameFromUrl(url, fallback) {
+  try {
+    const path = new URL(url, window.location.origin).pathname;
+    const name = decodeURIComponent(path.split("/").filter(Boolean).pop() || "");
+    return name || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function toFileItems(list) {
+  if (!Array.isArray(list)) return [];
+  return list.map((file, index) => {
+    const href = typeof file === "string" ? file : file?.url || file?.path || "";
+    const label =
+      (typeof file === "object" && (file?.name || file?.title)) ||
+      fileNameFromUrl(href, `Resource ${index + 1}`);
+    return { href, label, key: `${href}-${index}` };
+  });
+}
+
+function toLinkItems(list) {
+  if (!Array.isArray(list)) return [];
+  return list.map((link, index) => {
+    const href = typeof link === "string" ? link : link?.url || "";
+    const label =
+      (typeof link === "object" && (link?.name || link?.title)) || href || `Link ${index + 1}`;
+    return { href, label, key: `${href}-${index}` };
+  });
+}
+
 export default function CourseLearning() {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -20,27 +59,38 @@ export default function CourseLearning() {
   const [course, setCourse] = useState(null);
   const [activeLesson, setActiveLesson] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [isUpdating, setIsUpdating] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
   const fetchCourseDetails = async (showLoading = true) => {
-    if (!courseId || courseId === "undefined") return;
+    if (!courseId || courseId === "undefined") {
+      setLoadError(true);
+      setLoading(false);
+      return;
+    }
+
     try {
       if (showLoading) setLoading(true);
-      const token = localStorage.getItem("token");
-      const res = await api.get(`/courses/${courseId}/learning`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await api.get(`/courses/${courseId}/learning`);
       setCourse(res.data);
 
-      if (!activeLesson && res.data?.modules?.[0]) {
-        setActiveLesson(res.data.modules[0]);
-      }
+      const modules = Array.isArray(res.data?.modules) ? res.data.modules : [];
+      setActiveLesson((current) => {
+        if (current) {
+          const refreshed = modules.find((module) => module.id === current.id);
+          if (refreshed) return refreshed;
+        }
+        return modules.find((module) => !module.is_completed) || modules[0] || null;
+      });
     } catch (error) {
-      console.error("Error:", error);
-      if (error.response?.status === 401) navigate("/login");
+      console.error("Error loading course:", error);
+      if (error.response?.status === 401) {
+        navigate("/login");
+        return;
+      }
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -54,22 +104,19 @@ export default function CourseLearning() {
   const handleMarkAsComplete = async (lessonId) => {
     try {
       setIsUpdating(true);
-      const token = localStorage.getItem("token");
 
-      await api.post(
-        `/courses/${courseId}/complete-lesson`,
-        { lesson_id: lessonId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post(`/courses/${courseId}/complete-lesson`, { lesson_id: lessonId });
 
-      toast.success("Lesson completed. Well done!");
+      toast.success("Session completed. Well done!");
 
-      const res = await api.get(`/courses/${courseId}/learning`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get(`/courses/${courseId}/learning`);
       setCourse(res.data);
 
-      if (res.data.progress_percentage === 100) {
+      const modules = Array.isArray(res.data?.modules) ? res.data.modules : [];
+      const refreshed = modules.find((module) => module.id === lessonId);
+      if (refreshed) setActiveLesson(refreshed);
+
+      if (Number(res.data?.progress_percentage) >= 100) {
         setShowReviewModal(true);
       }
     } catch (error) {
@@ -79,210 +126,307 @@ export default function CourseLearning() {
     }
   };
 
+  const modules = useMemo(
+    () => (Array.isArray(course?.modules) ? course.modules : []),
+    [course]
+  );
+  const lessonIndex = activeLesson
+    ? modules.findIndex((module) => module.id === activeLesson.id)
+    : -1;
+  const previousLesson = lessonIndex > 0 ? modules[lessonIndex - 1] : null;
+  const nextLesson =
+    lessonIndex >= 0 && lessonIndex < modules.length - 1 ? modules[lessonIndex + 1] : null;
+
+  const handouts = toFileItems(activeLesson?.handouts);
+  const videoLinks = toLinkItems(activeLesson?.video_links);
+  const progress = Math.min(100, Math.round(Number(course?.progress_percentage) || 0));
+
+  const selectLesson = (lesson) => {
+    setActiveLesson(lesson);
+    setActiveTab("overview");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   if (loading) {
     return (
-      <div className="d-flex flex-column align-items-center justify-content-center vh-100 gap-3">
-        <div className="spinner-border" role="status"></div>
-        <p className="text-muted mb-0">Loading your classroom…</p>
+      <div className="th-classroom">
+        <NavBar />
+        <main id="main-content" className="th-container-wide th-classroom__loading">
+          <h1 className="visually-hidden">Loading your classroom</h1>
+          <div className="th-classroom__loading-grid" aria-hidden="true">
+            <div>
+              <div className="th-skeleton th-classroom__loading-stage" />
+              <div className="th-skeleton" style={{ height: 168, marginTop: 24 }} />
+            </div>
+            <div className="th-skeleton" style={{ height: 420 }} />
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
-  const progress = course?.progress_percentage || 0;
-  const handouts = activeLesson?.handouts || [];
-  const videoLinks = activeLesson?.video_links || [];
+  if (loadError || !course) {
+    return (
+      <div className="th-classroom">
+        <NavBar />
+        <main id="main-content" className="th-container-wide th-section">
+          <div className="th-empty">
+            <span className="th-empty__icon">
+              <i className="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            </span>
+            <p className="th-empty__title">We could not open this classroom</p>
+            <p className="th-empty__text">
+              The course may have been unpublished, or your enrolment is still being confirmed.
+            </p>
+            <div className="d-flex gap-2 justify-content-center flex-wrap">
+              <Link to="/learning" className="btn btn-primary">
+                Back to my learning
+              </Link>
+              <button
+                type="button"
+                className="btn btn-outline-dark"
+                onClick={() => {
+                  setLoadError(false);
+                  fetchCourseDetails();
+                }}
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-light min-vh-100">
+    <div className="th-classroom">
       <NavBar />
 
-      {/* Class header */}
-      <div
-        className="sticky-top"
-        style={{
-          top: "var(--th-header-h)",
-          zIndex: 1020,
-          background: "#fff",
-          borderBottom: "1px solid var(--th-line)",
-        }}
-      >
-        <div className="th-container-wide py-2 d-flex align-items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="btn btn-sm btn-outline-dark flex-shrink-0"
-            aria-label="Back to my learning"
-          >
-            <i className="bi bi-arrow-left" aria-hidden="true"></i>
-          </button>
+      <main id="main-content">
+        <div className="th-classroom__bar">
+          <div className="th-container-wide th-classroom__bar-inner">
+            <Link to="/learning" className="th-classroom__back">
+              <i className="bi bi-arrow-left" aria-hidden="true"></i>
+              <span>My learning</span>
+            </Link>
 
-          <div className="flex-grow-1" style={{ minWidth: 0 }}>
-            <span
-              className="d-block text-truncate"
-              style={{ fontWeight: 700, color: "var(--th-ink)", fontSize: "var(--th-fs-sm)" }}
-            >
-              {course?.title}
-            </span>
-            <button
-              type="button"
-              className="btn btn-link btn-sm p-0"
-              onClick={() => setShowReviewModal(true)}
-            >
-              <i className="bi bi-star-fill me-1" aria-hidden="true"></i>
-              Rate this course
-            </button>
-          </div>
-
-          <div className="d-none d-md-block" style={{ width: 180 }}>
-            <div className="d-flex justify-content-between mb-1">
-              <span className="text-muted">
-                Progress
-              </span>
-              <span style={{ fontSize: "var(--th-fs-2xs)", fontWeight: 700 }}>{progress}%</span>
+            <div className="th-classroom__bar-title">
+              <p className="th-classroom__bar-label">Now learning</p>
+              <p className="th-classroom__bar-course" title={course.title}>
+                {course.title}
+              </p>
             </div>
-            <div
-              className="progress"
-              role="progressbar"
-              aria-valuenow={progress}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label="Course progress"
-            >
+
+            <div className="th-classroom__bar-progress">
+              <div className="th-classroom__bar-progress-head">
+                <span>Course progress</span>
+                <strong>{progress}%</strong>
+              </div>
               <div
-                className="progress-bar"
-                style={{ width: `${progress}%`, backgroundColor: "var(--th-accent)" }}
-              ></div>
+                className="th-progress"
+                role="progressbar"
+                aria-valuenow={progress}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Course progress"
+              >
+                <span
+                  className="th-progress__fill th-progress__fill--accent"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="container-fluid p-0">
-        <div className="row g-0">
-          <div className="col-lg-8">
-            <div style={{ background: "#0b1b2d" }}>
-              <div className="ratio ratio-16x9">
+        <div className="th-classroom__layout">
+          <div className="th-classroom__main">
+            <div className="th-stage">
+              <div className="th-stage__frame">
                 {activeLesson?.video_url ? (
                   <video
                     key={activeLesson.video_url}
                     controls
                     controlsList="nodownload"
-                    autoPlay
-                    className="w-100 h-100"
+                    playsInline
+                    preload="metadata"
+                    aria-label={`${activeLesson.title} video`}
                   >
                     <source src={activeLesson.video_url} type="video/mp4" />
+                    Your browser does not support embedded video.
                   </video>
                 ) : (
-                  <div className="d-flex flex-column align-items-center justify-content-center text-white p-5 h-100 text-center">
-                    <i
-                      className="bi bi-file-earmark-text mb-3"
-                      style={{ fontSize: 42, opacity: 0.6 }}
-                      aria-hidden="true"
-                    ></i>
-                    <h2 style={{ color: "#fff", fontSize: "var(--th-fs-lg)" }}>
-                      Reading material only
-                    </h2>
-                    <p className="mb-0" style={{ fontSize: "var(--th-fs-sm)", opacity: 0.7 }}>
-                      This session has notes instead of a video.
+                  <div className="th-stage__empty">
+                    <span className="th-stage__empty-icon" aria-hidden="true">
+                      <i className="bi bi-journal-text"></i>
+                    </span>
+                    <h2>{activeLesson ? "Reading session" : "Choose a session"}</h2>
+                    <p>
+                      {activeLesson
+                        ? "This session is delivered as written notes and resources instead of a video."
+                        : "Pick a session from the course contents to begin."}
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="bg-white border-bottom p-4">
-              <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-                <h1 className="mb-0">
-                  {activeLesson?.title || "Select a lesson"}
-                </h1>
+            <section className="th-lesson" aria-labelledby="lesson-title">
+              <header className="th-lesson__head">
+                <div>
+                  <p className="th-lesson__eyebrow">
+                    {lessonIndex >= 0 ? (
+                      <span>
+                        Session {lessonIndex + 1} of {modules.length}
+                      </span>
+                    ) : (
+                      <span>No session selected</span>
+                    )}
+                    <span className="dot" aria-hidden="true"></span>
+                    <span>{activeLesson?.video_url ? "Video" : "Reading"}</span>
+                    <span className="dot" aria-hidden="true"></span>
+                    <span>{formatDuration(activeLesson?.duration)}</span>
+                    {activeLesson?.is_completed && (
+                      <>
+                        <span className="dot" aria-hidden="true"></span>
+                        <span className="th-lesson__done">
+                          <i className="bi bi-check-circle-fill" aria-hidden="true"></i>
+                          Completed
+                        </span>
+                      </>
+                    )}
+                  </p>
 
-                {activeLesson && (
+                  <h1 className="th-lesson__title" id="lesson-title">
+                    {activeLesson?.title || "Select a session"}
+                  </h1>
+                </div>
+
+                <div className="th-lesson__actions">
                   <button
                     type="button"
-                    onClick={() => handleMarkAsComplete(activeLesson.id)}
-                    disabled={activeLesson.is_completed || isUpdating}
-                    className={`btn ${
-                      activeLesson.is_completed ? "btn-secondary" : "btn-outline-dark"
-                    } btn-sm`}
+                    className="btn btn-sm btn-outline-dark"
+                    onClick={() => setShowReviewModal(true)}
                   >
-                    {isUpdating ? (
-                      <span
-                        className="spinner-border spinner-border-sm"
-                        aria-hidden="true"
-                      ></span>
-                    ) : (
-                      <i
-                        className={`bi ${
-                          activeLesson.is_completed ? "bi-check-all" : "bi-check2-circle"
-                        }`}
-                        aria-hidden="true"
-                      ></i>
-                    )}
-                    {activeLesson.is_completed ? "Completed" : "Mark as complete"}
+                    <i className="bi bi-star" aria-hidden="true"></i>
+                    Rate course
                   </button>
-                )}
-              </div>
 
-              <ul className="nav nav-tabs mb-4" role="tablist">
-                {TABS.map((tab) => (
-                  <li className="nav-item" key={tab.id} role="presentation">
+                  {activeLesson && (
                     <button
+                      type="button"
+                      onClick={() => handleMarkAsComplete(activeLesson.id)}
+                      disabled={activeLesson.is_completed || isUpdating}
+                      className={`btn btn-sm ${
+                        activeLesson.is_completed ? "btn-secondary" : "btn-primary"
+                      }`}
+                    >
+                      {isUpdating ? (
+                        <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                      ) : (
+                        <i
+                          className={`bi ${
+                            activeLesson.is_completed ? "bi-check-all" : "bi-check2-circle"
+                          }`}
+                          aria-hidden="true"
+                        ></i>
+                      )}
+                      {activeLesson.is_completed ? "Completed" : "Mark as complete"}
+                    </button>
+                  )}
+                </div>
+              </header>
+
+              <div className="th-lesson__tabs" role="tablist" aria-label="Session information">
+                {TABS.map((tab) => {
+                  const count =
+                    tab.id === "resources"
+                      ? handouts.length
+                      : tab.id === "links"
+                        ? videoLinks.length
+                        : null;
+
+                  return (
+                    <button
+                      key={tab.id}
                       type="button"
                       role="tab"
                       id={`tab-${tab.id}`}
                       aria-selected={activeTab === tab.id}
                       aria-controls={`panel-${tab.id}`}
-                      className={`nav-link ${activeTab === tab.id ? "active" : ""}`}
+                      className={`th-lesson__tab${activeTab === tab.id ? " is-active" : ""}`}
                       onClick={() => setActiveTab(tab.id)}
                     >
                       {tab.label}
+                      {count > 0 && (
+                        <span className="th-lesson__tab-count" aria-hidden="true">
+                          {count}
+                        </span>
+                      )}
                     </button>
-                  </li>
-                ))}
-              </ul>
+                  );
+                })}
+              </div>
 
-              <div className="tab-content">
+              <div className="th-lesson__body">
                 {activeTab === "overview" && (
-                  <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview">
-                    <p className="text-muted mb-4">
-                      {activeLesson?.description || "No description provided for this session."}
+                  <div
+                    role="tabpanel"
+                    id="panel-overview"
+                    aria-labelledby="tab-overview"
+                    tabIndex={0}
+                  >
+                    <p className="th-lesson__desc">
+                      {activeLesson?.description ||
+                        "This session has no summary yet. Use the notes below to follow along."}
                     </p>
-                    <div className="th-panel-muted">
-                      <h2 className="mb-2">
-                        Lesson notes
+
+                    <div className="th-notes">
+                      <h2 className="th-notes__title">
+                        <i className="bi bi-journal-text" aria-hidden="true"></i>
+                        Session notes
                       </h2>
-                      <div
-                        className="th-prose"
-                        style={{ whiteSpace: "pre-wrap", marginBottom: 0 }}
-                      >
-                        {activeLesson?.notes || "No notes for this session."}
+                      <div className="th-prose">
+                        {activeLesson?.notes || "No notes have been added for this session."}
                       </div>
                     </div>
                   </div>
                 )}
 
                 {activeTab === "resources" && (
-                  <div role="tabpanel" id="panel-resources" aria-labelledby="tab-resources">
+                  <div
+                    role="tabpanel"
+                    id="panel-resources"
+                    aria-labelledby="tab-resources"
+                    tabIndex={0}
+                  >
                     {handouts.length > 0 ? (
-                      <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
-                        {handouts.map((file, index) => {
-                          const href = file.url || file.path || file;
-                          const label = file.name || `Resource ${index + 1}`;
-                          return (
-                            <li key={index}>
-                              <a
-                                href={href}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="d-inline-flex align-items-center gap-2"
-                                style={{ fontSize: "var(--th-fs-sm)", fontWeight: 600 }}
-                              >
-                                <i className="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
-                                {label}
-                              </a>
-                            </li>
-                          );
-                        })}
+                      <ul className="th-file-list">
+                        {handouts.map((file) => (
+                          <li key={file.key}>
+                            <a
+                              href={file.href}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="th-file"
+                              download
+                            >
+                              <span className="th-file__icon" aria-hidden="true">
+                                <i className="bi bi-file-earmark-arrow-down"></i>
+                              </span>
+                              <span className="th-file__text">
+                                <span className="th-file__name">{file.label}</span>
+                                <span className="th-file__meta">Session handout</span>
+                              </span>
+                              <span className="th-file__cta" aria-hidden="true">
+                                Download
+                              </span>
+                            </a>
+                          </li>
+                        ))}
                       </ul>
                     ) : (
                       <p className="text-muted mb-0">
@@ -293,56 +437,96 @@ export default function CourseLearning() {
                 )}
 
                 {activeTab === "links" && (
-                  <div role="tabpanel" id="panel-links" aria-labelledby="tab-links">
+                  <div
+                    role="tabpanel"
+                    id="panel-links"
+                    aria-labelledby="tab-links"
+                    tabIndex={0}
+                  >
                     {videoLinks.length > 0 ? (
-                      <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
-                        {videoLinks.map((link, index) => (
-                          <li key={index}>
+                      <ul className="th-file-list">
+                        {videoLinks.map((link) => (
+                          <li key={link.key}>
                             <a
-                              href={link}
+                              href={link.href}
                               target="_blank"
                               rel="noreferrer"
-                              className="d-inline-flex align-items-center gap-2"
-                              style={{ fontSize: "var(--th-fs-sm)", fontWeight: 600 }}
+                              className="th-file"
                             >
-                              <i className="bi bi-link-45deg" aria-hidden="true"></i>
-                              {link}
+                              <span className="th-file__icon" aria-hidden="true">
+                                <i className="bi bi-link-45deg"></i>
+                              </span>
+                              <span className="th-file__text">
+                                <span className="th-file__name">{link.label}</span>
+                                <span className="th-file__meta">External reference</span>
+                              </span>
+                              <span className="th-file__cta" aria-hidden="true">
+                                Open
+                              </span>
                             </a>
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-muted mb-0">
-                        No additional links for this session.
-                      </p>
+                      <p className="text-muted mb-0">No additional links for this session.</p>
                     )}
                   </div>
                 )}
               </div>
-            </div>
+
+              <nav className="th-lesson__nav" aria-label="Session navigation">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-dark th-lesson__step"
+                  onClick={() => previousLesson && selectLesson(previousLesson)}
+                  disabled={!previousLesson}
+                >
+                  <i className="bi bi-arrow-left" aria-hidden="true"></i>
+                  <span className="th-lesson__step-text">
+                    <span className="th-lesson__step-label">Previous session</span>
+                    <span className="th-lesson__step-title">
+                      {previousLesson ? previousLesson.title : "Start of course"}
+                    </span>
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary th-lesson__step th-lesson__step--next"
+                  onClick={() => nextLesson && selectLesson(nextLesson)}
+                  disabled={!nextLesson}
+                >
+                  <span className="th-lesson__step-text">
+                    <span className="th-lesson__step-label">
+                      {nextLesson ? "Next session" : "Course complete"}
+                    </span>
+                    <span className="th-lesson__step-title">
+                      {nextLesson ? nextLesson.title : "You made it to the last session"}
+                    </span>
+                  </span>
+                  <i className="bi bi-arrow-right" aria-hidden="true"></i>
+                </button>
+              </nav>
+            </section>
           </div>
 
-          <div className="col-lg-4 bg-white border-start">
-            <div style={{ position: "sticky", top: "calc(var(--th-header-h) + 58px)" }}>
-              <CourseContentSidebar
-                modules={course?.modules}
-                onLessonSelect={(lesson) => {
-                  setActiveLesson(lesson);
-                  setActiveTab("overview");
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                activeLessonTitle={activeLesson?.title}
-              />
-              <div className="p-3 border-top">
-                <Link to="/learning" className="btn btn-outline-dark w-100 btn-sm">
-                  <i className="bi bi-collection-play" aria-hidden="true"></i>
-                  Back to my learning
-                </Link>
-              </div>
+          <aside className="th-classroom__rail" aria-label="Course contents">
+            <CourseContentSidebar
+              modules={modules}
+              onLessonSelect={selectLesson}
+              activeLessonTitle={activeLesson?.title}
+              activeLessonId={activeLesson?.id}
+            />
+
+            <div className="th-classroom__rail-footer">
+              <Link to="/learning" className="btn btn-outline-dark w-100 btn-sm">
+                <i className="bi bi-collection-play" aria-hidden="true"></i>
+                Back to my learning
+              </Link>
             </div>
-          </div>
+          </aside>
         </div>
-      </div>
+      </main>
 
       <Footer />
 

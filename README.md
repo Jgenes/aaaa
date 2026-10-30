@@ -30,8 +30,10 @@ npm run lint       # eslint
 npm run test:ui    # headless route smoke test (see below)
 ```
 
-The API base URL lives in `src/api/axio.js`. Requests to `/api` are proxied to
-`http://localhost:5174` during development (`vite.config.js`).
+The API base URL lives in `src/api/axio.js` and defaults to the production API.
+Set `VITE_API_BASE_URL` to point the app elsewhere without touching code — for
+example `VITE_API_BASE_URL=/api npm run dev` to route requests through the Vite
+dev proxy (`/api` → `http://localhost:5174`, see `vite.config.js`).
 
 ## Design system
 
@@ -45,6 +47,7 @@ src/styles/components.css  buttons, forms, cards, tables, modals, navigation…
 src/styles/marketing.css   public header/footer, hero, course cards, auth, pages
 src/styles/dashboard.css   provider & admin application shell
 src/styles/provider.css    provider screen-level classes (tables, forms, modals)
+src/styles/learning.css    learner dashboard + classroom player
 src/lib/tableStyles.js     shared react-data-table-component theme
 src/App.css                legacy aliases + shared page styles (single source)
 ```
@@ -84,8 +87,14 @@ Key conventions:
 | `components/CourseCard` | Shared course tile (home + catalogue)                      |
 | `components/AuthLayout` | Two-column shell for login/register/OTP                    |
 | `components/DashboardShell` | Sidebar + topbar shell for provider/admin dashboards  |
-| `components/CourseContentSideBar` | Lesson list with progress                      |
+| `components/CourseContentSideBar` | Curriculum list with completion dial           |
 | `components/ReviewModal` | Accessible rating dialog                                 |
+
+Learning screens follow the same language: `Learning` is an editorial dashboard
+(paper masthead, hairline stat strip, resume banner, status filters) and
+`CourseLearning` is a contained player (sticky course bar, 16:9 stage, session
+panel, sticky curriculum rail). Both are styled exclusively through
+`styles/learning.css` — no inline styles.
 
 Accessibility notes: every page exposes a `main` landmark, a “Skip to main
 content” link lives in `index.html`, focus rings are visible on keyboard
