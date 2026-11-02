@@ -148,7 +148,7 @@ export default function TrainingHubCheckout() {
     return (
       <>
         <NavBar />
-        <main id="main-content" className="th-container-wide th-section">
+        <main tabIndex={-1} id="main-content" className="th-container-wide th-section">
           <div className="row g-4" aria-hidden="true">
             <div className="col-lg-7">
               <div className="th-skeleton" style={{ height: 420 }} />
@@ -172,7 +172,7 @@ export default function TrainingHubCheckout() {
     <>
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         <section className="th-page-hero">
           <div className="th-container-wide">
             <nav aria-label="Breadcrumb">

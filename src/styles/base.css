@@ -323,15 +323,31 @@ img {
   font-weight: 600;
   font-size: var(--th-fs-sm);
   box-shadow: var(--th-shadow-lg);
-  transform: translateY(-160%);
+  /* Hidden from view AND from the visual flow until it is keyboard focused.
+     Clipping (rather than only translating) keeps it from stretching the
+     layout, painting over the sidebar or being caught by a stray scroll. */
+  transform: translateY(calc(-100% - 1.5rem));
   transition: transform var(--th-dur) var(--th-ease);
+  white-space: nowrap;
 }
 
+.skip-link:focus,
 .skip-link:focus-visible {
   transform: translateY(0);
   color: #fff;
   outline: 2px solid #fff;
   outline-offset: 2px;
+}
+
+/* The landmark itself is focused programmatically, so it should not draw a
+   focus ring — but it must stay scrollable-to and announced. */
+#main-content:focus,
+#main-content:focus-visible {
+  outline: none;
+}
+
+#main-content {
+  scroll-margin-top: var(--th-header-h, 64px);
 }
 
 @media (prefers-reduced-motion: reduce) {

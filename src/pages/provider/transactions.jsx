@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { apiUrl } from "../../lib/media";
 import api from "../../api/axio";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
@@ -39,8 +40,7 @@ export default function ProviderInvoices() {
   };
 
   const handleDownload = (reference) => {
-    const baseUrl = "http://localhost:8000/api";
-    window.open(`${baseUrl}/download-document/${reference}`, "_blank");
+    window.open(apiUrl(`/download-document/${reference}`), "_blank");
   };
 
   const handleToggleStatus = async (payment) => {

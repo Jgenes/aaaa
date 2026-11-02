@@ -1,9 +1,19 @@
-import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../api/axio";
 import AuthLayout from "../components/AuthLayout";
 import AuthField from "../components/AuthField";
+import {
+  canRoleAccessPath,
+  describePath,
+  getRole,
+  getToken,
+  peekReturnTo,
+  rememberReturnTo,
+  roleHome,
+  safeInternalPath,
+} from "../lib/session";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -15,6 +25,28 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const justActivated = searchParams.get("activated") === "true";
+
+  // Where the visitor was heading when we asked them to sign in.
+  // `?next=` wins over the destination remembered in this tab.
+  const nextParam = safeInternalPath(searchParams.get("next"));
+  const [destination] = useState(() => nextParam || peekReturnTo());
+
+  // A visitor who already has a session should never sit on the login screen.
+  const [alreadySignedInTo] = useState(() => {
+    if (!getToken()) return null;
+    const role = getRole();
+    if (destination && canRoleAccessPath(role, destination)) return destination;
+    return roleHome(role);
+  });
+
+  useEffect(() => {
+    // Survive the email → OTP round-trip (and a reload on that screen).
+    if (destination) rememberReturnTo(destination);
+  }, [destination]);
+
+  if (alreadySignedInTo) {
+    return <Navigate to={alreadySignedInTo} replace />;
+  }
 
   const validate = () => {
     const nextErrors = {};
@@ -55,6 +87,16 @@ export default function Login() {
       title="Welcome back"
       subtitle="Sign in to continue your training. We'll email you a one-time code to confirm it's you."
     >
+      {destination && (
+        <div className="alert alert-info d-flex align-items-start gap-2" role="status">
+          <i className="bi bi-arrow-return-left" aria-hidden="true"></i>
+          <span>
+            Sign in and we&apos;ll take you straight back to{" "}
+            <strong>{describePath(destination)}</strong>.
+          </span>
+        </div>
+      )}
+
       {justActivated && (
         <div className="alert alert-success d-flex align-items-start gap-2" role="status">
           <i className="bi bi-check-circle-fill" aria-hidden="true"></i>

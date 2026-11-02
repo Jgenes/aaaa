@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axio";
+import { extractList, fetchCourses } from "../api/catalogue";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseCard from "../components/CourseCard";
@@ -26,50 +27,77 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const courseRes = await api.get("/public-courses").catch(() => ({ data: [] }));
-        const providerRes = await api.get("/top-providers").catch(() => ({ data: [] }));
-        const reviewRes = await api.get("/public-reviews").catch(() => ({ data: [] }));
+  const loadCatalogue = useCallback(async ({ force = false } = {}) => {
+    setLoading(true);
+    setLoadError(false);
 
-        if (courseRes.data) {
-          const processed = courseRes.data.map((c) => {
-            const hasCompletedEnrollment = c.enrollments?.some(
-              (enrol) => enrol.status?.toLowerCase() === "completed"
-            );
+    try {
+      // One shared loader: unwraps { data: [...] } envelopes, falls back to the
+      // other public endpoints and hides courses still in moderation.
+      const { courses: list, attempts } = await fetchCourses({ force });
 
-            return {
-              ...c,
-              isEnrolled: hasCompletedEnrollment,
-              mainCohort:
-                c.cohorts?.find((coh) => coh.status?.toUpperCase() === "OPEN") ||
-                c.cohorts?.[0],
-            };
-          });
+      const processed = list.map((course) => {
+        const hasCompletedEnrollment = course.enrollments?.some(
+          (enrol) => String(enrol.status || "").toLowerCase() === "completed"
+        );
 
-          setCourses(processed);
-          const uniqueCats = [...new Set(processed.map((c) => c.category))].filter(Boolean);
-          if (uniqueCats.length > 0) setActiveTab(uniqueCats[0]);
-          setCategories(uniqueCats);
-        }
+        return {
+          ...course,
+          isEnrolled: Boolean(course.is_enrolled) || Boolean(hasCompletedEnrollment),
+          mainCohort:
+            course.cohorts?.find(
+              (cohort) => String(cohort.status || "").toUpperCase() === "OPEN"
+            ) ||
+            course.cohorts?.[0] ||
+            null,
+        };
+      });
 
-        setProviders(providerRes.data || []);
-        setReviews(reviewRes.data || []);
-      } catch (err) {
-        console.error("Error fetching data:", err);
+      setCourses(processed);
+
+      const uniqueCats = [...new Set(processed.map((c) => c.category))].filter(Boolean);
+      setCategories(uniqueCats);
+      // Never start on a category tab that hides every course.
+      setActiveTab((current) =>
+        current && uniqueCats.includes(current) ? current : ""
+      );
+
+      if (!processed.length) {
         setLoadError(true);
-      } finally {
-        setLoading(false);
+        // The UI already shows a retry state; keep the detail in a warning so
+        // it never looks like a runtime crash in monitoring.
+        console.warn("Catalogue returned no public courses", attempts);
       }
-    };
-    fetchData();
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const visibleCourses = useMemo(
-    () => courses.filter((c) => (activeTab ? c.category === activeTab : true)),
-    [courses, activeTab]
-  );
+  useEffect(() => {
+    loadCatalogue();
+
+    const fetchHighlights = async () => {
+      const [providerRes, reviewRes] = await Promise.all([
+        api.get("/top-providers").catch(() => ({ data: [] })),
+        api.get("/public-reviews").catch(() => ({ data: [] })),
+      ]);
+
+      setProviders(extractList(providerRes.data));
+      setReviews(extractList(reviewRes.data));
+    };
+
+    fetchHighlights();
+  }, [loadCatalogue]);
+
+  const visibleCourses = useMemo(() => {
+    if (!activeTab) return courses;
+    const inTab = courses.filter((course) => course.category === activeTab);
+    // A category with no live courses must never blank the section.
+    return inTab.length ? inTab : courses;
+  }, [courses, activeTab]);
 
   const latestCourses = useMemo(
     () => [...courses].sort((a, b) => b.id - a.id).slice(0, 4),
@@ -89,7 +117,7 @@ export default function Home() {
     <>
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         {/* ---------------------------------------------------------- Hero */}
         <section className="hero" aria-labelledby="hero-title">
           <div className="th-container-wide hero__grid">
@@ -229,9 +257,10 @@ export default function Home() {
                   <button
                     type="button"
                     className="btn btn-primary"
-                    onClick={() => window.location.reload()}
+                    onClick={() => loadCatalogue({ force: true })}
                   >
-                    Refresh page
+                    <i className="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>
+                    Try again
                   </button>
                   <Link to="/contact" className="btn btn-outline-dark">
                     Contact support

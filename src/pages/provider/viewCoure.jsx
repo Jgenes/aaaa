@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { mediaUrl } from "../../lib/media";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaCheckCircle, FaGraduationCap, FaLayerGroup, FaPlayCircle, FaFilePdf, FaTag, FaInfoCircle } from "react-icons/fa";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
@@ -53,7 +54,7 @@ export default function ViewCourse() {
 
         {/* Banner Section */}
         {course.banner && (
-          <img src={`http://localhost:8000/${course.banner}`} alt={course.title} className="course-banner mb-4" />
+          <img src={mediaUrl(course.banner)} alt={course.title} className="course-banner mb-4" />
         )}
 
         {/* Core Identity */}
@@ -140,7 +141,7 @@ export default function ViewCourse() {
                         </a>
                       ))}
                       {content.handouts?.map((pdf, pIdx) => (
-                        <a key={pIdx} href={`http://localhost:8000/${pdf}`} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 px-3">
+                        <a key={pIdx} href={mediaUrl(pdf)} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 px-3">
                           <FaFilePdf /> Material {pIdx + 1}
                         </a>
                       ))}

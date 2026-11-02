@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import api from "../api/axio";
-import "react-toastify/dist/ReactToastify.css";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
+import { clearDraft, formatSavedAt, loadDraft, saveDraft } from "../lib/formDraft";
 
 const steps = [
   { title: "Identity", icon: "bi-building" },
@@ -71,34 +71,79 @@ const reviewSections = (form, files) => [
   },
 ];
 
+const DRAFT_KEY = "provider-onboarding";
+
+const EMPTY_FORM = {
+  legal_name: "",
+  brand_name: "",
+  provider_type: "",
+  registration_ref: "",
+  tin: "",
+  website: "",
+  country: "Tanzania",
+  region: "",
+  district: "",
+  physical_address: "",
+  google_maps_link: "",
+  contact_name: "",
+  contact_role: "",
+  contact_phone: "",
+  contact_email: "",
+};
+
+const readDraftPayload = () => loadDraft(DRAFT_KEY)?.data || {};
+
 function ProviderOnboardingFull() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
-    legal_name: "",
-    brand_name: "",
-    provider_type: "",
-    registration_ref: "",
-    tin: "",
-    website: "",
-    country: "Tanzania",
-    region: "",
-    district: "",
-    physical_address: "",
-    google_maps_link: "",
-    contact_name: "",
-    contact_role: "",
-    contact_phone: "",
-    contact_email: "",
-  });
+  // Draft restored from localStorage (survives a reload, a dropped connection
+  // or a logout → login cycle). Files cannot be persisted for security
+  // reasons, so they are re-attached by the applicant.
+  const [restoredDraft, setRestoredDraft] = useState(() => loadDraft(DRAFT_KEY));
+  const [savedAt, setSavedAt] = useState(() => loadDraft(DRAFT_KEY)?.savedAt || null);
+  const [draftHandled, setDraftHandled] = useState(false);
+
+  const [form, setForm] = useState(() => ({
+    ...EMPTY_FORM,
+    ...(readDraftPayload().form || {}),
+  }));
 
   // State for files
   const [files, setFiles] = useState({
     brela_doc: null,
     tin_doc: null,
   });
+
+  // Restore the step the applicant was on, but never jump straight to "Submit".
+  useEffect(() => {
+    if (draftHandled) return;
+    const draft = loadDraft(DRAFT_KEY);
+    const savedStep = draft?.data?.step;
+    if (Number.isInteger(savedStep) && savedStep > 0) {
+      setStep(Math.min(savedStep, steps.length - 2));
+    }
+    setDraftHandled(true);
+  }, [draftHandled]);
+
+  // Autosave while the applicant types (skipped once they are on the final
+  // review step, where nothing new is entered).
+  useEffect(() => {
+    if (!draftHandled) return;
+    const timer = setTimeout(() => {
+      saveDraft(DRAFT_KEY, { form, step });
+      setSavedAt(Date.now());
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [form, step, draftHandled]);
+
+  const clearSavedDraft = ({ notify = true } = {}) => {
+    clearDraft(DRAFT_KEY);
+    setRestoredDraft(null);
+    setSavedAt(null);
+    if (notify) toast.info("Saved draft discarded.");
+  };
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -136,6 +181,7 @@ function ProviderOnboardingFull() {
       await api.post("/provider/onboarding", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      clearDraft(DRAFT_KEY);
       toast.success("Application submitted successfully!");
       navigate("/provider/verification");
     } catch (err) {
@@ -148,12 +194,10 @@ function ProviderOnboardingFull() {
   return (
     <>
       <NavBar />
-      <main className="th-onboarding">
+      <main tabIndex={-1} id="main-content" className="th-onboarding">
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-lg-8 col-md-10">
-              <ToastContainer position="top-center" />
-
               <header className="th-onboarding__head">
                 <p className="th-eyebrow">Partner with us</p>
                 <h1>Provider application</h1>
@@ -164,6 +208,29 @@ function ProviderOnboardingFull() {
               </header>
 
               <div className="th-panel th-onboarding__card">
+                {restoredDraft && (
+                  <div className="alert alert-info d-flex flex-wrap align-items-start gap-2" role="status">
+                    <i className="bi bi-clock-history" aria-hidden="true"></i>
+                    <span className="flex-grow-1">
+                      We restored the application you started
+                      {savedAt ? ` (saved ${formatSavedAt(savedAt)})` : ""}. Any uploaded
+                      documents need to be attached again before you submit.
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-dark"
+                      onClick={() => {
+                        clearSavedDraft();
+                        setForm(EMPTY_FORM);
+                        setFiles({ brela_doc: null, tin_doc: null });
+                        setStep(0);
+                      }}
+                    >
+                      Start over
+                    </button>
+                  </div>
+                )}
+
                 <ol className="th-steps" aria-label="Application progress">
                   {steps.map((s, i) => {
                     const state =
@@ -484,6 +551,19 @@ function ProviderOnboardingFull() {
 
                 {/* Navigation */}
                 <div className="th-onboarding__actions">
+                  <p className="th-onboarding__save m-0 me-auto" role="status" aria-live="polite">
+                    {savedAt ? (
+                      <>
+                        <i className="bi bi-cloud-check me-1" aria-hidden="true"></i>
+                        Progress saved {formatSavedAt(savedAt)}
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-cloud me-1" aria-hidden="true"></i>
+                        Your answers are saved on this device as you type
+                      </>
+                    )}
+                  </p>
                   <button
                     type="button"
                     className="btn btn-outline-dark"

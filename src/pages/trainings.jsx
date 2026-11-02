@@ -3,12 +3,13 @@ import { Link, useSearchParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseCard from "../components/CourseCard";
-import api from "../api/axio";
+import { fetchCourses } from "../api/catalogue";
 
 export default function Training() {
   const [searchParams] = useSearchParams();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState({
     name: searchParams.get("q") || "",
@@ -17,27 +18,36 @@ export default function Training() {
     date: "",
   });
 
-  useEffect(() => {
-    fetchCourses();
-  }, []);
-
-  const fetchCourses = async () => {
+  const loadCourses = async ({ force = false } = {}) => {
+    setLoading(true);
+    setLoadError(false);
     try {
-      const res = await api.get("/training");
-      const rawData = res.data?.data || (Array.isArray(res.data) ? res.data : []);
-      setCourses(rawData);
+      const { courses: list, attempts } = await fetchCourses({ force });
+      setCourses(list);
+      // Nothing came back from any endpoint: that is a failure we must show,
+      // not a silently empty catalogue.
+      if (!list.length) {
+        setLoadError(true);
+        console.warn("Catalogue returned no public courses", attempts);
+      }
     } catch (error) {
       console.error("Failed to fetch courses", error);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    loadCourses();
+  }, []);
+
   const courseList = useMemo(() => {
     return courses.map((course) => {
-      const activeCohort =
-        course.cohorts?.find((c) => c.status?.toUpperCase() === "OPEN") ||
-        course.cohorts?.[0];
+      const openCohort = course.cohorts?.find(
+        (cohort) => String(cohort.status || "").toUpperCase() === "OPEN"
+      );
+      const activeCohort = openCohort || course.cohorts?.[0] || null;
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -45,19 +55,21 @@ export default function Training() {
       const deadline = activeCohort ? new Date(activeCohort.registration_deadline) : null;
       const isPastDeadline = deadline ? deadline < today : false;
 
-      const isFull = activeCohort
-        ? Number(activeCohort.capacity) - Number(activeCohort.seats_taken) <= 0
-        : false;
+      const remaining =
+        activeCohort?.remaining_seats !== undefined
+          ? Number(activeCohort.remaining_seats)
+          : activeCohort
+            ? Number(activeCohort.capacity || 0) - Number(activeCohort.seats_taken || 0)
+            : null;
+
+      const isFull = remaining !== null && remaining <= 0;
 
       return {
         ...course,
         mainCohort: activeCohort,
         isEnrolled: course.is_enrolled || false,
         enrollmentOpen:
-          Boolean(activeCohort) &&
-          activeCohort.status?.toUpperCase() === "OPEN" &&
-          !isPastDeadline &&
-          !isFull,
+          Boolean(openCohort) && !isPastDeadline && !isFull,
         isFull,
         isPastDeadline,
       };
@@ -70,7 +82,9 @@ export default function Training() {
         .toLowerCase()
         .includes(filters.name.toLowerCase());
       const categoryMatch = filters.category ? course.category === filters.category : true;
-      const trainerMatch = filters.trainer ? course.provider?.name === filters.trainer : true;
+      const trainerMatch = filters.trainer
+        ? course.provider?.name === filters.trainer
+        : true;
       const dateMatch = filters.date ? course.mainCohort?.start_date === filters.date : true;
 
       return nameMatch && categoryMatch && trainerMatch && dateMatch;
@@ -89,7 +103,7 @@ export default function Training() {
     <>
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         <section className="th-page-hero">
           <div className="th-container-wide">
             <nav aria-label="Breadcrumb">
@@ -253,6 +267,30 @@ export default function Training() {
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : loadError && courses.length === 0 ? (
+                <div className="th-empty">
+                  <span className="th-empty__icon">
+                    <i className="bi bi-cloud-slash" aria-hidden="true"></i>
+                  </span>
+                  <p className="th-empty__title">We couldn&apos;t load the catalogue</p>
+                  <p className="th-empty__text">
+                    The training list didn&apos;t come through. Check your connection and try
+                    again — nothing has been lost.
+                  </p>
+                  <div className="d-flex gap-2 justify-content-center flex-wrap">
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => loadCourses({ force: true })}
+                    >
+                      <i className="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>
+                      Try again
+                    </button>
+                    <Link to="/contact" className="btn btn-outline-dark">
+                      Contact support
+                    </Link>
+                  </div>
                 </div>
               ) : filteredCourses.length === 0 ? (
                 <div className="th-empty">

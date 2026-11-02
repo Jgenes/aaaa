@@ -151,7 +151,7 @@ export default function CourseLearning() {
     return (
       <div className="th-classroom">
         <NavBar />
-        <main id="main-content" className="th-container-wide th-classroom__loading">
+        <main tabIndex={-1} id="main-content" className="th-container-wide th-classroom__loading">
           <h1 className="visually-hidden">Loading your classroom</h1>
           <div className="th-classroom__loading-grid" aria-hidden="true">
             <div>
@@ -170,7 +170,7 @@ export default function CourseLearning() {
     return (
       <div className="th-classroom">
         <NavBar />
-        <main id="main-content" className="th-container-wide th-section">
+        <main tabIndex={-1} id="main-content" className="th-container-wide th-section">
           <div className="th-empty">
             <span className="th-empty__icon">
               <i className="bi bi-exclamation-triangle" aria-hidden="true"></i>
@@ -205,7 +205,7 @@ export default function CourseLearning() {
     <div className="th-classroom">
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         <div className="th-classroom__bar">
           <div className="th-container-wide th-classroom__bar-inner">
             <Link to="/learning" className="th-classroom__back">

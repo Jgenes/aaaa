@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import api from "../api/axio";
+import { fetchCourseById } from "../api/catalogue";
+import MediaImage from "../components/MediaImage";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseImageFallback from "../assets/ict-pic (1).jpg";
@@ -31,8 +32,16 @@ export default function Course() {
   const fetchCourse = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/training/${courseId}`);
-      const courseData = res.data;
+      setError(null);
+
+      // Tries /training/:id, then the other public endpoints, then the cached
+      // catalogue, so a card opened from the catalogue always resolves.
+      const { course: courseData } = await fetchCourseById(courseId);
+
+      if (!courseData) {
+        setError("This training is not available right now.");
+        return;
+      }
 
       let cohort = null;
       if (cohortId && cohortId !== "undefined") {
@@ -114,7 +123,7 @@ export default function Course() {
     return (
       <>
         <NavBar />
-        <main id="main-content" className="th-container-wide th-section">
+        <main tabIndex={-1} id="main-content" className="th-container-wide th-section">
           <h1 className="visually-hidden">Loading training details</h1>
           <div className="row g-4" aria-hidden="true">
             <div className="col-lg-8">
@@ -139,7 +148,7 @@ export default function Course() {
     return (
       <>
         <NavBar />
-        <main id="main-content" className="th-container-wide th-section">
+        <main tabIndex={-1} id="main-content" className="th-container-wide th-section">
           <div className="th-empty">
             <span className="th-empty__icon">
               <i className="bi bi-exclamation-triangle" aria-hidden="true"></i>
@@ -170,7 +179,7 @@ export default function Course() {
     <>
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         <section className="th-course-hero">
           <div className="th-container-wide">
             <nav aria-label="Breadcrumb">
@@ -244,16 +253,10 @@ export default function Course() {
               </div>
 
               <div className="th-course-media">
-                <img
-                  src={
-                    course.banner
-                      ? `http://localhost:8000/${course.banner}`
-                      : CourseImageFallback
-                  }
+                <MediaImage
+                  path={course.banner}
+                  fallback={CourseImageFallback}
                   alt={`${course.title} training preview`}
-                  onError={(event) => {
-                    event.currentTarget.src = CourseImageFallback;
-                  }}
                 />
               </div>
             </div>

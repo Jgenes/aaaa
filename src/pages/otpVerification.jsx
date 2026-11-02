@@ -1,14 +1,26 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../api/axio";
 import AuthLayout from "../components/AuthLayout";
+import {
+  describePath,
+  peekReturnTo,
+  resolvePostLoginPath,
+  safeInternalPath,
+} from "../lib/session";
 
 function OtpVerification() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [searchParams] = useSearchParams();
   const emailFromState = location.state?.email || localStorage.getItem("loginEmail");
+
+  // The page the visitor was interrupted on (login → OTP → back to it).
+  const [resumePath] = useState(
+    () => safeInternalPath(searchParams.get("next")) || peekReturnTo()
+  );
 
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [loading, setLoading] = useState(false);
@@ -89,8 +101,14 @@ function OtpVerification() {
       localStorage.setItem("user", JSON.stringify(res.data.user || {}));
       localStorage.removeItem("loginEmail");
 
-      toast.success("OTP verified successfully!");
-      navigate(res.data.redirect || resolveDestination(res.data.user));
+      const destination = resolvePostLoginPath({
+        next: resumePath,
+        backendRedirect: res.data.redirect || resolveDestination(res.data.user),
+        role: res.data.user?.role,
+      });
+
+      toast.success("Verified — welcome back.");
+      navigate(destination, { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || "Invalid or expired OTP");
     } finally {
@@ -129,6 +147,14 @@ function OtpVerification() {
           Code sent to <strong>{emailFromState || "your email"}</strong>
         </span>
       </div>
+
+      {resumePath && (
+        <p className="th-auth__helper mb-3">
+          <i className="bi bi-arrow-return-left me-1" aria-hidden="true"></i>
+          After verifying we&apos;ll take you back to{" "}
+          <strong>{describePath(resumePath)}</strong>.
+        </p>
+      )}
 
       <form onSubmit={handleVerifyOtp} noValidate>
         <fieldset>

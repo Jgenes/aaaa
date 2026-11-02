@@ -13,7 +13,7 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, wide = 
     <>
       <NavBar />
 
-      <main id="main-content" className="th-auth">
+      <main tabIndex={-1} id="main-content" className="th-auth">
         <div className={`th-auth__card${wide ? " th-auth__card--wide" : ""}`}>
           <header className="th-auth__card-head">
             {eyebrow && <p className="th-eyebrow th-auth__eyebrow">{eyebrow}</p>}

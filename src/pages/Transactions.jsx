@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/axio";
+import { apiUrl } from "../lib/media";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 
@@ -15,11 +16,8 @@ export default function Transactions() {
   const [activeTab, setActiveTab] = useState("All");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    axios
-      .get("http://localhost:8000/api/my-payments", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    api
+      .get("/my-payments")
       .then((res) => {
         const data = res.data?.data || res.data;
         const list = Array.isArray(data) ? data : [];
@@ -52,14 +50,14 @@ export default function Transactions() {
   }, [searchTerm, activeTab, payments]);
 
   const handleDownload = (reference) => {
-    window.open(`http://localhost:8000/api/download-document/${reference}`, "_blank");
+    window.open(apiUrl(`/download-document/${reference}`), "_blank");
   };
 
   return (
     <>
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         <section className="th-page-hero">
           <div className="th-container-wide">
             <nav aria-label="Breadcrumb">

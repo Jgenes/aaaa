@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
+import api from "../api/axio";
 
 export default function ActivateAccount() {
   const [searchParams] = useSearchParams();
@@ -24,8 +24,8 @@ export default function ActivateAccount() {
     if (called.current) return;
     called.current = true;
 
-    axios
-      .post("http://localhost:8000/api/auth/activate-account", { token, email })
+    api
+      .post("/auth/activate-account", { token, email })
       .then(() => {
         setState("success");
         setTimeout(() => navigate("/login?activated=true"), 1600);
@@ -43,7 +43,7 @@ export default function ActivateAccount() {
     <>
       <NavBar />
 
-      <main id="main-content" className="th-container-wide th-section">
+      <main tabIndex={-1} id="main-content" className="th-container-wide th-section">
         <div className="th-auth__card mx-auto text-center" style={{ maxWidth: 520 }}>
           {state === "loading" && (
             <>

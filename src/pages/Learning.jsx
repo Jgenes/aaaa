@@ -169,7 +169,7 @@ export default function Learning() {
     <div className="th-learning">
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         <header className="th-learning__masthead">
           <div className="th-container-wide">
             <div className="th-learning__masthead-grid">

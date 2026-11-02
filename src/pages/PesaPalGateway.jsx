@@ -20,7 +20,7 @@ export default function PesaPalGateway() {
     return (
       <>
         <NavBar />
-        <main id="main-content" className="th-container-wide th-section">
+        <main tabIndex={-1} id="main-content" className="th-container-wide th-section">
           <div className="th-empty">
             <span className="th-empty__icon">
               <i className="bi bi-credit-card" aria-hidden="true"></i>
@@ -53,7 +53,7 @@ export default function PesaPalGateway() {
     <div className="d-flex flex-column min-vh-100 bg-light">
       <NavBar />
 
-      <main id="main-content" className="th-container-wide flex-grow-1 py-4">
+      <main tabIndex={-1} id="main-content" className="th-container-wide flex-grow-1 py-4">
         <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
           <div>
             <h1 className="mb-1">

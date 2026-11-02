@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import DashboardShell from "../../../components/DashboardShell";
 import api from "../../../api/axio";
+import {
+  clearSession,
+  isAuthenticated,
+  loginPathFor,
+  readUser,
+} from "../../../lib/session";
 
 export default function AdminDashboardLayout({ title, subtitle, children }) {
   const [user, setUser] = useState(null);
@@ -12,10 +19,13 @@ export default function AdminDashboardLayout({ title, subtitle, children }) {
     logs: 0,
   });
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+    const target = `${location.pathname}${location.search}`;
+    clearSession();
+    navigate(loginPathFor(target), { replace: true });
   };
 
   const fetchCounts = async () => {
@@ -28,24 +38,19 @@ export default function AdminDashboardLayout({ title, subtitle, children }) {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
+    const sessionUser = readUser();
 
-    if (!token || !savedUser) {
-      window.location.href = "/login";
+    if (!isAuthenticated() || !sessionUser) {
+      clearSession();
+      // Come back to this exact screen after signing in again.
+      navigate(loginPathFor(`${location.pathname}${location.search}`), { replace: true });
       return;
     }
 
-    try {
-      const userData = JSON.parse(savedUser);
-      setUser(userData);
-
-      fetchCounts();
-      const interval = setInterval(fetchCounts, 120000);
-      return () => clearInterval(interval);
-    } catch (error) {
-      logout();
-    }
+    setUser(sessionUser);
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 120000);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -69,10 +74,6 @@ export default function AdminDashboardLayout({ title, subtitle, children }) {
         { to: "/admin/reports", label: "Reports", icon: "bi-bar-chart", badge: counts.reports },
         { label: "Logs", icon: "bi-terminal", disabled: true },
       ],
-    },
-    {
-      heading: "Account",
-      items: [{ to: "/provider/settings", label: "Settings", icon: "bi-gear" }],
     },
   ];
 

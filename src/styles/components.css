@@ -1338,11 +1338,25 @@ select.form-select {
 .th-onboarding__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: var(--th-space-3);
   margin-top: var(--th-space-6);
   padding-top: var(--th-space-4);
   border-top: 1px solid var(--th-line);
+}
+
+.th-onboarding__save {
+  flex: 1 1 100%;
+  font-size: var(--th-fs-2xs);
+  color: var(--th-muted);
+}
+
+@media (min-width: 768px) {
+  .th-onboarding__save {
+    flex: 1 1 auto;
+    order: -1;
+  }
 }
 
 @media (max-width: 575.98px) {
