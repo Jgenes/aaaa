@@ -3,6 +3,7 @@ import api from '../../api/axio';
 import ProviderDashboardLayout from "./layouts/AdminDashboardLayout";
 import DataTable from 'react-data-table-component';
 import { toast, ToastContainer } from 'react-toastify';
+import { clearStaleModalArtifacts } from '../../lib/modalOverlay';
 
 export default function AdminCourses() {
 
@@ -32,6 +33,14 @@ export default function AdminCourses() {
 
     useEffect(() => {
         fetchCourses();
+    }, []);
+
+    // Bootstrap appends its modal backdrop to <body>; if this page unmounts
+    // while a review dialog is open the backdrop survives and blocks clicks on
+    // the rest of the app. Clean it up on mount and on unmount.
+    useEffect(() => {
+        clearStaleModalArtifacts();
+        return clearStaleModalArtifacts;
     }, []);
 
     // LOGIC YA SEARCH
