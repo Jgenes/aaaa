@@ -566,6 +566,37 @@
   }
 }
 
+/* Trigger button in the course moderation table */
+.th-btn-review {
+  background: var(--th-primary);
+  border: 1px solid var(--th-primary);
+  color: #fff;
+  font-size: var(--th-fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: background var(--th-dur) var(--th-ease),
+    border-color var(--th-dur) var(--th-ease);
+}
+
+.th-btn-review:hover,
+.th-btn-review:focus-visible {
+  background: var(--th-primary-hover);
+  border-color: var(--th-primary-hover);
+  color: #fff;
+}
+
+.th-btn-review:active {
+  background: var(--th-primary-active);
+  border-color: var(--th-primary-active);
+  color: #fff;
+}
+
+/* The course dialog reuses the review-dialog shell; the header pill sits
+   inline with the title, so keep it from being pushed around on small text. */
+.th-review-dialog .th-pill {
+  white-space: nowrap;
+}
+
 /* ------------------------------------------------------------
    Small utilities used by the admin surfaces
    ------------------------------------------------------------ */
