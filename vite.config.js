@@ -1,8 +1,15 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+// Stamped into the bundle at build time so a running deployment can prove
+// which build it is serving (shown in the catalogue diagnostics panel).
+const buildTime = new Date().toISOString();
+
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __BUILD_TIME__: JSON.stringify(buildTime),
+  },
   base: "./",
   server: {
     host: "0.0.0.0",

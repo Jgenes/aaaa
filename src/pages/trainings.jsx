@@ -3,13 +3,22 @@ import { Link, useSearchParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseCard from "../components/CourseCard";
-import { cohortAvailability, fetchCourses, primaryCohort } from "../api/catalogue";
+import CatalogueDiagnostics from "../components/CatalogueDiagnostics";
+import {
+  checkCatalogueHealth,
+  cohortAvailability,
+  describeAttempts,
+  fetchCourses,
+  primaryCohort,
+} from "../api/catalogue";
 
 export default function Training() {
   const [searchParams] = useSearchParams();
   const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  // loading | ready | empty | hidden | error
+  const [status, setStatus] = useState("loading");
+  const [attempts, setAttempts] = useState([]);
+  const [health, setHealth] = useState(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState({
     name: searchParams.get("q") || "",
@@ -19,22 +28,41 @@ export default function Training() {
   });
 
   const loadCourses = async ({ force = false } = {}) => {
-    setLoading(true);
-    setLoadError(false);
+    setStatus("loading");
+    setHealth(null);
+
     try {
-      const { courses: list, attempts } = await fetchCourses({ force });
-      setCourses(list);
-      // Nothing came back from any endpoint: that is a failure we must show,
-      // not a silently empty catalogue.
-      if (!list.length) {
-        setLoadError(true);
-        console.warn("Catalogue returned no public courses", attempts);
+      const result = await fetchCourses({ force });
+      setCourses(result.courses);
+      setAttempts(result.attempts || []);
+
+      if (result.courses.length) {
+        setStatus("ready");
+        return;
       }
+
+      // The API answered but every record was hidden (closed/suspended) —
+      // that is a content state, not a network failure.
+      if (result.ok && result.filteredOut > 0) {
+        setStatus("hidden");
+        return;
+      }
+
+      // The API answered with an empty list: nothing is published yet.
+      if (result.ok) {
+        setStatus("empty");
+        return;
+      }
+
+      // Nothing answered. Keep a readable, copy-pasteable trace and probe the
+      // public canary so the next report says exactly what is broken.
+      setStatus("error");
+      console.warn("[catalogue]", describeAttempts(result.attempts), result.attempts);
+      const canary = await checkCatalogueHealth();
+      setHealth(canary);
     } catch (error) {
       console.error("Failed to fetch courses", error);
-      setLoadError(true);
-    } finally {
-      setLoading(false);
+      setStatus("error");
     }
   };
 
@@ -231,7 +259,7 @@ export default function Training() {
             <div className="col-lg-9">
               <div className="th-results-bar">
                 <p className="th-results-count mb-0" aria-live="polite">
-                  {loading ? (
+                  {status === "loading" ? (
                     "Loading trainings…"
                   ) : (
                     <>
@@ -243,7 +271,7 @@ export default function Training() {
                 </p>
               </div>
 
-              {loading ? (
+              {status === "loading" ? (
                 <div className="course-grid" aria-hidden="true">
                   {[0, 1, 2, 3, 4, 5].map((i) => (
                     <div className="course-card" key={i}>
@@ -256,7 +284,7 @@ export default function Training() {
                     </div>
                   ))}
                 </div>
-              ) : loadError && courses.length === 0 ? (
+              ) : status === "error" ? (
                 <div className="th-empty">
                   <span className="th-empty__icon">
                     <i className="bi bi-cloud-slash" aria-hidden="true"></i>
@@ -279,6 +307,44 @@ export default function Training() {
                       Contact support
                     </Link>
                   </div>
+                  <CatalogueDiagnostics attempts={attempts} health={health} />
+                </div>
+              ) : status === "empty" ? (
+                <div className="th-empty">
+                  <span className="th-empty__icon">
+                    <i className="bi bi-journal-x" aria-hidden="true"></i>
+                  </span>
+                  <p className="th-empty__title">No trainings are published yet</p>
+                  <p className="th-empty__text">
+                    The API is answering, but it currently lists no public trainings. New
+                    cohorts appear here as soon as providers open them.
+                  </p>
+                  <div className="d-flex gap-2 justify-content-center flex-wrap">
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => loadCourses({ force: true })}
+                    >
+                      <i className="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>
+                      Check again
+                    </button>
+                    <Link to="/contact" className="btn btn-outline-dark">
+                      Contact support
+                    </Link>
+                  </div>
+                  <CatalogueDiagnostics attempts={attempts} />
+                </div>
+              ) : status === "hidden" ? (
+                <div className="th-empty">
+                  <span className="th-empty__icon">
+                    <i className="bi bi-eye-slash" aria-hidden="true"></i>
+                  </span>
+                  <p className="th-empty__title">Trainings exist but are not public yet</p>
+                  <p className="th-empty__text">
+                    The API returned trainings, but every one is closed, suspended or archived.
+                    An administrator can publish them from Courses management.
+                  </p>
+                  <CatalogueDiagnostics attempts={attempts} />
                 </div>
               ) : filteredCourses.length === 0 ? (
                 <div className="th-empty">

@@ -260,6 +260,35 @@ const run = async () => {
     1
   );
 
+  /* ------------------------------------------------ diagnostics contract */
+  // The empty-catalogue panel depends on these strings being readable and on
+  // failures being classified correctly. Keep them pinned.
+  equals(
+    "failed attempts describe status",
+    catalogue.describeAttempts([
+      { endpoint: "/public-courses", ok: false, status: 401, reason: "error", detail: "HTTP 401" },
+      { endpoint: "/training", ok: false, status: null, reason: "error", detail: "network error (no response)" },
+    ]),
+    "/public-courses → HTTP 401 · /training → network error (no response)"
+  );
+  equals(
+    "empty vs filtered vs ok attempts",
+    catalogue.describeAttempts([
+      { endpoint: "/public-courses", ok: false, status: 200, reason: "empty" },
+      { endpoint: "/training", ok: false, status: 200, rawCount: 3, reason: "filtered" },
+    ]),
+    "/public-courses → empty list · /training → 3 records, none public"
+  );
+  equals(
+    "healthy attempts report counts",
+    catalogue.describeAttempts([{ endpoint: "/public-courses", ok: true, count: 4 }]),
+    "/public-courses → 4 courses"
+  );
+  check(
+    "401 attempts are detectable",
+    catalogue.attemptsHave401([{ status: 401 }]) && !catalogue.attemptsHave401([{ status: 500 }])
+  );
+
   const tmp = path.join(process.cwd(), "node_modules", ".cache", "data-check");
   if (!process.env.KEEP_TMP) fs.rmSync(tmp, { recursive: true, force: true });
 

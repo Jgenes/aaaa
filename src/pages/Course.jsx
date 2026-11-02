@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
+  checkCatalogueHealth,
   cohortAvailability,
+  describeAttempts,
   fetchCourseById,
   formatDate,
   primaryCohort,
 } from "../api/catalogue";
+import CatalogueDiagnostics from "../components/CatalogueDiagnostics";
 import { mediaUrl } from "../lib/media";
 import MediaImage from "../components/MediaImage";
 import NavBar from "../components/NavBar";
@@ -29,6 +32,8 @@ export default function Course() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [attempts, setAttempts] = useState([]);
+  const [health, setHealth] = useState(null);
   const [selectedCohort, setSelectedCohort] = useState(null);
   const [previewVideo, setPreviewVideo] = useState(null);
   const [openSessions, setOpenSessions] = useState([]);
@@ -41,12 +46,25 @@ export default function Course() {
       setError(null);
 
       // GET /training/:id, with the cached catalogue as a fallback.
-      const { course: courseData } = await fetchCourseById(courseId);
+      const { course: courseData, attempts: detailAttempts = [], failed } =
+        await fetchCourseById(courseId);
       if (cancelled) return;
 
+      setAttempts(detailAttempts);
+
       if (!courseData) {
-        setError("This training is not available right now.");
+        setError(
+          failed
+            ? "We couldn't load this training — the API did not respond."
+            : "This training is not available right now."
+        );
         setLoading(false);
+        if (failed) {
+          console.warn("[catalogue]", describeAttempts(detailAttempts), detailAttempts);
+          checkCatalogueHealth().then((canary) => {
+            if (!cancelled) setHealth(canary);
+          });
+        }
         return;
       }
 
@@ -148,6 +166,7 @@ export default function Course() {
                 Back home
               </Link>
             </div>
+            <CatalogueDiagnostics attempts={attempts} health={health} />
           </div>
         </main>
         <Footer />

@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axio";
-import { extractList, fetchCourses, primaryCohort } from "../api/catalogue";
+import {
+  checkCatalogueHealth,
+  describeAttempts,
+  extractList,
+  fetchCourses,
+  primaryCohort,
+} from "../api/catalogue";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseCard from "../components/CourseCard";
+import CatalogueDiagnostics from "../components/CatalogueDiagnostics";
 import HeroImage from "../assets/banner0.jpg";
 import LogoNacte from "../assets/NACTE.png";
 import LogoVeta from "../assets/VETA.png";
@@ -26,15 +33,20 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [attempts, setAttempts] = useState([]);
+  const [health, setHealth] = useState(null);
 
   const loadCatalogue = useCallback(async ({ force = false } = {}) => {
     setLoading(true);
     setLoadError(false);
+    setHealth(null);
 
     try {
       // One shared loader: unwraps { data: [...] } envelopes, falls back to the
       // other public endpoints and hides courses still in moderation.
-      const { courses: list, attempts } = await fetchCourses({ force });
+      const result = await fetchCourses({ force });
+      const list = result.courses;
+      setAttempts(result.attempts || []);
 
       const processed = list.map((course) => {
         const hasCompletedEnrollment = course.enrollments?.some(
@@ -60,9 +72,13 @@ export default function Home() {
 
       if (!processed.length) {
         setLoadError(true);
-        // The UI already shows a retry state; keep the detail in a warning so
-        // it never looks like a runtime crash in monitoring.
-        console.warn("Catalogue returned no public courses", attempts);
+        // Readable one-liner first, raw attempts second (for copying).
+        console.warn("[catalogue]", describeAttempts(result.attempts), result.attempts);
+        if (!result.ok) {
+          // Nothing answered at all — probe the public canary so the panel can
+          // say whether the API is down or just refusing the catalogue routes.
+          setHealth(await checkCatalogueHealth());
+        }
       }
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -262,6 +278,7 @@ export default function Home() {
                     Contact support
                   </Link>
                 </div>
+                <CatalogueDiagnostics attempts={attempts} health={health} />
               </div>
             ) : visibleCourses.length > 0 ? (
               <div className="course-grid">

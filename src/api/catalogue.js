@@ -487,10 +487,88 @@ const normaliseList = (records) =>
     .filter(isPubliclyVisible);
 
 /* ------------------------------------------------------------
-   Fetching
+   Fetching + diagnostics
    ------------------------------------------------------------ */
 
 let listCache = null; // { at, courses, endpoint }
+
+/**
+ * A 200 response that is actually the site's HTML shell (typical when the
+ * frontend is pointed at its own origin without a working API proxy).
+ */
+const looksLikeHtml = (data) =>
+  typeof data === "string" && /^\s*<(!doctype|html|body|head)/i.test(data);
+
+/** Human readable label for a failed request. */
+const describeError = (error) => {
+  if (!error) return "unknown error";
+  if (error.response) return `HTTP ${error.response.status}`;
+  if (error.code === "ECONNABORTED" || /timeout/i.test(error.message || "")) {
+    return "timeout";
+  }
+  if (error.request) return "network error (no response)";
+  return error.message || "request failed";
+};
+
+/**
+ * One-line, copy-pasteable summary of what happened when loading the
+ * catalogue. Example:
+ *   "/public-courses → HTTP 401 · /training → HTTP 401"
+ */
+export function describeAttempts(attempts = []) {
+  if (!Array.isArray(attempts) || !attempts.length) return "no request made";
+
+  return attempts
+    .map((attempt) => {
+      if (attempt.ok) {
+        if (attempt.endpoint === "catalogue-cache") return "cache → match";
+        return `${attempt.endpoint} → ${attempt.count ?? 0} courses`;
+      }
+      if (attempt.reason === "empty") {
+        return `${attempt.endpoint} → ${attempt.detail || "empty list"}`;
+      }
+      if (attempt.reason === "filtered") {
+        return `${attempt.endpoint} → ${attempt.rawCount} records, none public`;
+      }
+      return `${attempt.endpoint} → ${attempt.detail || "failed"}`;
+    })
+    .join(" · ");
+}
+
+/** True when the API answered but rejected the request as unauthenticated. */
+export const attemptsHave401 = (attempts = []) =>
+  (attempts || []).some((attempt) => Number(attempt?.status) === 401);
+
+/**
+ * Probe the API's public canary (`GET /cors-check`).
+ *
+ * It is deliberately cheap and unauthenticated, so it separates two very
+ * different failures:
+ *   • canary fails too  → the API is unreachable / blocked (network, DNS, CORS)
+ *   • canary works      → the API is fine, but the catalogue routes are
+ *                         rejecting the request (auth middleware, route cache,
+ *                         stale deployment)
+ */
+export async function checkCatalogueHealth() {
+  const startedAt = Date.now();
+  try {
+    const res = await api.get("/cors-check", { timeout: 8000 });
+    return {
+      ok: true,
+      status: res.status,
+      ms: Date.now() - startedAt,
+      data: res.data || null,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: error?.response?.status ?? null,
+      ms: Date.now() - startedAt,
+      detail: describeError(error),
+      data: error?.response?.data ?? null,
+    };
+  }
+}
 
 /**
  * Load the public course catalogue.
@@ -499,45 +577,107 @@ let listCache = null; // { at, courses, endpoint }
  * payload, and caches the result briefly so the home page, the catalogue
  * and the notification strip do not all hit the API on a cold load.
  *
+ * The result distinguishes the three ways an empty catalogue can happen:
+ *   ok: true,  courses: []                    → nothing is published yet
+ *   ok: true,  filteredOut > 0, courses: []   → records exist but all hidden
+ *   ok: false                                 → every request failed
+ *
  * @param {{ force?: boolean }} options
- * @returns {Promise<{ courses: object[], endpoint: string|null, attempts: object[] }>}
+ * @returns {Promise<{courses: object[], endpoint: string|null, attempts: object[],
+ *                    ok: boolean, filteredOut: number, cached: boolean}>}
  */
 export async function fetchCourses({ force = false } = {}) {
   const now = Date.now();
   if (!force && listCache && now - listCache.at < CACHE_TTL) {
-    return { courses: listCache.courses, endpoint: listCache.endpoint, attempts: [] };
+    return {
+      courses: listCache.courses,
+      endpoint: listCache.endpoint,
+      attempts: [],
+      ok: true,
+      filteredOut: 0,
+      cached: true,
+    };
   }
 
   const attempts = [];
+  let ok = false; // did any endpoint answer with a 2xx?
+  let filteredOut = 0;
 
   for (const endpoint of LIST_ENDPOINTS) {
     try {
       const res = await api.get(endpoint);
+
+      if (looksLikeHtml(res.data)) {
+        attempts.push({
+          endpoint,
+          ok: false,
+          status: res.status,
+          reason: "error",
+          detail: "HTML instead of JSON (API base URL or proxy misconfigured)",
+        });
+        continue;
+      }
+
+      ok = true;
+
       const records = extractList(res.data);
       if (!records.length) {
-        attempts.push({ endpoint, ok: false, reason: "empty" });
+        // A 200 that is an array means "nothing published". Anything else is a
+        // payload shape we did not recognise — say so, with the keys we saw.
+        const payload =
+          res.data && typeof res.data === "object" && !Array.isArray(res.data)
+            ? `object with keys: ${Object.keys(res.data).slice(0, 8).join(", ") || "(none)"}`
+            : Array.isArray(res.data)
+              ? null
+              : `scalar ${typeof res.data}`;
+
+        attempts.push({
+          endpoint,
+          ok: false,
+          status: res.status,
+          rawCount: 0,
+          reason: "empty",
+          detail: payload
+            ? `unrecognised payload (${payload})`
+            : undefined,
+        });
         continue;
       }
 
       const courses = normaliseList(records);
       if (!courses.length) {
-        attempts.push({ endpoint, ok: false, reason: "filtered" });
+        filteredOut = Math.max(filteredOut, records.length);
+        attempts.push({
+          endpoint,
+          ok: false,
+          status: res.status,
+          rawCount: records.length,
+          reason: "filtered",
+        });
         continue;
       }
 
       listCache = { at: now, courses, endpoint };
-      attempts.push({ endpoint, ok: true, count: courses.length });
-      return { courses, endpoint, attempts };
+      attempts.push({
+        endpoint,
+        ok: true,
+        status: res.status,
+        count: courses.length,
+      });
+
+      return { courses, endpoint, attempts, ok: true, filteredOut: 0, cached: false };
     } catch (error) {
       attempts.push({
         endpoint,
         ok: false,
-        reason: error?.response?.status || error?.message || "error",
+        status: error?.response?.status ?? null,
+        reason: "error",
+        detail: describeError(error),
       });
     }
   }
 
-  return { courses: [], endpoint: null, attempts };
+  return { courses: [], endpoint: null, attempts, ok, filteredOut, cached: false };
 }
 
 /**
@@ -558,25 +698,40 @@ export async function fetchCourseById(id) {
         attempts.push({ endpoint, ok: true });
         return { course: normaliseCourse(record), endpoint, attempts };
       }
-      attempts.push({ endpoint, ok: false, reason: "empty" });
+      attempts.push({ endpoint, ok: false, status: res.status, reason: "empty" });
     } catch (error) {
       attempts.push({
         endpoint,
         ok: false,
-        reason: error?.response?.status || error?.message || "error",
+        status: error?.response?.status ?? null,
+        reason: "error",
+        detail: describeError(error),
       });
     }
   }
 
   // Last resort: the catalogue we already have (or can still load).
-  const { courses } = await fetchCourses();
+  const { courses, attempts: listAttempts = [] } = await fetchCourses();
   const match = courses.find((course) => String(course.id) === String(id));
   if (match) {
     attempts.push({ endpoint: "catalogue-cache", ok: true });
-    return { course: match, endpoint: "catalogue-cache", attempts };
+    return { course: match, endpoint: "catalogue-cache", attempts, failed: false };
   }
 
-  return { course: null, endpoint: null, attempts };
+  // Keep the catalogue attempts too — they explain *why* the fallback was empty.
+  listAttempts.forEach((attempt) => {
+    attempts.push({ ...attempt, endpoint: `list ${attempt.endpoint}` });
+  });
+
+  // Distinguish "this course is gone" (a clean 404/empty) from "the API is
+  // broken for us" (no response, 401, 5xx) so the page can explain itself.
+  const failed = attempts.some(
+    (attempt) =>
+      !attempt.ok &&
+      (attempt.status == null || attempt.status === 401 || attempt.status >= 500)
+  );
+
+  return { course: null, endpoint: null, attempts, failed };
 }
 
 /** Clear the short-lived cache (used by retry buttons and tests). */

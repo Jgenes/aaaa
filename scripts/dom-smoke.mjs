@@ -31,6 +31,7 @@ const ROUTES = [
   "/transactions",
   "/checkout/1/1",
   "/pesapal-gateway",
+  "/payment-success",
   "/provider/dashboard",
   "/provider/course",
   "/provider/cohorts",
@@ -172,6 +173,10 @@ async function runRoute(bundle, route) {
   const text = (root?.textContent || "").replace(/\s+/g, " ").trim();
   const landmark = root?.querySelector("header, h1, main");
   const title = window.document.title;
+
+  // TEXT_ROUTE=/trainings prints the rendered text of one route — handy when
+  // checking an empty/error state without a browser.
+  if (process.env.TEXT_ROUTE === route) console.log(`\n--- ${route} ---\n${text}\n`);
 
   if (!landmark) errors.push("no landmark element rendered");
   if (text.length < 60) errors.push(`almost no content (${text.length} chars)`);
