@@ -68,7 +68,23 @@ export default function ProviderProfile() {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.put("/provider/profile/update", formData);
+      // Only the fields ProviderProfileController@update validates. Sending
+      // the whole form meant empty strings for unrelated keys could fail a
+      // `required` rule and block a perfectly valid save.
+      const payload = {
+        legal_name: formData.legal_name.trim(),
+        brand_name: formData.brand_name.trim(),
+        tin: formData.tin.trim(),
+        website: formData.website.trim(),
+        region: formData.region.trim(),
+        district: formData.district.trim(),
+        physical_address: formData.physical_address.trim(),
+        contact_name: formData.contact_name.trim(),
+        contact_phone: formData.contact_phone.trim(),
+        contact_email: formData.contact_email.trim(),
+      };
+
+      await api.put("/provider/profile/update", payload);
       toast.success("Profile imesasishwa kikamilifu! 🚀", {
         position: "top-right",
         autoClose: 3000,

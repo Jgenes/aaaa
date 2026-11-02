@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axio";
-import { extractList, fetchCourses } from "../api/catalogue";
+import { extractList, fetchCourses, primaryCohort } from "../api/catalogue";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseCard from "../components/CourseCard";
@@ -44,12 +44,8 @@ export default function Home() {
         return {
           ...course,
           isEnrolled: Boolean(course.is_enrolled) || Boolean(hasCompletedEnrollment),
-          mainCohort:
-            course.cohorts?.find(
-              (cohort) => String(cohort.status || "").toUpperCase() === "OPEN"
-            ) ||
-            course.cohorts?.[0] ||
-            null,
+          // Best open cohort (already normalised: seats, price, deadline).
+          mainCohort: primaryCohort(course.cohorts),
         };
       });
 

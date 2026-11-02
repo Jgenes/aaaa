@@ -53,11 +53,14 @@ export default function AdminDashboard() {
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await api.get("/dashboard/stats", {
+        // Admin insights live on GET /admin/stats (AdminStatsController).
+        // /dashboard/stats is the learner/provider payload and has no user,
+        // provider or revenue figures — using it rendered an all-zero page.
+        const res = await api.get("/admin/stats", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const data = res.data;
+        const data = res.data || {};
 
         setStats({
           totalCourses: data.totalCourses || 0,
@@ -67,7 +70,7 @@ export default function AdminDashboard() {
           topCourse: data.topEnrolledCourse || "N/A",
         });
 
-        if (data.revenueChart) {
+        if (Array.isArray(data.revenueChart?.labels)) {
           setRevenueData({
             labels: data.revenueChart.labels,
             datasets: [

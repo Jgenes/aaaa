@@ -16,14 +16,12 @@ export default function CreateCohort() {
     startDate: "",
     endDate: "",
     schedule: "",
-    mode: "Online",
     venue: "",
     onlineLink: "",
     capacity: 0,
     price: 0,
     registrationDeadline: "",
-    status: "Open",
-    description: "",
+    status: "OPEN",
   });
 
   const handleChange = (e) => {
@@ -36,19 +34,18 @@ export default function CreateCohort() {
     setIsSubmitting(true);
 
     try {
+      // Mirrors CohortController@store validation exactly.
       const payload = {
-        intake_name: cohort.intakeName,
+        intake_name: cohort.intakeName.trim(),
         start_date: cohort.startDate,
         end_date: cohort.endDate,
         schedule_text: cohort.schedule,
-        mode: cohort.mode,
         venue: cohort.venue,
         online_link: cohort.onlineLink,
-        capacity: parseInt(cohort.capacity) || 0,
-        price: parseFloat(cohort.price) || 0,
+        capacity: Math.max(1, parseInt(cohort.capacity, 10) || 0),
+        price: Math.max(0, Math.round(Number(cohort.price) || 0)),
         registration_deadline: cohort.registrationDeadline,
-        status: cohort.status.toUpperCase(),
-        description: cohort.description,
+        status: String(cohort.status || "OPEN").toUpperCase(),
       };
 
       await api.post(`/courses/${courseId}/cohorts`, payload);
@@ -109,32 +106,20 @@ export default function CreateCohort() {
             </div>
             <div className="row g-3 mb-3">
               <div className="col-md-6">
-                <label className="form-label" htmlFor="mode">Mode of Study</label>
-                <select id="mode" className="form-select" name="mode" value={cohort.mode} onChange={handleChange}>
-                  <option value="Online">Online</option>
-                  <option value="Physical">Physical</option>
-                  <option value="Hybrid">Hybrid</option>
-                </select>
-              </div>
-              <div className="col-md-6">
                 <label className="form-label" htmlFor="schedule">Schedule</label>
                 <input id="schedule" type="text" className="form-control" name="schedule" value={cohort.schedule} onChange={handleChange} placeholder="e.g. Mon-Fri | 09:00 - 12:00" required />
               </div>
             </div>
 
-            {cohort.mode !== "Online" && (
-              <div className="mb-3">
-                <label className="form-label" htmlFor="venue">Physical Venue</label>
-                <input id="venue" type="text" className="form-control" name="venue" value={cohort.venue} onChange={handleChange} placeholder="Room number, Building or Street" />
-              </div>
-            )}
+            <div className="mb-3">
+              <label className="form-label" htmlFor="venue">Physical venue (optional)</label>
+              <input id="venue" type="text" className="form-control" name="venue" value={cohort.venue} onChange={handleChange} placeholder="Room number, Building or Street" />
+            </div>
 
-            {cohort.mode !== "Physical" && (
-              <div className="mb-3">
-                <label className="form-label" htmlFor="onlineLink">Class Link (Zoom/Meet)</label>
-                <input id="onlineLink" type="url" className="form-control" name="onlineLink" value={cohort.onlineLink} onChange={handleChange} placeholder="https://zoom.us/j/..." />
-              </div>
-            )}
+            <div className="mb-3">
+              <label className="form-label" htmlFor="onlineLink">Class link (optional)</label>
+              <input id="onlineLink" type="url" className="form-control" name="onlineLink" value={cohort.onlineLink} onChange={handleChange} placeholder="https://zoom.us/j/..." />
+            </div>
           </div>
 
           {/* Section 3: Capacity & Pricing */}
@@ -157,9 +142,9 @@ export default function CreateCohort() {
               <div className="col-md-4">
                 <label className="form-label" htmlFor="status">Current Status</label>
                 <select id="status" className="form-select" name="status" value={cohort.status} onChange={handleChange}>
-                  <option value="Open">Open</option>
-                  <option value="Full">Full</option>
-                  <option value="Closed">Closed</option>
+                  <option value="OPEN">Open</option>
+                  <option value="FULL">Full</option>
+                  <option value="CLOSED">Closed</option>
                 </select>
               </div>
             </div>
@@ -169,10 +154,6 @@ export default function CreateCohort() {
                 <span className="input-group-text"><FaCalendarAlt /></span>
                 <input id="registrationDeadline" type="date" className="form-control" name="registrationDeadline" value={cohort.registrationDeadline} onChange={handleChange} required />
               </div>
-            </div>
-            <div className="mb-0">
-              <label className="form-label" htmlFor="description">Additional Description (Optional)</label>
-              <textarea id="description" className="form-control" name="description" rows={3} value={cohort.description} onChange={handleChange} placeholder="Any specific notes for this intake..."></textarea>
             </div>
           </div>
 

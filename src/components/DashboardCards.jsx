@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axio";
+import { extractList, normaliseCourse } from "../api/catalogue";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -49,27 +50,71 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await api.get("/dashboard/stats", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // /dashboard/stats is platform-wide. Providers get accurate numbers by
+        // combining their own course list (cohorts) with the per-course
+        // performance report.
+        const [coursesRes, statsRes] = await Promise.all([
+          api.get("/courses"),
+          api.get("/provider/reports/courses").catch(() => ({ data: null })),
+        ]);
 
-        const data = res.data;
+        const courses = extractList(coursesRes.data)
+          .map(normaliseCourse)
+          .filter(Boolean);
+
+        const cohorts = courses.reduce(
+          (total, course) => total + (course.cohorts?.length || 0),
+          0
+        );
+
+        const reportRows = extractList(statsRes.data?.courses ?? statsRes.data);
+        const enrolments = reportRows.length
+          ? reportRows.reduce((total, row) => total + Number(row.students || 0), 0)
+          : courses.reduce(
+              (total, course) =>
+                total + Number(course.enrollments_count ?? course.enrollments?.length ?? 0),
+              0
+            );
+
+        const now = new Date();
+        const ongoing = courses.reduce(
+          (total, course) =>
+            total +
+            (course.cohorts || []).filter((cohort) => {
+              if (String(cohort.status).toUpperCase() !== "OPEN") return false;
+              const start = cohort.start_date ? new Date(cohort.start_date) : null;
+              const end = cohort.end_date ? new Date(cohort.end_date) : null;
+              if (start && start > now) return false;
+              if (end && end < now) return false;
+              return true;
+            }).length,
+          0
+        );
 
         setStats({
-          totalCourses: data.totalCourses || 0,
-          cohorts: data.totalCohorts || 0,
-          enrollments: data.totalEnrollments || 0,
-          onProgress: data.ongoingTrainings || 0,
+          totalCourses: courses.length,
+          cohorts,
+          enrollments: enrolments,
+          onProgress: ongoing,
         });
 
-        if (data.chart) {
+        const chartRows = reportRows.length
+          ? reportRows.map((row) => ({
+              label: row.title || row.course_title || "Untitled",
+              value: Number(row.students || 0),
+            }))
+          : courses.slice(0, 8).map((course) => ({
+              label: course.title,
+              value: Number(course.enrollments_count ?? 0),
+            }));
+
+        if (chartRows.length) {
           setChartData({
-            labels: data.chart.labels,
+            labels: chartRows.map((row) => row.label),
             datasets: [
               {
                 label: "Enrolments",
-                data: data.chart.values,
+                data: chartRows.map((row) => row.value),
                 borderColor: "#0b1d33",
                 backgroundColor: "rgba(11, 29, 51, 0.08)",
                 tension: 0.35,
@@ -109,17 +154,17 @@ export default function Dashboard() {
         <StatTile label="Total trainings" value={stats.totalCourses} icon="bi-journal-bookmark" />
         <StatTile label="Active cohorts" value={stats.cohorts} icon="bi-calendar3" tone="th-stat__icon--green" />
         <StatTile label="Enrolments" value={stats.enrollments} icon="bi-people" tone="th-stat__icon--orange" />
-        <StatTile label="Ongoing projects" value={stats.onProgress} icon="bi-activity" tone="th-stat__icon--violet" />
+        <StatTile label="Running now" value={stats.onProgress} icon="bi-activity" tone="th-stat__icon--violet" />
       </div>
 
       <section className="th-chart-card" aria-labelledby="trend-title">
         <div className="th-chart-card__head">
           <div>
             <h3 className="th-chart-card__title" id="trend-title">
-              Enrolment trends
+              Enrolments by training
             </h3>
             <p className="th-chart-card__sub">
-              Trainee registrations over time across your cohorts.
+              Paid trainees per training in your catalogue.
             </p>
           </div>
         </div>

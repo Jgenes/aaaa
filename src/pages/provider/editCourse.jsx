@@ -91,8 +91,9 @@ export default function EditCourse() {
       if (course.banner && typeof course.banner !== "string") {
         formData.append("banner", course.banner);
       }
-      formData.append("_method", "PUT");
 
+      // The API exposes POST /courses/:id as the multipart-safe update route
+      // (see routes/api.php) — no method spoofing needed.
       await api.post(`/courses/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -144,7 +145,7 @@ export default function EditCourse() {
                     <label className="form-label" htmlFor="mode">Delivery Mode *</label>
                     <select id="mode" className="form-select" name="mode" value={course.mode} onChange={handleChange}>
                       <option>Online</option>
-                      <option>Offline</option>
+                      <option>Physical</option>
                       <option>Hybrid</option>
                     </select>
                   </div>

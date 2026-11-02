@@ -1,20 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { fetchCourseById } from "../api/catalogue";
+import {
+  cohortAvailability,
+  fetchCourseById,
+  formatDate,
+  primaryCohort,
+} from "../api/catalogue";
+import { mediaUrl } from "../lib/media";
 import MediaImage from "../components/MediaImage";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseImageFallback from "../assets/ict-pic (1).jpg";
 
-const formatDate = (value) => {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+/** File name shown for a stored handout path. */
+const fileNameOf = (path, fallback) => {
+  if (!path) return fallback;
+  try {
+    const clean = String(path).split("?")[0];
+    const name = decodeURIComponent(clean.split("/").filter(Boolean).pop() || "");
+    return name || fallback;
+  } catch {
+    return fallback;
+  }
 };
 
 export default function Course() {
@@ -22,92 +29,53 @@ export default function Course() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCohort, setSelectedCohort] = useState(null);
   const [previewVideo, setPreviewVideo] = useState(null);
+  const [openSessions, setOpenSessions] = useState([]);
 
   useEffect(() => {
-    fetchCourse();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseId, cohortId]);
+    let cancelled = false;
 
-  const fetchCourse = async () => {
-    try {
+    const load = async () => {
       setLoading(true);
       setError(null);
 
-      // Tries /training/:id, then the other public endpoints, then the cached
-      // catalogue, so a card opened from the catalogue always resolves.
+      // GET /training/:id, with the cached catalogue as a fallback.
       const { course: courseData } = await fetchCourseById(courseId);
+      if (cancelled) return;
 
       if (!courseData) {
         setError("This training is not available right now.");
+        setLoading(false);
         return;
       }
 
-      let cohort = null;
-      if (cohortId && cohortId !== "undefined") {
-        cohort = courseData.cohorts?.find((c) => c.id === parseInt(cohortId));
-      }
+      // Pick the cohort named in the URL, otherwise the best open one.
+      const requested =
+        cohortId && cohortId !== "undefined"
+          ? courseData.cohorts.find((cohort) => String(cohort.id) === String(cohortId))
+          : null;
 
-      if (!cohort && courseData.cohorts?.length > 0) {
-        cohort = courseData.cohorts[0];
-      }
+      setCourse(courseData);
+      setSelectedCohort(requested || primaryCohort(courseData.cohorts));
+      // First session expanded so the curriculum never looks empty.
+      setOpenSessions(courseData.curriculum.length ? [0] : []);
+      setLoading(false);
+    };
 
-      const robustParse = (data) => {
-        if (!data) return [];
-        if (Array.isArray(data)) return data;
-        let result = data;
-        try {
-          if (typeof result === "string") result = JSON.parse(result);
-          if (typeof result === "string") result = JSON.parse(result);
-          return Array.isArray(result) ? result : [];
-        } catch (e) {
-          return [];
-        }
-      };
-
-      let rawCurriculum =
-        cohort?.contents?.curriculum ||
-        cohort?.contents ||
-        courseData.curriculum ||
-        courseData.contents ||
-        [];
-
-      setCourse({
-        ...courseData,
-        selectedCohort: cohort,
-        curriculum: robustParse(rawCurriculum),
-        requirements: robustParse(courseData.requirements),
-        learningOutcomes: robustParse(courseData.learning_outcomes),
-        skills: robustParse(courseData.skills),
-      });
-    } catch (err) {
+    load().catch((err) => {
+      if (cancelled) return;
       console.error("Fetch error:", err);
       setError("Failed to load training details.");
-    } finally {
       setLoading(false);
-    }
-  };
+    });
 
-  // Enrolment availability logic (unchanged behaviour)
-  const getEnrollmentStatus = () => {
-    if (!course?.selectedCohort) return { disabled: true, text: "Enrol now" };
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId, cohortId]);
 
-    const today = new Date();
-    const deadline = new Date(course.selectedCohort.registration_deadline);
-    const remainingSeats = parseInt(course.selectedCohort.remaining_seats) || 0;
-
-    if (today > deadline) {
-      return { disabled: true, text: "Enrolment closed" };
-    }
-
-    if (remainingSeats <= 0) {
-      return { disabled: true, text: "Cohort full" };
-    }
-
-    return { disabled: false, text: "Enrol now" };
-  };
-
-  // Close the preview modal with the keyboard
+  // Close the preview modal with the keyboard.
   useEffect(() => {
     if (!previewVideo) return;
     const onKeyDown = (event) => {
@@ -117,7 +85,21 @@ export default function Course() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [previewVideo]);
 
-  const status = getEnrollmentStatus();
+  const sessions = useMemo(() => course?.curriculum || [], [course]);
+  const availability = useMemo(
+    () => cohortAvailability(selectedCohort),
+    [selectedCohort]
+  );
+
+  const toggleSession = (index) =>
+    setOpenSessions((current) =>
+      current.includes(index)
+        ? current.filter((value) => value !== index)
+        : [...current, index]
+    );
+
+  const sessionCount = sessions.length;
+  const lessonLabel = sessionCount === 1 ? "session" : "sessions";
 
   if (loading) {
     return (
@@ -173,7 +155,38 @@ export default function Course() {
     );
   }
 
-  const cohort = course.selectedCohort;
+  const cohort = selectedCohort;
+  const canEnrol = Boolean(cohort) && availability.open;
+  const priceLabel =
+    cohort && Number(cohort.price) > 0
+      ? `TZS ${Number(cohort.price).toLocaleString()}`
+      : course.price
+        ? `TZS ${Number(course.price).toLocaleString()}`
+        : "Fee on request";
+
+  const enrolled = Boolean(course.is_enrolled);
+
+  const enrolButton = (className) => {
+    if (enrolled) {
+      return (
+        <Link to={`/learning/${course.id}`} className={className}>
+          Continue learning
+          <i className="bi bi-arrow-right" aria-hidden="true"></i>
+        </Link>
+      );
+    }
+
+    return canEnrol ? (
+      <Link to={`/checkout/${course.id}/${cohort.id}`} className={className}>
+        Enrol now
+        <i className="bi bi-arrow-right" aria-hidden="true"></i>
+      </Link>
+    ) : (
+      <button type="button" className={className} disabled>
+        {cohort ? availability.label : "Cohort dates coming soon"}
+      </button>
+    );
+  };
 
   return (
     <>
@@ -202,21 +215,25 @@ export default function Course() {
                   <span className="th-skill-pill mb-3 d-inline-flex">{course.category}</span>
                 )}
                 <h1 className="th-course-hero__title">{course.title}</h1>
-                <p className="th-course-hero__lead">{course.short_description}</p>
+                {course.short_description && (
+                  <p className="th-course-hero__lead">{course.short_description}</p>
+                )}
 
                 {cohort ? (
                   <ul className="th-course-meta">
                     <li>
                       <i className="bi bi-calendar-check" aria-hidden="true"></i>
-                      Starts {formatDate(cohort.start_date)}
+                      Starts {formatDate(cohort.start_date, "date to be confirmed")}
                     </li>
-                    <li className="is-danger">
+                    <li className={availability.deadlinePassed ? "is-danger" : ""}>
                       <i className="bi bi-alarm" aria-hidden="true"></i>
-                      Deadline {formatDate(cohort.registration_deadline)}
+                      Deadline {formatDate(cohort.registration_deadline, "not set")}
                     </li>
-                    <li className="is-success">
+                    <li className={availability.isFull ? "is-danger" : "is-success"}>
                       <i className="bi bi-people" aria-hidden="true"></i>
-                      {cohort.remaining_seats ?? "—"} seats available
+                      {cohort.capacity > 0
+                        ? `${cohort.remaining_seats} of ${cohort.capacity} seats available`
+                        : `${cohort.remaining_seats} seats available`}
                     </li>
                     {course.mode && (
                       <li>
@@ -233,19 +250,7 @@ export default function Course() {
                 )}
 
                 <div className="d-flex flex-wrap gap-2">
-                  {status.disabled || !cohort ? (
-                    <button type="button" className="btn btn-primary btn-lg" disabled>
-                      {status.text}
-                    </button>
-                  ) : (
-                    <Link
-                      to={`/checkout/${courseId}/${cohort.id}`}
-                      className="btn btn-primary btn-lg"
-                    >
-                      {status.text}
-                      <i className="bi bi-arrow-right" aria-hidden="true"></i>
-                    </Link>
-                  )}
+                  {enrolButton("btn btn-primary btn-lg")}
                   <Link to="/trainings" className="btn btn-outline-dark btn-lg">
                     Compare trainings
                   </Link>
@@ -266,14 +271,14 @@ export default function Course() {
         <div className="th-container-wide th-section-tight">
           <div className="row g-4">
             <div className="col-lg-8">
-              {course.learningOutcomes?.length > 0 && (
+              {course.learning_outcomes?.length > 0 && (
                 <section className="th-detail-block" aria-labelledby="outcomes-title">
                   <h2 className="th-detail-block__title" id="outcomes-title">
                     <i className="bi bi-check2-circle" aria-hidden="true"></i>
                     What you&apos;ll learn
                   </h2>
                   <ul className="th-outcome-list">
-                    {course.learningOutcomes.map((item, i) => (
+                    {course.learning_outcomes.map((item, i) => (
                       <li key={i}>
                         <i className="bi bi-check-circle-fill" aria-hidden="true"></i>
                         <span>{item}</span>
@@ -289,79 +294,130 @@ export default function Course() {
                   Course content
                 </h2>
 
-                {course.curriculum.length > 0 ? (
-                  <div className="accordion" id="curriculumAccordion">
-                    {course.curriculum.map((section, index) => {
-                      const isOpen = index < 2;
-                      return (
-                        <div className="accordion-item" key={index}>
-                          <h3 className="accordion-header" id={`section-heading-${index}`}>
-                            <button
-                              className={`accordion-button ${!isOpen ? "collapsed" : ""}`}
-                              type="button"
-                              data-bs-toggle="collapse"
-                              data-bs-target={`#section${index}`}
-                              aria-expanded={isOpen}
-                              aria-controls={`section${index}`}
+                {sessionCount > 0 ? (
+                  <>
+                    <p className="text-muted small mb-3">
+                      {sessionCount} {lessonLabel} · covered across the cohort
+                    </p>
+
+                    <div className="accordion" id="curriculumAccordion">
+                      {sessions.map((session, index) => {
+                        const isOpen = openSessions.includes(index);
+                        const panelId = `curriculum-session-${index}`;
+                        const headingId = `curriculum-heading-${index}`;
+                        const links = session.video_links || [];
+                        const handouts = session.handouts || [];
+
+                        return (
+                          <div className="accordion-item" key={session.id ?? index}>
+                            <h3 className="accordion-header" id={headingId}>
+                              <button
+                                className={`accordion-button ${isOpen ? "" : "collapsed"}`}
+                                type="button"
+                                aria-expanded={isOpen}
+                                aria-controls={panelId}
+                                onClick={() => toggleSession(index)}
+                              >
+                                <span className="d-flex align-items-center gap-2">
+                                  <i
+                                    className={`bi ${
+                                      session.video ? "bi-play-circle" : "bi-journal-text"
+                                    } text-muted`}
+                                    aria-hidden="true"
+                                  ></i>
+                                  <strong>
+                                    {index + 1}. {session.title}
+                                  </strong>
+                                </span>
+                              </button>
+                            </h3>
+                            <div
+                              id={panelId}
+                              className={`accordion-collapse collapse ${isOpen ? "show" : ""}`}
+                              aria-labelledby={headingId}
                             >
-                              <span className="d-flex align-items-center gap-2">
-                                <i
-                                  className={`bi ${
-                                    section.unlocked ? "bi-unlock" : "bi-lock"
-                                  } text-muted`}
-                                  aria-hidden="true"
-                                ></i>
-                                <strong>{section.sectionTitle || section.title}</strong>
-                              </span>
-                            </button>
-                          </h3>
-                          <div
-                            id={`section${index}`}
-                            className={`accordion-collapse collapse ${isOpen ? "show" : ""}`}
-                            aria-labelledby={`section-heading-${index}`}
-                            data-bs-parent="#curriculumAccordion"
-                          >
-                            <div className="accordion-body p-0">
-                              {section.lessons?.map((lesson, i) => (
-                                <div
-                                  key={i}
-                                  className={`th-lesson ${
-                                    lesson.preview ? "th-lesson--preview" : ""
-                                  }`}
-                                  onClick={() =>
-                                    lesson.preview && lesson.video && setPreviewVideo(lesson.video)
-                                  }
-                                  role={lesson.preview && lesson.video ? "button" : undefined}
-                                  tabIndex={lesson.preview && lesson.video ? 0 : undefined}
-                                  onKeyDown={(event) => {
-                                    if (
-                                      (event.key === "Enter" || event.key === " ") &&
-                                      lesson.preview &&
-                                      lesson.video
-                                    ) {
-                                      event.preventDefault();
-                                      setPreviewVideo(lesson.video);
-                                    }
-                                  }}
-                                >
-                                  <span className="th-lesson__label">
-                                    <i
-                                      className={`bi ${
-                                        lesson.preview ? "bi-play-circle-fill" : "bi-lock"
-                                      } th-lesson__icon`}
-                                      aria-hidden="true"
-                                    ></i>
-                                    <span>{lesson.title}</span>
-                                  </span>
-                                  <span className="th-lesson__time">{lesson.time}</span>
-                                </div>
-                              ))}
+                              <div className="accordion-body">
+                                {session.description && (
+                                  <p className="mb-2 small text-secondary">
+                                    {session.description}
+                                  </p>
+                                )}
+
+                                {session.notes && (
+                                  <div className="th-prose small mb-3">
+                                    {session.notes}
+                                  </div>
+                                )}
+
+                                {session.video && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-dark mb-3"
+                                    onClick={() => setPreviewVideo(session.video)}
+                                  >
+                                    <i className="bi bi-play-circle me-2" aria-hidden="true"></i>
+                                    Preview this session
+                                  </button>
+                                )}
+
+                                {links.length > 0 && (
+                                  <ul className="list-unstyled d-flex flex-column gap-2 mb-3">
+                                    {links.map((link, linkIndex) => (
+                                      <li key={`${link}-${linkIndex}`}>
+                                        <a
+                                          href={link}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="small d-inline-flex align-items-center gap-2"
+                                        >
+                                          <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                          Session resource {linkIndex + 1}
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+
+                                {handouts.length > 0 && (
+                                  <ul className="th-file-list">
+                                    {handouts.map((handout, fileIndex) => (
+                                      <li key={`${handout}-${fileIndex}`}>
+                                        <a
+                                          href={mediaUrl(handout)}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="th-file"
+                                          download
+                                        >
+                                          <span className="th-file__icon" aria-hidden="true">
+                                            <i className="bi bi-file-earmark-arrow-down"></i>
+                                          </span>
+                                          <span className="th-file__text">
+                                            {fileNameOf(handout, `Handout ${fileIndex + 1}`)}
+                                          </span>
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+
+                                {!session.description &&
+                                  !session.notes &&
+                                  !session.video &&
+                                  !links.length &&
+                                  !handouts.length && (
+                                    <p className="text-muted small mb-0">
+                                      Materials for this session are shared once your enrolment
+                                      is confirmed.
+                                    </p>
+                                  )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 ) : (
                   <p className="text-muted mb-0">Curriculum coming soon.</p>
                 )}
@@ -423,10 +479,7 @@ export default function Course() {
                     <i className="bi bi-file-text" aria-hidden="true"></i>
                     Detailed course description
                   </h2>
-                  <div
-                    className="th-prose"
-                    dangerouslySetInnerHTML={{ __html: course.long_description }}
-                  />
+                  <div className="th-prose">{course.long_description}</div>
                 </section>
               )}
             </div>
@@ -435,24 +488,36 @@ export default function Course() {
             <aside className="col-lg-4">
               <div className="th-enroll-panel">
                 <p className="th-enroll-panel__label">Course fee</p>
-                <p className="th-enroll-panel__value">
-                  {cohort?.price ? `TZS ${Number(cohort.price).toLocaleString()}` : "Fee on request"}
-                </p>
+                <p className="th-enroll-panel__value">{priceLabel}</p>
                 <p className="th-enroll-panel__seats">
-                  <span className="th-status th-status--info">
-                    {cohort?.remaining_seats ?? "—"} of {cohort?.capacity ?? "—"} seats left
+                  <span
+                    className={`th-status ${
+                      availability.open ? "th-status--success" : "th-status--info"
+                    }`}
+                  >
+                    {cohort
+                      ? availability.state === "open"
+                        ? `${cohort.remaining_seats} of ${cohort.capacity || "—"} seats left`
+                        : availability.label
+                      : "No cohort scheduled"}
                   </span>
                 </p>
 
                 <ul className="th-enroll-panel__list">
                   <li>
                     <span>Starts</span>
-                    <strong>{formatDate(cohort?.start_date)}</strong>
+                    <strong>{formatDate(cohort?.start_date, "—")}</strong>
                   </li>
                   <li>
                     <span>Enrolment deadline</span>
-                    <strong>{formatDate(cohort?.registration_deadline)}</strong>
+                    <strong>{formatDate(cohort?.registration_deadline, "—")}</strong>
                   </li>
+                  {cohort?.intake_name && (
+                    <li>
+                      <span>Intake</span>
+                      <strong>{cohort.intake_name}</strong>
+                    </li>
+                  )}
                   <li>
                     <span>Delivery</span>
                     <strong>{course.mode || "—"}</strong>
@@ -465,19 +530,7 @@ export default function Course() {
                   )}
                 </ul>
 
-                {status.disabled || !cohort ? (
-                  <button type="button" className="btn btn-primary w-100 mt-4" disabled>
-                    {status.text}
-                  </button>
-                ) : (
-                  <Link
-                    to={`/checkout/${courseId}/${cohort.id}`}
-                    className="btn btn-primary w-100 mt-4"
-                  >
-                    {status.text}
-                    <i className="bi bi-arrow-right" aria-hidden="true"></i>
-                  </Link>
-                )}
+                {enrolButton("btn btn-primary w-100 mt-4")}
 
                 <p className="th-enroll-panel__note">
                   Secure checkout · Instant invoice · Verified certificate
@@ -493,7 +546,7 @@ export default function Course() {
           className="modal show d-block th-modal-backdrop"
           role="dialog"
           aria-modal="true"
-          aria-label="Lesson preview"
+          aria-label="Session preview"
           onClick={(event) => {
             if (event.target === event.currentTarget) setPreviewVideo(null);
           }}
@@ -501,7 +554,7 @@ export default function Course() {
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content border-0 shadow-lg">
               <div className="modal-header">
-                <h2 className="modal-title h6 mb-0">Lesson preview</h2>
+                <h2 className="modal-title h6 mb-0">Session preview</h2>
                 <button
                   type="button"
                   className="btn-close"
@@ -511,8 +564,7 @@ export default function Course() {
               </div>
               <div className="modal-body p-0">
                 <div className="ratio ratio-16x9">
-                  <video controls autoPlay>
-                    <source src={previewVideo} type="video/mp4" />
+                  <video controls autoPlay src={mediaUrl(previewVideo)}>
                     Your browser does not support embedded videos.
                   </video>
                 </div>

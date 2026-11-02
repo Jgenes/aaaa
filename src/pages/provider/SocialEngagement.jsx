@@ -40,7 +40,8 @@ export default function SocialEngagement() {
 
     const shareCourse = (platform, course) => {
         const baseUrl = window.location.origin; 
-        const rawUrl = `${baseUrl}/training/${course.id}`;
+        // Public course route in this app (see src/App.jsx).
+        const rawUrl = `${baseUrl}/course/${course.id}`;
         const url = encodeURIComponent(rawUrl);
         const text = encodeURIComponent(`Karibu kwenye mafunzo ya ${course.title || course.course_name}. Jisajili sasa!`);
         

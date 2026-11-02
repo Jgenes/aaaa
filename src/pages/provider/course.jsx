@@ -6,6 +6,7 @@ import { MdAddCircleOutline } from "react-icons/md";
 import { ToastContainer, toast } from "react-toastify";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import api from "../../api/axio";
+import { extractList, normaliseCourse } from "../../api/catalogue";
 import "react-toastify/dist/ReactToastify.css";
 
 import { tableStyles } from "../../lib/tableStyles";
@@ -22,8 +23,12 @@ export default function ProviderDashboard() {
   const fetchCourses = async () => {
     try {
       setLoading(true);
+      // GET /courses → bare array of the signed-in provider's courses.
       const response = await api.get("/courses");
-      setCourses(response.data);
+      const list = extractList(response.data)
+        .map(normaliseCourse)
+        .filter(Boolean);
+      setCourses(list);
     } catch (error) {
       toast.error("Network error: Could not load courses.");
     } finally {
@@ -79,13 +84,17 @@ export default function ProviderDashboard() {
       selector: (row) => row.status,
       sortable: true,
       cell: (row) => {
-        const status = row.status?.toUpperCase();
+        const status = String(row.status || "").toUpperCase();
+        const published = status === "PUBLISHED" || status === "ACTIVE";
         return (
-          <span className="fw-bold" style={{ 
-            fontSize: "12px", 
-            color: status === "ACTIVE" || status === "OPEN" ? "var(--th-success)" : "#95a5a6" 
-          }}>
-            ● {status || "N/A"}
+          <span
+            className="fw-bold"
+            style={{
+              fontSize: "12px",
+              color: published ? "var(--th-success)" : "var(--th-muted, #6b7280)",
+            }}
+          >
+            ● {row.status || "Draft"}
           </span>
         );
       },

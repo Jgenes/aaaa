@@ -28,12 +28,62 @@ npm run build      # production build in dist/
 npm run preview    # preview the production build
 npm run lint       # eslint
 npm run test:ui    # headless route smoke test (see below)
+npm run test:data  # payload contract test for the course/learning normalisers
 ```
 
 The API base URL lives in `src/api/axio.js` and defaults to the production API.
 Set `VITE_API_BASE_URL` to point the app elsewhere without touching code — for
 example `VITE_API_BASE_URL=/api npm run dev` to route requests through the Vite
 dev proxy (`/api` → `http://localhost:5174`, see `vite.config.js`).
+
+## API contract
+
+The frontend is written against the Laravel API in `routes/api.php`. All
+payload handling lives in two modules so a backend change only has to be
+handled once:
+
+| Module | Responsibility |
+| --- | --- |
+| `src/api/catalogue.js` | Public courses, cohorts, curriculum, media paths |
+| `src/api/learning.js` | Learner enrolments, classroom modules, progress |
+
+Endpoints used by each screen:
+
+| Screen | Request |
+| --- | --- |
+| Home, `/trainings`, announcement strip | `GET /public-courses` → `GET /training` (fallback) |
+| Course detail `/course/:id` | `GET /training/:id` (falls back to the cached catalogue) |
+| Checkout | auth `GET /courses/:courseId/cohorts/:cohortId`, `POST /payment/send-otp`, `POST /payment/verify-otp`, `POST /payment/initiate` |
+| My learning | `GET /my-learning`, then `GET /courses/:id/learning` per course for progress |
+| Classroom `/learning/:id` | `GET /courses/:id/learning`, `POST /courses/:id/complete-lesson` |
+| Provider courses | `GET /courses` (own courses), `POST /courses`, `POST|PUT /courses/:id` |
+| Provider cohorts | `GET /courses/:id/cohorts`, `POST /courses/:id/cohorts`, `PUT|DELETE …/:cohortId`, `PATCH …/:cohortId/status`, `POST …/refresh-statuses` |
+| Provider dashboard | `GET /courses` + `GET /provider/reports/courses` |
+| Admin dashboard | `GET /admin/stats`, `GET /admin/notifications/count` |
+| Admin courses | `GET /admin/courses`, `POST /courses/:id/status` |
+| PesaPal return | `/payment-success?status=…&reference=…` (the API redirects here) |
+
+### Payload rules the UI depends on
+
+- **Lists are bare arrays.** `GET /public-courses`, `/training`, `/courses`
+  and `/admin/courses` answer with an array; `extractList()` still tolerates
+  `{ data: [...] }` envelopes.
+- **`Draft` is public.** `Course::scopePublished()` returns *Published* and
+  *Draft* courses, and new provider courses are saved as `Draft`. The
+  catalogue therefore hides only `Closed`/`Suspended`/`Archived` records —
+  filtering out `Draft` emptied the whole catalogue.
+- **Cohorts** are `{ id, intake_name, capacity, seats_taken, price,
+  registration_deadline, start_date, end_date, status }` with
+  `status ∈ OPEN | FULL | CLOSED`. `remaining_seats` is only sent by
+  `/training`; elsewhere it is derived as `capacity - seats_taken`.
+- **Curriculum** is `contents`: one entry per session, each with `title`,
+  `description`, `notes_text`, `video`, `video_links` and `handouts`.
+  `normaliseCurriculum()` flattens this into the session list used by the
+  course page, provider preview and admin review dialog.
+- **Classroom modules** use `completed` and `links`; the UI exposes
+  `is_completed` and `video_links` after normalisation.
+- **Uploads** are stored as `uploads/…` paths served from the API origin, so
+  every image/file goes through `src/lib/media.js` (`MediaImage`, `mediaUrl`).
 
 ## Design system
 
@@ -100,6 +150,15 @@ Accessibility notes: every page exposes a `main` landmark, a “Skip to main
 content” link lives in `index.html`, focus rings are visible on keyboard
 navigation, dialogs support <kbd>Esc</kbd>, and `prefers-reduced-motion` is
 respected globally.
+
+## Payload contract test
+
+`npm run test:data` bundles `src/api/catalogue.js` and `src/api/learning.js`
+for Node and asserts the transformations the course screens depend on: Draft
+courses staying visible, `seats_taken` → `remaining_seats`, OPEN/FULL/CLOSED
+availability, `contents` → curriculum sessions (including the legacy nested
+shape), `{ data: … }` envelopes, and the classroom's `completed` / `links`
+aliases. It runs in under a second and needs no API.
 
 ## Route smoke test
 

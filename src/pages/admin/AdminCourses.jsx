@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { mediaUrl } from "../../lib/media";
 import api from '../../api/axio';
+import { extractList, normaliseCourse } from '../../api/catalogue';
 import ProviderDashboardLayout from "./layouts/AdminDashboardLayout";
 import DataTable from 'react-data-table-component';
 import { toast, ToastContainer } from 'react-toastify';
@@ -22,7 +23,8 @@ export default function AdminCourses() {
         try {
             setLoading(true);
             const res = await api.get('/admin/courses');
-            const data = res.data || [];
+            // GET /admin/courses → bare array of every course + provider + cohorts.
+            const data = extractList(res.data).map(normaliseCourse).filter(Boolean);
             setCourses(data);
             setFilteredCourses(data); // Mwanzoni filtered ni sawa na zote
         } catch (error) {
@@ -116,6 +118,8 @@ export default function AdminCourses() {
                     badgeClass = 'bg-success';
                 } else if (currentStatus === 'DRAFT') {
                     badgeClass = 'bg-secondary';
+                } else if (currentStatus === 'CLOSED' || currentStatus === 'SUSPENDED') {
+                    badgeClass = 'bg-danger';
                 }
 
                 return (
@@ -217,9 +221,9 @@ export default function AdminCourses() {
                                                 <p><strong>Mode:</strong> {selectedCourse.mode}</p>
                                                 <hr/>
                                                 <p><strong>Short Description:</strong><br/>{selectedCourse.short_description}</p>
-                                                <p><strong>Learning Outcomes:</strong><br/>{selectedCourse.learning_outcomes}</p>
-                                                <p><strong>Requirements:</strong><br/>{selectedCourse.requirements}</p>
-                                                <p><strong>Skills:</strong><br/>{selectedCourse.skills}</p>
+                                                <p><strong>Learning outcomes:</strong><br/>{selectedCourse.learning_outcomes.join(' · ') || '—'}</p>
+                                                <p><strong>Requirements:</strong><br/>{selectedCourse.requirements.join(' · ') || '—'}</p>
+                                                <p><strong>Skills:</strong><br/>{selectedCourse.skills.join(' · ') || '—'}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -247,7 +251,7 @@ export default function AdminCourses() {
                                                                         <td>{new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS' }).format(cohort.price)}</td>
                                                                         <td>
                                                                             <span className={`badge ${
-                                                                                cohort.status === 'ACTIVE' ? 'bg-success' : 'bg-warning text-dark'
+                                                                                String(cohort.status).toUpperCase() === 'OPEN' ? 'bg-success' : 'bg-warning text-dark'
                                                                             }`}>
                                                                                 {cohort.status}
                                                                             </span>
@@ -271,11 +275,15 @@ export default function AdminCourses() {
                                                 <p>{selectedCourse.long_description}</p>
                                                 <hr/>
                                                 <h6 className="fw-bold">Contents</h6>
-                                                {selectedCourse.contents && Array.isArray(selectedCourse.contents) ? (
-                                                    selectedCourse.contents.map((item, index) => (
-                                                        <div key={index} className="mb-4 p-3 border rounded bg-white">
+                                                {selectedCourse.curriculum?.length > 0 ? (
+                                                    selectedCourse.curriculum.map((item, index) => (
+                                                        <div key={item.id ?? index} className="mb-4 p-3 border rounded bg-white">
                                                             <h6 className="fw-bold text-primary">{index + 1}. {item.title}</h6>
-                                                            <p>{item.description}</p>
+                                                            {item.description && <p className="mb-1">{item.description}</p>}
+                                                            <small className="text-muted">
+                                                                {item.video ? 'Video · ' : ''}
+                                                                {item.video_links.length} links · {item.handouts.length} handouts
+                                                            </small>
                                                         </div>
                                                     ))
                                                 ) : (

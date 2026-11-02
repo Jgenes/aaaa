@@ -1,10 +1,24 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
 import { FaEye, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
 import api from "../../api/axio";
+import { extractList, formatDate, normaliseCohort } from "../../api/catalogue";
+import { deleteCohort } from "../../api/courseServices";
 
+/**
+ * Cohort browser.
+ *
+ * • /provider/cohorts            → every cohort owned by the provider
+ *                                  (GET /provider/all-cohorts)
+ * • /provider/cohorts/:courseId  → cohorts of one course
+ *                                  (GET /courses/:id/cohorts)
+ *
+ * The API field names are snake_case: `intake_name`, `seats_taken`,
+ * `registration_deadline`, `course_title`…
+ */
 export default function ProviderCohorts() {
   const navigate = useNavigate();
   const { courseId } = useParams();
@@ -12,81 +26,124 @@ export default function ProviderCohorts() {
   const [filterText, setFilterText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedCohort, setSelectedCohort] = useState(null);
-  const [data, setData] = useState([]); // Initialized as empty array
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    api
-      .get(`/courses/${courseId}/cohorts`)
-      .then((res) => {
-        /**
-         * FIX: Laravel API often wraps the array in a 'data' key.
-         * We check if res.data is the array, or if res.data.data is the array.
-         */
-        const actualData = Array.isArray(res.data)
-          ? res.data
-          : res.data?.data || [];
+  const loadCohorts = async () => {
+    setLoading(true);
+    try {
+      const res = courseId
+        ? await api.get(`/courses/${courseId}/cohorts`)
+        : await api.get("/provider/all-cohorts");
 
-        setData(actualData);
-      })
-      .catch((err) => {
-        console.error("Failed to load cohorts:", err);
-        setData([]); // Reset to empty array on error to prevent .filter crash
-      });
-  }, [courseId]);
+      const list = extractList(res.data)
+        .map(normaliseCohort)
+        .filter(Boolean);
 
-  /**
-   * FIX: Added a check (data || []) to ensure .filter
-   * never runs on a non-array value.
-   */
-  const filteredData = (Array.isArray(data) ? data : []).filter(
-    (item) =>
-      item.intakeName?.toLowerCase().includes(filterText.toLowerCase()) ||
-      item.courseName?.toLowerCase().includes(filterText.toLowerCase()),
-  );
-
-  const handleView = (cohort) => {
-    setSelectedCohort(cohort);
-    setShowModal(true);
+      setData(list);
+    } catch (err) {
+      console.error("Failed to load cohorts:", err);
+      toast.error("We could not load cohorts.");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEdit = (cohort) => alert(`Edit cohort: ${cohort.intakeName}`);
+  useEffect(() => {
+    loadCohorts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId]);
 
-  const handleDelete = (cohort) => {
-    if (window.confirm(`Delete ${cohort.intakeName}?`)) {
-      alert("Deleted");
+  const filteredData = data.filter((item) =>
+    [item.intake_name, item.course_title, item.course?.title, item.start_date]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(filterText.toLowerCase()))
+  );
+
+  const handleDelete = async (cohort) => {
+    if (!window.confirm(`Delete "${cohort.intake_name}"?`)) return;
+
+    try {
+      await deleteCohort(cohort.course_id || courseId, cohort.id);
+      toast.success("Cohort deleted.");
+      loadCohorts();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not delete this cohort.");
     }
   };
 
   const columns = [
     { name: "ID", selector: (row) => row.id, width: "70px" },
-    { name: "Intake Name", selector: (row) => row.intakeName, sortable: true },
-    { name: "Course", selector: (row) => row.courseName },
-    { name: "Mode", selector: (row) => row.mode },
-    { name: "Seats", selector: (row) => row.capacity },
+    { name: "Intake name", selector: (row) => row.intake_name, sortable: true },
     {
-      name: "Remaining",
-      selector: (row) => (row.capacity || 0) - (row.enrolled || 0),
+      name: "Course",
+      selector: (row) => row.course_title || row.course?.title || "—",
       sortable: true,
     },
-    { name: "Status", selector: (row) => row.status },
+    {
+      name: "Starts",
+      selector: (row) => row.start_date,
+      cell: (row) => formatDate(row.start_date),
+      sortable: true,
+    },
+    {
+      name: "Seats",
+      cell: (row) => `${row.seats_taken} / ${row.capacity || "—"}`,
+    },
+    {
+      name: "Remaining",
+      selector: (row) => row.remaining_seats,
+      sortable: true,
+    },
+    {
+      name: "Price",
+      selector: (row) => row.price,
+      cell: (row) => `TZS ${Number(row.price || 0).toLocaleString()}`,
+    },
+    {
+      name: "Status",
+      cell: (row) => {
+        const tone =
+          row.status === "OPEN"
+            ? "bg-success"
+            : row.status === "FULL"
+              ? "bg-warning text-dark"
+              : "bg-secondary";
+        return <span className={`badge ${tone}`}>{row.status || "—"}</span>;
+      },
+    },
     {
       name: "Actions",
       cell: (row) => (
         <div className="d-flex gap-2">
           <button
+            type="button"
             className="btn btn-sm btn-info"
-            onClick={() => handleView(row)}
+            aria-label={`View ${row.intake_name}`}
+            onClick={() => {
+              setSelectedCohort(row);
+              setShowModal(true);
+            }}
           >
             <FaEye color="white" />
           </button>
           <button
+            type="button"
             className="btn btn-sm btn-primary"
-            onClick={() => handleEdit(row)}
+            aria-label={`Edit ${row.intake_name}`}
+            onClick={() =>
+              navigate(
+                `/provider/cohorts/${row.course_id || courseId}/${row.id}/edit`
+              )
+            }
           >
             <FaEdit color="white" />
           </button>
           <button
+            type="button"
             className="btn btn-sm btn-danger"
+            aria-label={`Delete ${row.intake_name}`}
             onClick={() => handleDelete(row)}
           >
             <FaTrash color="white" />
@@ -98,24 +155,29 @@ export default function ProviderCohorts() {
 
   return (
     <ProviderDashboardLayout title="Cohorts">
+      <ToastContainer position="top-right" />
       <div>
         <div className="d-flex justify-content-between mb-2">
-          <h5>Cohorts List</h5>
+          <h2 className="h5 mb-0">Cohorts</h2>
           <div className="d-flex gap-2">
-            <input aria-label="Search cohorts"
+            <input
+              aria-label="Search cohorts"
               type="text"
-              placeholder="Search..."
+              placeholder="Search…"
               className="form-control w-auto"
               style={{ minWidth: "200px" }}
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
-            <button
-              onClick={() => navigate(`/provider/cohorts/create/${courseId}`)}
-              className="btn btn-sm btn-success d-flex align-items-center gap-1 addCohortBtn"
-            >
-              <FaPlus /> Add Cohort
-            </button>
+            {courseId && (
+              <button
+                type="button"
+                onClick={() => navigate(`/provider/cohorts/create/${courseId}`)}
+                className="btn btn-sm btn-success d-flex align-items-center gap-1 addCohortBtn"
+              >
+                <FaPlus /> Add cohort
+              </button>
+            )}
           </div>
         </div>
 
@@ -124,20 +186,30 @@ export default function ProviderCohorts() {
           data={filteredData}
           pagination
           highlightOnHover
-          striped
-          noDataComponent="No cohorts found for this course."
+          responsive
+          progressPending={loading}
+          noDataComponent={
+            <div className="p-4 text-muted">
+              No cohorts found. Pick a course from Trainings to open an intake.
+            </div>
+          }
         />
 
         {showModal && selectedCohort && (
           <div
             className="modal fade show d-block th-modal-backdrop"
-            
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cohort-modal-title"
           >
             <div className="modal-dialog modal-lg modal-dialog-scrollable">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">{selectedCohort.intakeName}</h5>
+                  <h2 className="modal-title h5" id="cohort-modal-title">
+                    {selectedCohort.intake_name}
+                  </h2>
                   <button
+                    type="button"
                     className="btn-close"
                     aria-label="Close cohort details"
                     onClick={() => setShowModal(false)}
@@ -145,66 +217,53 @@ export default function ProviderCohorts() {
                 </div>
                 <div className="modal-body">
                   <p>
-                    <strong>Course:</strong> {selectedCohort.courseName}
+                    <strong>Course:</strong>{" "}
+                    {selectedCohort.course_title || selectedCohort.course?.title || "—"}
                   </p>
                   <p>
-                    <strong>Duration:</strong> {selectedCohort.startDate} –{" "}
-                    {selectedCohort.endDate}
+                    <strong>Dates:</strong> {formatDate(selectedCohort.start_date)} –{" "}
+                    {formatDate(selectedCohort.end_date)}
                   </p>
                   <p>
-                    <strong>Schedule:</strong> {selectedCohort.schedule}
+                    <strong>Schedule:</strong> {selectedCohort.schedule_text || "—"}
                   </p>
                   <p>
-                    <strong>Mode:</strong> {selectedCohort.mode}
+                    <strong>Venue:</strong> {selectedCohort.venue || "—"}
                   </p>
-
-                  {selectedCohort.mode === "Physical" && (
+                  {selectedCohort.online_link && (
                     <p>
-                      <strong>Venue:</strong> {selectedCohort.venue}
-                    </p>
-                  )}
-                  {selectedCohort.mode === "Online" && (
-                    <p>
-                      <strong>Online Link:</strong>{" "}
+                      <strong>Online link:</strong>{" "}
                       <a
-                        href={selectedCohort.onlineLink}
+                        href={selectedCohort.online_link}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Join Class
+                        Join class
                       </a>
                     </p>
                   )}
                   <hr />
                   <p>
-                    <strong>Seats:</strong> {selectedCohort.capacity}
-                  </p>
-                  <p>
-                    <strong>Remaining Seats:</strong>{" "}
-                    {(selectedCohort.capacity || 0) -
-                      (selectedCohort.enrolled || 0)}
+                    <strong>Seats taken:</strong> {selectedCohort.seats_taken} of{" "}
+                    {selectedCohort.capacity || "—"} ({selectedCohort.remaining_seats}{" "}
+                    remaining)
                   </p>
                   <p>
                     <strong>Price:</strong> TZS{" "}
-                    {selectedCohort.price?.toLocaleString()}
+                    {Number(selectedCohort.price || 0).toLocaleString()}
                   </p>
                   <p>
-                    <strong>Deadline:</strong>{" "}
-                    {selectedCohort.registrationDeadline}
+                    <strong>Registration deadline:</strong>{" "}
+                    {formatDate(selectedCohort.registration_deadline)}
                   </p>
                   <p>
                     <strong>Status:</strong>{" "}
-                    <span className="badge bg-success">
-                      {selectedCohort.status}
-                    </span>
-                  </p>
-                  <hr />
-                  <p>
-                    <strong>Description:</strong> {selectedCohort.description}
+                    <span className="badge bg-success">{selectedCohort.status}</span>
                   </p>
                 </div>
                 <div className="modal-footer">
                   <button
+                    type="button"
                     className="btn btn-secondary"
                     onClick={() => setShowModal(false)}
                   >

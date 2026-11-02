@@ -3,7 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
 import { FaEye, FaPlus, FaArrowLeft, FaEdit, FaTrash, FaSearch } from "react-icons/fa";
-import { getCohorts, deleteCohort } from "../../api/courseServices";
+import { deleteCohort, getCohorts, refreshCohortStatuses } from "../../api/courseServices";
+import api from "../../api/axio";
+import { extractList, formatDate, normaliseCohort } from "../../api/catalogue";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -18,6 +20,7 @@ export default function CohortList() {
   const [filterText, setFilterText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedCohort, setSelectedCohort] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchCohorts();
@@ -26,20 +29,26 @@ export default function CohortList() {
   const fetchCohorts = async () => {
     try {
       setLoading(true);
+      // GET /courses/:id/cohorts → { status, data: [...] }
       const response = await getCohorts(courseId);
-      let cohortsData = [];
-      
-      if (response.data) {
-        if (Array.isArray(response.data)) cohortsData = response.data;
-        else if (response.data.data && Array.isArray(response.data.data)) cohortsData = response.data.data;
-        else if (response.data.cohorts && Array.isArray(response.data.cohorts)) cohortsData = response.data.cohorts;
-      }
+      const cohortsData = extractList(response.data)
+        .map(normaliseCohort)
+        .filter(Boolean);
 
       setCohorts(cohortsData);
-      if (cohortsData.length > 0) {
-        setCourseName(cohortsData[0].course?.title || cohortsData[0].course_name || `Course #${courseId}`);
+
+      // Cohorts come back with their course relation; fall back to a direct
+      // fetch so the page never shows "Course #7" as its heading.
+      const embeddedName = cohortsData[0]?.course?.title || cohortsData[0]?.course_title;
+      if (embeddedName) {
+        setCourseName(embeddedName);
       } else {
-        setCourseName(`Course #${courseId}`);
+        try {
+          const courseRes = await api.get(`/courses/${courseId}`);
+          setCourseName(courseRes.data?.title || `Course #${courseId}`);
+        } catch {
+          setCourseName(`Course #${courseId}`);
+        }
       }
     } catch (error) {
       toast.error("Failed to load cohorts");
@@ -66,20 +75,39 @@ export default function CohortList() {
     }
   };
 
-  const calculateRemainingSeats = (cohort) => {
-    const enrolled = cohort.enrolled_students || cohort.enrolledStudents || 0;
-    const capacity = cohort.capacity || 0;
-    return Math.max(0, capacity - enrolled);
+  // POST /courses/:id/cohorts/refresh-statuses → recompute OPEN/FULL/CLOSED.
+  const handleRefreshStatuses = async () => {
+    try {
+      setRefreshing(true);
+      await refreshCohortStatuses(courseId);
+      toast.success("Cohort statuses refreshed.");
+      await fetchCohorts();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not refresh cohort statuses.");
+    } finally {
+      setRefreshing(false);
+    }
   };
 
-  const getStatusBadge = (cohort) => {
-    const now = new Date();
-    const deadline = new Date(cohort.registration_deadline || cohort.registrationDeadline);
-    const enrolled = cohort.enrolled_students || cohort.enrolledStudents || 0;
-    const capacity = cohort.capacity || 0;
+  // The API tracks seats with `seats_taken` (capacity - seats_taken = remaining).
+  const seatsTaken = (cohort) => Number(cohort.seats_taken ?? 0);
+  const remainingSeats = (cohort) =>
+    cohort.remaining_seats !== undefined
+      ? Number(cohort.remaining_seats)
+      : Math.max(0, Number(cohort.capacity || 0) - seatsTaken(cohort));
 
-    if (now > deadline) return { label: "CLOSED", class: "status-closed" };
-    if (enrolled >= capacity) return { label: "FULL", class: "status-full" };
+  const getStatusBadge = (cohort) => {
+    const status = String(cohort.status || "").toUpperCase(); // OPEN | FULL | CLOSED
+    if (status === "FULL") return { label: "FULL", class: "status-full" };
+    if (status === "CLOSED") return { label: "CLOSED", class: "status-closed" };
+
+    const deadline = cohort.registration_deadline
+      ? new Date(cohort.registration_deadline)
+      : null;
+    if (deadline && !Number.isNaN(deadline.getTime()) && deadline < new Date()) {
+      return { label: "CLOSED", class: "status-closed" };
+    }
+    if (remainingSeats(cohort) <= 0) return { label: "FULL", class: "status-full" };
     return { label: "OPEN", class: "status-open" };
   };
 
@@ -102,19 +130,19 @@ export default function CohortList() {
       name: "Duration",
       cell: (row) => (
         <div className="small">
-          <div className="text-nowrap"><span className="text-muted">Start:</span> {row.start_date}</div>
-          <div className="text-nowrap"><span className="text-muted">End:</span> {row.end_date}</div>
+          <div className="text-nowrap"><span className="text-muted">Start:</span> {formatDate(row.start_date)}</div>
+          <div className="text-nowrap"><span className="text-muted">End:</span> {formatDate(row.end_date)}</div>
         </div>
       )
     },
     {
       name: "Enrollment",
-      selector: (row) => row.enrolled_students,
+      selector: (row) => seatsTaken(row),
       sortable: true,
       cell: (row) => {
-        const remaining = calculateRemainingSeats(row);
-        const capacity = row.capacity || 0;
-        const enrolled = row.enrolled_students || 0;
+        const remaining = remainingSeats(row);
+        const capacity = Number(row.capacity || 0);
+        const enrolled = seatsTaken(row);
         const percentage = capacity > 0 ? (enrolled / capacity) * 100 : 0;
         return (
           <div className="w-100 pe-3">
@@ -194,6 +222,15 @@ export default function CohortList() {
                 onChange={(e) => setFilterText(e.target.value)}
               />
             </div>
+            <button
+              type="button"
+              className="btn btn-outline-dark d-flex align-items-center gap-2"
+              onClick={handleRefreshStatuses}
+              disabled={refreshing}
+            >
+              <i className={`bi bi-arrow-clockwise ${refreshing ? "spinner-border spinner-border-sm" : ""}`} aria-hidden="true"></i>
+              Refresh seats
+            </button>
             <button className="btn-add-cohort d-flex align-items-center gap-2" onClick={() => navigate(`/provider/cohorts/create/${courseId}`)}>
               <FaPlus size={14} /> Add Cohort
             </button>
@@ -233,7 +270,7 @@ export default function CohortList() {
                   <div className="row g-4">
                     <div className="col-6">
                       <div className="detail-label">Timeline</div>
-                      <div className="small fw-bold">{selectedCohort.start_date} - {selectedCohort.end_date}</div>
+                      <div className="small fw-bold">{formatDate(selectedCohort.start_date)} – {formatDate(selectedCohort.end_date)}</div>
                     </div>
                     <div className="col-6">
                       <div className="detail-label">Investment</div>
@@ -241,7 +278,7 @@ export default function CohortList() {
                     </div>
                     <div className="col-6">
                       <div className="detail-label">Enrollment</div>
-                      <div className="small fw-bold">{selectedCohort.enrolled_students} / {selectedCohort.capacity} Students</div>
+                      <div className="small fw-bold">{selectedCohort.seats_taken} / {selectedCohort.capacity} Students</div>
                     </div>
                     <div className="col-6">
                       <div className="detail-label">Venue</div>
