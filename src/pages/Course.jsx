@@ -27,6 +27,50 @@ const fileNameOf = (path, fallback) => {
   }
 };
 
+/** How much description is worth showing before asking the reader to expand. */
+const CLAMP_CHARS = 420;
+
+/**
+ * Long descriptions used to stretch the page for screens. Keep the block short
+ * and offer a "Read more" toggle — only when the text is actually long enough
+ * to be clipped, so short descriptions never get a pointless button.
+ */
+function ExpandableText({ text, lines = 6, className = "" }) {
+  const [expanded, setExpanded] = useState(false);
+  const content = String(text || "").trim();
+
+  if (content.length <= CLAMP_CHARS) {
+    return <div className={className}>{content}</div>;
+  }
+
+  return (
+    <div className="th-expandable">
+      <div
+        id="course-description-body"
+        className={`th-expandable__body ${className} ${
+          expanded ? "is-expanded" : "is-clamped"
+        }`}
+        style={expanded ? undefined : { WebkitLineClamp: lines }}
+      >
+        {content}
+      </div>
+      <button
+        type="button"
+        className="th-expandable__toggle"
+        aria-expanded={expanded}
+        aria-controls="course-description-body"
+        onClick={() => setExpanded((value) => !value)}
+      >
+        {expanded ? "Show less" : "Read more"}
+        <i
+          className={`bi ${expanded ? "bi-chevron-up" : "bi-chevron-down"}`}
+          aria-hidden="true"
+        ></i>
+      </button>
+    </div>
+  );
+}
+
 export default function Course() {
   const { courseId, cohortId } = useParams();
   const [course, setCourse] = useState(null);
@@ -176,6 +220,7 @@ export default function Course() {
 
   const cohort = selectedCohort;
   const canEnrol = Boolean(cohort) && availability.open;
+  const checkoutHref = cohort?.id ? `/checkout/${course.id}/${cohort.id}` : null;
   const priceLabel =
     cohort && Number(cohort.price) > 0
       ? `TZS ${Number(cohort.price).toLocaleString()}`
@@ -184,19 +229,18 @@ export default function Course() {
         : "Fee on request";
 
   const enrolled = Boolean(course.is_enrolled);
+  // Module contents (notes, videos, links, handouts) stay locked until the
+  // enrolment is confirmed, i.e. until the learner has paid.
+  const hasCourseAccess = enrolled;
 
-  const enrolButton = (className) => {
-    if (enrolled) {
-      return (
-        <Link to={`/learning/${course.id}`} className={className}>
-          Continue learning
-          <i className="bi bi-arrow-right" aria-hidden="true"></i>
-        </Link>
-      );
-    }
-
-    return canEnrol ? (
-      <Link to={`/checkout/${course.id}/${cohort.id}`} className={className}>
+  /**
+   * The primary call to action always leads to checkout. It used to swap to
+   * "Continue learning" whenever the API reported `is_enrolled`, which sent
+   * people to the (long) My learning page instead of the payment page.
+   */
+  const enrolButton = (className) =>
+    canEnrol && checkoutHref ? (
+      <Link to={checkoutHref} className={className}>
         Enrol now
         <i className="bi bi-arrow-right" aria-hidden="true"></i>
       </Link>
@@ -205,7 +249,15 @@ export default function Course() {
         {cohort ? availability.label : "Cohort dates coming soon"}
       </button>
     );
-  };
+
+  /** Secondary door into the classroom for learners who already have access. */
+  const continueButton = (className) =>
+    enrolled ? (
+      <Link to={`/learning/${course.id}`} className={className}>
+        <i className="bi bi-play-circle" aria-hidden="true"></i>
+        Continue learning
+      </Link>
+    ) : null;
 
   return (
     <>
@@ -270,6 +322,7 @@ export default function Course() {
 
                 <div className="d-flex flex-wrap gap-2">
                   {enrolButton("btn btn-primary btn-lg")}
+                  {continueButton("btn btn-outline-dark btn-lg")}
                   <Link to="/trainings" className="btn btn-outline-dark btn-lg">
                     Compare trainings
                   </Link>
@@ -313,7 +366,51 @@ export default function Course() {
                   Course content
                 </h2>
 
-                {sessionCount > 0 ? (
+                {sessionCount > 0 && !hasCourseAccess && (
+                  <>
+                    <p className="text-muted small mb-3">
+                      {sessionCount} {lessonLabel} · module titles are visible, contents unlock
+                      after payment
+                    </p>
+
+                    <ol className="th-module-preview">
+                      {sessions.map((session, index) => (
+                        <li className="th-module-preview__item" key={session.id ?? index}>
+                          <span className="th-module-preview__index" aria-hidden="true">
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <span className="th-module-preview__title">{session.title}</span>
+                          <span className="th-module-preview__lock">
+                            <i className="bi bi-lock-fill" aria-hidden="true"></i>
+                            Locked
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+
+                    <div className="th-locked-note" role="note">
+                      <span className="th-locked-note__icon" aria-hidden="true">
+                        <i className="bi bi-shield-lock"></i>
+                      </span>
+                      <div className="th-locked-note__body">
+                        <p className="th-locked-note__title">
+                          Module contents unlock after payment
+                        </p>
+                        <p className="th-locked-note__text">
+                          Session descriptions, videos, resources and handouts appear in your
+                          classroom as soon as your enrolment is confirmed. You can see every
+                          module title above.
+                        </p>
+                        <div className="d-flex flex-wrap gap-2">
+                          {enrolButton("btn btn-primary btn-sm")}
+                          {continueButton("btn btn-outline-dark btn-sm")}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {sessionCount > 0 && hasCourseAccess && (
                   <>
                     <p className="text-muted small mb-3">
                       {sessionCount} {lessonLabel} · covered across the cohort
@@ -437,7 +534,9 @@ export default function Course() {
                       })}
                     </div>
                   </>
-                ) : (
+                )}
+
+                {sessionCount === 0 && (
                   <p className="text-muted mb-0">Curriculum coming soon.</p>
                 )}
               </section>
@@ -498,7 +597,7 @@ export default function Course() {
                     <i className="bi bi-file-text" aria-hidden="true"></i>
                     Detailed course description
                   </h2>
-                  <div className="th-prose">{course.long_description}</div>
+                  <ExpandableText text={course.long_description} className="th-prose" />
                 </section>
               )}
             </div>
@@ -549,7 +648,10 @@ export default function Course() {
                   )}
                 </ul>
 
-                {enrolButton("btn btn-primary w-100 mt-4")}
+                <div className="d-flex flex-column gap-2 mt-4">
+                  {enrolButton("btn btn-primary w-100")}
+                  {continueButton("btn btn-outline-dark w-100")}
+                </div>
 
                 <p className="th-enroll-panel__note">
                   Secure checkout · Instant invoice · Verified certificate
