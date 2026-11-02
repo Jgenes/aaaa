@@ -1,4 +1,11 @@
 import axios from "axios";
+import {
+  clearSession,
+  isAuthPage,
+  loginPathFor,
+  rememberReturnTo,
+  requiresSession,
+} from "../lib/session";
 
 // Override with VITE_API_BASE_URL when pointing the app at a local/staging API.
 const baseURL =
@@ -30,9 +37,16 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("USER_INFO");
-      window.location.href = "/login";
+      clearSession();
+
+      // Send the visitor back to the exact page they were working on once
+      // they sign in again — but never bounce them in circles on an auth page.
+      const { pathname = "", search = "" } = window.location;
+      if (!isAuthPage(pathname) && requiresSession(pathname)) {
+        const target = `${pathname}${search}`;
+        rememberReturnTo(target);
+        window.location.replace(loginPathFor(target));
+      }
     }
     return Promise.reject(error);
   },

@@ -43,11 +43,19 @@ import ProviderReview from "./pages/provider/ProviderReview.jsx";
 import AllEnrollments from "./pages/provider/AllEnrollments.jsx";
 import AllCohort from "./pages/provider/AllCohort.jsx";
 import About from "./pages/About.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import ChatWidget from "./components/ChatWidget";
+import ScrollToTop from "./components/ScrollToTop";
+import SkipLink from "./components/SkipLink";
+import OverlayGuard from "./components/OverlayGuard";
+import { RequireAdmin, RequireLearner, RequireProvider } from "./components/RequireAuth";
 
 function App() {
   return (
     <Router>
+      <SkipLink />
+      <OverlayGuard />
+      <ScrollToTop />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
@@ -58,55 +66,69 @@ function App() {
         <Route path="/otp-verification" element={<OtpVerification />} />
         <Route path="/activate-account" element={<ActivateAccount />} />
         <Route path="/tenant-register" element={<RegisterTenant />} />
-        <Route path="/tenant/onboarding" element={<Onboarding />} />
+        <Route
+          path="/tenant/onboarding"
+          element={<RequireProvider><Onboarding /></RequireProvider>}
+        />
         <Route path="/trainings" element={<Training />} />
         <Route path="/course/:courseId" element={<Course />} />
         <Route path="/course/:courseId/cohort/:cohortId" element={<Course />} />
-        <Route path="/checkout/:courseId/:cohortId" element={<TrainingHubCheckout />} />
         <Route path="/pesapal-gateway" element={<PesaPalGateway />} />
         <Route path="/contact" element={<About />} />
 
-        {/* Student/User Routes */}
-        <Route path="/learning" element={<Learning />} />
-        <Route path="/learning/:courseId" element={<CourseLearning />} />
-        <Route path="/transactions" element={<Transactions />} />
+        {/* Student/User Routes — any signed-in account */}
+        <Route path="/learning" element={<RequireLearner><Learning /></RequireLearner>} />
+        <Route
+          path="/learning/:courseId"
+          element={<RequireLearner><CourseLearning /></RequireLearner>}
+        />
+        <Route
+          path="/transactions"
+          element={<RequireLearner><Transactions /></RequireLearner>}
+        />
+        <Route
+          path="/checkout/:courseId/:cohortId"
+          element={<RequireLearner><TrainingHubCheckout /></RequireLearner>}
+        />
 
         {/* Provider Routes */}
-        <Route path="/provider/dashboard" element={<ProviderDashboard />} />
-        <Route path="/provider/profile" element={<ProviderProfile />} />
-        <Route path="/provider/settings" element={<ProviderSettings />} />
-        <Route path="/provider/verification" element={<ProviderVerification />} />
+        <Route path="/provider/dashboard" element={<RequireProvider><ProviderDashboard /></RequireProvider>} />
+        <Route path="/provider/profile" element={<RequireProvider><ProviderProfile /></RequireProvider>} />
+        <Route path="/provider/settings" element={<RequireProvider><ProviderSettings /></RequireProvider>} />
+        <Route path="/provider/verification" element={<RequireProvider><ProviderVerification /></RequireProvider>} />
         
         {/* Provider Course Management */}
-        <Route path="/provider/course" element={<ProviderCourse />} />
-        <Route path="/provider/createCourse" element={<CreateCourse />} />
-        <Route path="/provider/editCourse/:id" element={<EditCourse />} />
-        <Route path="/provider/viewCourse/:id" element={<ProviderCourseView />} />
-        <Route path="/provider/courses/:courseId/manage" element={<ManageCourseExtras />} />
+        <Route path="/provider/course" element={<RequireProvider><ProviderCourse /></RequireProvider>} />
+        <Route path="/provider/createCourse" element={<RequireProvider><CreateCourse /></RequireProvider>} />
+        <Route path="/provider/editCourse/:id" element={<RequireProvider><EditCourse /></RequireProvider>} />
+        <Route path="/provider/viewCourse/:id" element={<RequireProvider><ProviderCourseView /></RequireProvider>} />
+        <Route path="/provider/courses/:courseId/manage" element={<RequireProvider><ManageCourseExtras /></RequireProvider>} />
         
         {/* Provider Cohort Management */}
-        <Route path="/provider/cohorts" element={<ProviderCohorts />} />
-        <Route path="/provider/cohorts/:courseId" element={<CohortList />} />
-        <Route path="/provider/cohorts/create/:courseId" element={<CreateCohort />} />
-        <Route path="/provider/cohorts/:courseId/:cohortId/edit" element={<EditCohort />} />
+        <Route path="/provider/cohorts" element={<RequireProvider><ProviderCohorts /></RequireProvider>} />
+        <Route path="/provider/cohorts/:courseId" element={<RequireProvider><CohortList /></RequireProvider>} />
+        <Route path="/provider/cohorts/create/:courseId" element={<RequireProvider><CreateCohort /></RequireProvider>} />
+        <Route path="/provider/cohorts/:courseId/:cohortId/edit" element={<RequireProvider><EditCohort /></RequireProvider>} />
         
         {/* Provider Reports & Engagement */}
-        <Route path="/provider/enrollments" element={<Penrollments />} />
-        <Route path="/provider/course/:courseId/enrollments" element={<Penrollments />} />
-        <Route path="/provider/invoices" element={<ProviderInvoices />} />
-        <Route path="/provider/reports" element={<ProviderReports />} />
-        <Route path="/provider/social-engagement" element={<SocialEngagement />} />
-        <Route path="/provider/review" element={<ProviderReview />} />
-        <Route path="/provider/all-enrollments" element={<AllEnrollments />} />
-        <Route path="/provider/all-cohorts" element={<AllCohort />} />
+        <Route path="/provider/enrollments" element={<RequireProvider><Penrollments /></RequireProvider>} />
+        <Route path="/provider/course/:courseId/enrollments" element={<RequireProvider><Penrollments /></RequireProvider>} />
+        <Route path="/provider/invoices" element={<RequireProvider><ProviderInvoices /></RequireProvider>} />
+        <Route path="/provider/reports" element={<RequireProvider><ProviderReports /></RequireProvider>} />
+        <Route path="/provider/social-engagement" element={<RequireProvider><SocialEngagement /></RequireProvider>} />
+        <Route path="/provider/review" element={<RequireProvider><ProviderReview /></RequireProvider>} />
+        <Route path="/provider/all-enrollments" element={<RequireProvider><AllEnrollments /></RequireProvider>} />
+        <Route path="/provider/all-cohorts" element={<RequireProvider><AllCohort /></RequireProvider>} />
 
         {/* Admin Routes */}
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/providers" element={<AdminProviderReview />} />
-        <Route path="/admin/courses" element={<AdminCourses />} />
-        <Route path="/admin/transactions" element={<AdminTransactions />} />
-        <Route path="/admin/reports" element={<AdminReports />} />
-        
+        <Route path="/admin/dashboard" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+        <Route path="/admin/providers" element={<RequireAdmin><AdminProviderReview /></RequireAdmin>} />
+        <Route path="/admin/courses" element={<RequireAdmin><AdminCourses /></RequireAdmin>} />
+        <Route path="/admin/transactions" element={<RequireAdmin><AdminTransactions /></RequireAdmin>} />
+        <Route path="/admin/reports" element={<RequireAdmin><AdminReports /></RequireAdmin>} />
+
+        {/* Anything else */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       <ChatWidget />

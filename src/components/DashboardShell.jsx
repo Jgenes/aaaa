@@ -145,7 +145,7 @@ export default function DashboardShell({
           </div>
         </header>
 
-        <main className="th-app__content" id="main-content">
+        <main tabIndex={-1} className="th-app__content" id="main-content">
           {subtitle && (
             <div className="th-content-head">
               <div>

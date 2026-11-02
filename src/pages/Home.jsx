@@ -89,7 +89,7 @@ export default function Home() {
     <>
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         {/* ---------------------------------------------------------- Hero */}
         <section className="hero" aria-labelledby="hero-title">
           <div className="th-container-wide hero__grid">

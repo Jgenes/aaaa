@@ -55,7 +55,7 @@ export default function About() {
     <>
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         <section className="th-page-hero">
           <div className="th-container-wide">
             <nav aria-label="Breadcrumb">

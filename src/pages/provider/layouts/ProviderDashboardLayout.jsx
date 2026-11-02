@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import DashboardShell from "../../../components/DashboardShell";
+import {
+  clearSession,
+  isAuthenticated,
+  loginPathFor,
+  readUser,
+} from "../../../lib/session";
 
 const SECTIONS = [
   {
@@ -30,28 +37,29 @@ const SECTIONS = [
 
 export default function ProviderDashboardLayout({ title, subtitle, children }) {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+    // Drafts and the "where you left off" marker live on, so signing back in
+    // resumes the same screen instead of dumping the user on a generic home.
+    const target = `${location.pathname}${location.search}`;
+    clearSession();
+    navigate(loginPathFor(target), { replace: true });
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
+    const sessionUser = readUser();
 
-    if (!token || !savedUser) {
-      window.location.href = "/login";
+    if (!isAuthenticated() || !sessionUser) {
+      clearSession();
+      // Remember the page so signing back in returns here, not to a generic home.
+      navigate(loginPathFor(`${location.pathname}${location.search}`), { replace: true });
       return;
     }
 
-    try {
-      setUser(JSON.parse(savedUser));
-    } catch (error) {
-      console.error("Imeshindwa kusoma data za user", error);
-      logout();
-    }
+    setUser(sessionUser);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

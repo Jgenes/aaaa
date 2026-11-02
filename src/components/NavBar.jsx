@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import LOGO from "../assets/trainhub-tz-logo.png";
 import NotificationBar from "./NotificationBar";
+import { clearSession, loginPathFor } from "../lib/session";
 
 const NAV_LINKS = [
   { to: "/", label: "Explore", match: (p) => p === "/" },
@@ -39,9 +40,10 @@ export default function NavBar() {
   const canAccessDashboard = user.role === "admin" || user.role === "provider";
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-    window.location.reload();
+    // Keep form drafts and the "where you left off" marker: only the session
+    // is dropped so signing back in resumes the same screen.
+    clearSession();
+    navigate(loginPathFor(`${location.pathname}${location.search}`), { replace: true });
   };
 
   const handleSearch = (event) => {

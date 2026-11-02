@@ -43,7 +43,7 @@ export default function ActivateAccount() {
     <>
       <NavBar />
 
-      <main id="main-content" className="th-container-wide th-section">
+      <main tabIndex={-1} id="main-content" className="th-container-wide th-section">
         <div className="th-auth__card mx-auto text-center" style={{ maxWidth: 520 }}>
           {state === "loading" && (
             <>

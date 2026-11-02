@@ -114,7 +114,7 @@ export default function Course() {
     return (
       <>
         <NavBar />
-        <main id="main-content" className="th-container-wide th-section">
+        <main tabIndex={-1} id="main-content" className="th-container-wide th-section">
           <h1 className="visually-hidden">Loading training details</h1>
           <div className="row g-4" aria-hidden="true">
             <div className="col-lg-8">
@@ -139,7 +139,7 @@ export default function Course() {
     return (
       <>
         <NavBar />
-        <main id="main-content" className="th-container-wide th-section">
+        <main tabIndex={-1} id="main-content" className="th-container-wide th-section">
           <div className="th-empty">
             <span className="th-empty__icon">
               <i className="bi bi-exclamation-triangle" aria-hidden="true"></i>
@@ -170,7 +170,7 @@ export default function Course() {
     <>
       <NavBar />
 
-      <main id="main-content">
+      <main tabIndex={-1} id="main-content">
         <section className="th-course-hero">
           <div className="th-container-wide">
             <nav aria-label="Breadcrumb">
