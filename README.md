@@ -160,6 +160,36 @@ availability, `contents` → curriculum sessions (including the legacy nested
 shape), `{ data: … }` envelopes, and the classroom's `completed` / `links`
 aliases. It runs in under a second and needs no API.
 
+## Catalogue failure states
+
+An empty catalogue is never silent. `fetchCourses()` classifies what happened
+and `/trainings`, `/course/:id` and the home page render the same
+`CatalogueDiagnostics` panel underneath the empty state:
+
+| state | meaning | what to fix |
+| --- | --- | --- |
+| `error` (401/403) | the API answered but refused the catalogue routes | backend auth middleware / route cache |
+| `error` (404) | route missing on the deployed API | redeploy the backend, `php artisan route:clear` |
+| `error` (no response) | network or CORS | backend host, DNS, CORS allow-list |
+| `error` (HTML) | a 200 page, not JSON | `VITE_API_BASE_URL` / proxy |
+| `empty` | API answered `[]` | nothing published yet |
+| `unrecognised payload (object with keys: …)` | unknown envelope | extend `extractList` |
+| `hidden` | records exist but every one is closed/suspended/archived | publish from admin courses |
+
+The panel also probes `GET /cors-check` when nothing answers, so "the API is
+down" is visibly different from "the catalogue route refused us", prints the
+build timestamp (`__BUILD_TIME__`, injected by `vite.config.js`) so a stale
+bundle is obvious, and exposes the same payload as
+`window.__trainhubCatalogue`. `console.warn("[catalogue]", summary)` prints a
+one-line, copy-pasteable trace.
+
+Public endpoints (`/public-courses`, `/training`, `/public-reviews`,
+`/top-providers`, `/cors-check`, …) never clear the session on 401 — only
+authenticated requests do, so a broken public route cannot log a visitor out.
+
+`npm run test:fetch` replays every one of those states against a stubbed axios
+instance and asserts the classification.
+
 ## Route smoke test
 
 `npm run test:ui` builds the production bundle, re-wraps it as an IIFE and
@@ -169,7 +199,9 @@ error. Network calls are stubbed to fail fast, so the test is hermetic.
 
 Run `AUDIT=1 npm run test:ui` for a structural report per route: heading
 count, missing `alt` text, unnamed controls, duplicate ids, unlabelled form
-fields and inline-style count.
+fields and inline-style count. `TEXT_ROUTE=/trainings npm run test:ui` prints
+the rendered text of one route, which is the quickest way to inspect an
+empty/error state without a browser.
 
 Chart screens are excluded from chart-rendering assertions because jsdom has no
 `<canvas>` implementation — everything else is asserted.
