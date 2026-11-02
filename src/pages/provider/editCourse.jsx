@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { mediaUrl } from "../../lib/media";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { FaArrowLeft, FaSave, FaImage, FaInfoCircle, FaListUl } from "react-icons/fa";
@@ -47,7 +48,7 @@ export default function EditCourse() {
         });
 
         if (data.banner) {
-          setPreviewImage(`http://localhost:8000/${data.banner}`);
+          setPreviewImage(mediaUrl(data.banner));
         }
       } catch (err) {
         toast.error("Failed to load course data");

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { mediaUrl } from "../../lib/media";
 import api from '../../api/axio';
 import ProviderDashboardLayout from "./layouts/AdminDashboardLayout";
 import DataTable from 'react-data-table-component';
@@ -197,7 +198,7 @@ export default function AdminCourses() {
                             {selectedCourse?.banner && (
                                 <div className="mb-3">
                                     <img
-                                        src={`http://localhost:8000/${selectedCourse.banner}`}
+                                        src={mediaUrl(selectedCourse.banner)}
                                         alt="Course Banner"
                                         className="img-fluid rounded shadow-sm w-100"
                                         style={{ maxHeight: "300px", objectFit: "cover" }}

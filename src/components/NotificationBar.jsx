@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../api/axio";
+import { fetchCourses } from "../api/catalogue";
 
 /**
  * Site-wide announcement strip.
@@ -148,9 +148,8 @@ export default function NotificationBar() {
     let active = true;
     const load = async () => {
       try {
-        const res = await api.get("/public-courses");
-        const raw = res.data?.data || (Array.isArray(res.data) ? res.data : []);
-        const next = buildNotifications(Array.isArray(raw) ? raw : []);
+        const { courses } = await fetchCourses();
+        const next = buildNotifications(courses);
         writeCache(next);
         if (active) setItems(next);
       } catch {

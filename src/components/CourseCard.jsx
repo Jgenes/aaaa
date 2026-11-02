@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import Banner1 from "../assets/ict-pic (1).jpg";
-
-const MEDIA_BASE = "http://localhost:8000";
+import MediaImage from "./MediaImage";
 
 const formatDate = (value) => {
   if (!value) return null;
@@ -21,10 +20,8 @@ const formatDate = (value) => {
  */
 export default function CourseCard({ course, className = "" }) {
   const cohort = course.mainCohort || course.cohorts?.find((c) => c.status?.toUpperCase() === "OPEN");
-  const isEnrolled = Boolean(course.isEnrolled);
-  const image = course.banner
-    ? `${MEDIA_BASE}/${course.banner}`
-    : course.image || Banner1;
+  const isEnrolled = Boolean(course.isEnrolled ?? course.is_enrolled);
+  const bannerPath = course.banner || course.image || null;
 
   const remainingSeats =
     cohort?.remaining_seats !== undefined
@@ -62,14 +59,7 @@ export default function CourseCard({ course, className = "" }) {
   return (
     <article className={`course-card ${className}`}>
       <div className="course-card__media">
-        <img
-          src={image}
-          alt=""
-          loading="lazy"
-          onError={(event) => {
-            event.currentTarget.src = Banner1;
-          }}
-        />
+        <MediaImage path={bannerPath} fallback={Banner1} alt="" />
         {course.category && <span className="course-card__tag">{course.category}</span>}
         {isEnrolled && (
           <span className="course-card__tag course-card__tag--muted" style={{ left: "auto", right: "0.6rem" }}>
@@ -88,7 +78,7 @@ export default function CourseCard({ course, className = "" }) {
         <div className="course-card__provider">
           <span className="th-avatar" aria-hidden="true">
             {course.provider?.logo ? (
-              <img src={`${MEDIA_BASE}/storage/uploads/${course.provider.logo}`} alt="" />
+              <MediaImage path={course.provider.logo} alt="" fallback={null} />
             ) : (
               providerName.charAt(0)
             )}
