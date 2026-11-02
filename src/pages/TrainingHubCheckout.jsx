@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import api from "../api/axio";
+import { normaliseCohort } from "../api/catalogue";
 
 const TZ_DATA = {
   Arusha: ["Arusha City", "Arumeru", "Karatu", "Monduli", "Ngorongoro"],
@@ -61,14 +62,16 @@ export default function TrainingHubCheckout() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const cohortData = cohortRes.data.data || cohortRes.data;
+        // GET /courses/:courseId/cohorts/:cohortId → cohort + its course.
+        const raw = cohortRes.data?.data || cohortRes.data;
+        const cohortData = normaliseCohort(raw);
         setCohort(cohortData);
-        setCourse(cohortData.course || null);
+        setCourse(raw?.course || null);
 
         const userRes = await api.get("/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const user = userRes.data;
+        const user = userRes.data?.data || userRes.data || {};
         setUserInfo((prev) => ({
           ...prev,
           name: user.name || "",
@@ -111,10 +114,17 @@ export default function TrainingHubCheckout() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      const amount = Number(cohort?.price || 0);
+      if (!amount || amount < 1) {
+        toast.error("This cohort has no fee set yet. Please contact the provider.");
+        setIsVerifying(false);
+        return;
+      }
+
       const paymentData = {
         course_id: courseId,
         cohort_id: cohortId,
-        amount: cohort?.price,
+        amount,
         name: userInfo.name,
         email: userInfo.email,
         phone: userInfo.phone,
@@ -166,7 +176,7 @@ export default function TrainingHubCheckout() {
     );
   }
 
-  const price = cohort?.price?.toLocaleString() ?? "—";
+  const price = Number(cohort?.price || 0).toLocaleString("en-TZ");
 
   return (
     <>

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaCheckCircle, FaGraduationCap, FaLayerGroup, FaPlayCircle, FaFilePdf, FaTag, FaInfoCircle } from "react-icons/fa";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import api from "../../api/axio";
+import { normaliseCourse } from "../../api/catalogue";
 
 export default function ViewCourse() {
   const { id } = useParams();
@@ -15,7 +16,7 @@ export default function ViewCourse() {
     const fetchCourse = async () => {
       try {
         const response = await api.get(`/courses/${id}`);
-        setCourse(response.data);
+        setCourse(normaliseCourse(response.data));
       } catch (error) {
         console.error("Error fetching course details:", error);
       } finally {
@@ -64,8 +65,14 @@ export default function ViewCourse() {
               <span className="badge bg-primary-subtle text-primary mb-2 px-3 py-2">{course.category}</span>
               <h2 className="fw-bold" style={{ color: "var(--th-primary)" }}>{course.title}</h2>
             </div>
-            <span className={`status-pill ${course.status === "Published" ? "bg-success text-white" : "bg-warning text-dark"}`}>
-              {course.status}
+            <span
+              className={`status-pill ${
+                String(course.status).toUpperCase() === "PUBLISHED"
+                  ? "bg-success text-white"
+                  : "bg-warning text-dark"
+              }`}
+            >
+              {course.status || "Draft"}
             </span>
           </div>
           
@@ -76,12 +83,14 @@ export default function ViewCourse() {
 
           <div className="mb-4">
             <h6 className="fw-bold text-dark">Brief Overview</h6>
-            <p className="text-secondary">{course.short_description}</p>
+            <p className="text-secondary">{course.short_description || "No summary yet."}</p>
           </div>
 
           <div className="p-3 rounded bg-light border-start border-4 border-primary">
             <h6 className="fw-bold text-dark">Full Description</h6>
-            <p className="text-secondary mb-0 small" style={{ lineHeight: "1.6" }}>{course.long_description}</p>
+            <p className="text-secondary mb-0 small" style={{ lineHeight: "1.6" }}>
+              {course.long_description || "No detailed description yet."}
+            </p>
           </div>
         </div>
 
@@ -117,20 +126,32 @@ export default function ViewCourse() {
           <div className="col-lg-7">
             <div className="info-card shadow-sm">
               <div className="section-header"><FaInfoCircle /> Curriculum</div>
-              {course.contents?.length > 0 ? (
-                course.contents.map((content, idx) => (
-                  <div key={idx} className="lesson-card p-4 mb-3">
+              {course.curriculum?.length > 0 ? (
+                course.curriculum.map((content, idx) => (
+                  <div key={content.id ?? idx} className="lesson-card p-4 mb-3">
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <h6 className="fw-bold mb-0" style={{ color: "var(--th-primary)" }}>
                         Lesson {idx + 1}: {content.title}
                       </h6>
+                      {content.video && (
+                        <a
+                          href={mediaUrl(content.video)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn btn-sm btn-outline-dark"
+                        >
+                          <FaPlayCircle className="me-1" /> Main video
+                        </a>
+                      )}
                     </div>
-                    
-                    <p className="text-muted small mb-3">{content.description}</p>
 
-                    {content.notes_text && (
+                    {content.description && (
+                      <p className="text-muted small mb-3">{content.description}</p>
+                    )}
+
+                    {content.notes && (
                       <div className="bg-light p-2 rounded mb-3 small border">
-                        <strong>Teacher's Note:</strong> {content.notes_text}
+                        <strong>Teacher&apos;s note:</strong> {content.notes}
                       </div>
                     )}
 

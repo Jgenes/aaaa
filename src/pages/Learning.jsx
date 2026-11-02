@@ -1,20 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../api/axio";
+import { attachProgress, fetchMyLearning } from "../api/learning";
+import { mediaUrl } from "../lib/media";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 
 const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360'%3E%3Crect fill='%23efece4' width='640' height='360'/%3E%3Cpath d='M320 140l46 26v52l-46 26-46-26v-52z' fill='none' stroke='%23cdc7bb' stroke-width='6'/%3E%3Ctext x='50%25' y='63%25' fill='%23596274' text-anchor='middle' font-family='Inter, sans-serif' font-size='15'%3ENo preview available%3C/text%3E%3C/svg%3E";
 
-const API_ORIGIN = (api.defaults.baseURL || "").replace(/\/api\/?$/, "");
-
-/** Absolute banner URLs pass through; stored paths are joined to the API origin. */
-function resolveAsset(path) {
-  if (!path) return PLACEHOLDER;
-  if (/^(https?:)?\/\//i.test(path) || path.startsWith("data:")) return path;
-  return `${API_ORIGIN}/${String(path).replace(/^\/+/, "")}`;
-}
+/** Stored banner paths are resolved (and fall back) by the media helper. */
+const resolveAsset = (path) => mediaUrl(path) || PLACEHOLDER;
 
 const TABS = [
   { id: "all", label: "All courses" },
@@ -42,18 +37,17 @@ function statusOf(progress) {
 }
 
 function toCourse(item, index) {
-  const course = item?.course || {};
   const progress = Math.min(100, Math.max(0, Math.round(Number(item?.progress) || 0)));
-  const totalLessons = Number(item?.total_lessons ?? course.lessons_count) || 0;
-  const completedLessons = Number(item?.completed_lessons) || 0;
+  const totalLessons = Number(item?.totalLessons) || 0;
+  const completedLessons = Number(item?.completedLessons) || 0;
 
   return {
-    id: course.id ?? item?.course_id ?? index,
-    title: course.title || "Untitled course",
-    providerName: course.provider?.name || "Verified provider",
+    id: item?.courseId ?? index,
+    title: item?.title || "Untitled course",
+    providerName: item?.providerName || "Verified provider",
     progress,
-    image: resolveAsset(course.banner),
-    cohort: item?.cohort?.name || course?.cohort?.name || "",
+    image: resolveAsset(item?.banner),
+    cohort: item?.cohortName || "",
     totalLessons,
     completedLessons: Math.min(completedLessons, totalLessons || completedLessons),
     state: statusOf(progress),
@@ -105,10 +99,11 @@ export default function Learning() {
   const loadCourses = useCallback(async () => {
     setStatus("loading");
     try {
-      const response = await api.get("/my-learning");
-      const payload = Array.isArray(response.data) ? response.data : response.data?.data;
-      const list = Array.isArray(payload) ? payload : [];
-      setCourses(list.map(toCourse));
+      // GET /my-learning returns the learner's paid enrolments (payments with
+      // their course + cohort). Progress is fetched per course afterwards.
+      const enrolments = await fetchMyLearning();
+      const withProgress = await attachProgress(enrolments);
+      setCourses(withProgress.map(toCourse));
       setStatus("ready");
     } catch (error) {
       console.error("Error fetching learning data:", error);

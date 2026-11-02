@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../../api/axio";
+import { formatDate } from "../../api/catalogue";
 import ProviderDashboardLayout from "./layouts/ProviderDashboardLayout";
 import DataTable from "react-data-table-component";
 
@@ -18,12 +19,6 @@ export default function ProviderCohorts() {
     setLoading(true);
     try {
       const res = await api.get("/provider/all-cohorts");
-      // --- DEBUG SECTION ---
-      console.log("1. Raw Cohorts from API:", res.data);
-      if(res.data.cohorts && res.data.cohorts.length > 0) {
-         console.log("2. Sample Cohort Keys:", Object.keys(res.data.cohorts[0]));
-      }
-      // ---------------------
       const data = res.data?.cohorts || [];
       setCohorts(data);
       setFilteredCohorts(data);
@@ -35,12 +30,10 @@ export default function ProviderCohorts() {
   };
 
   const viewStudents = async (cohort) => {
-    console.log("3. Viewing Students for Cohort ID:", cohort.id);
     setSelectedCohort(cohort);
     setFetchingStudents(true);
     try {
       const res = await api.get(`/provider/cohort-students/${cohort.id}`);
-      console.log("4. Students List for Cohort 5:", res.data.students);
       setStudents(res.data?.students || []);
     } catch (err) { 
       console.error("Student API Error:", err); 
@@ -74,7 +67,12 @@ export default function ProviderCohorts() {
       selector: row => row.course_title || row.course?.title || row.title || "N/A", 
       sortable: true 
     },
-    { name: "Start Date", selector: row => row.start_date, sortable: true },
+        {
+      name: "Start Date",
+      selector: row => row.start_date,
+      sortable: true,
+      cell: row => formatDate(row.start_date),
+    },
     { 
       name: "Seats", 
       cell: row => <span>{row.seats_taken || 0} / {row.capacity}</span> 

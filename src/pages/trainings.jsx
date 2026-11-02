@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseCard from "../components/CourseCard";
-import { fetchCourses } from "../api/catalogue";
+import { cohortAvailability, fetchCourses, primaryCohort } from "../api/catalogue";
 
 export default function Training() {
   const [searchParams] = useSearchParams();
@@ -44,34 +44,18 @@ export default function Training() {
 
   const courseList = useMemo(() => {
     return courses.map((course) => {
-      const openCohort = course.cohorts?.find(
-        (cohort) => String(cohort.status || "").toUpperCase() === "OPEN"
-      );
-      const activeCohort = openCohort || course.cohorts?.[0] || null;
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const deadline = activeCohort ? new Date(activeCohort.registration_deadline) : null;
-      const isPastDeadline = deadline ? deadline < today : false;
-
-      const remaining =
-        activeCohort?.remaining_seats !== undefined
-          ? Number(activeCohort.remaining_seats)
-          : activeCohort
-            ? Number(activeCohort.capacity || 0) - Number(activeCohort.seats_taken || 0)
-            : null;
-
-      const isFull = remaining !== null && remaining <= 0;
+      // The shared normaliser already reconciled cohorts from both
+      // /public-courses and /training (seats, price, status, deadline).
+      const activeCohort = primaryCohort(course.cohorts);
+      const availability = cohortAvailability(activeCohort);
 
       return {
         ...course,
         mainCohort: activeCohort,
         isEnrolled: course.is_enrolled || false,
-        enrollmentOpen:
-          Boolean(openCohort) && !isPastDeadline && !isFull,
-        isFull,
-        isPastDeadline,
+        enrollmentOpen: availability.open,
+        isFull: availability.isFull,
+        isPastDeadline: availability.deadlinePassed,
       };
     });
   }, [courses]);
@@ -85,7 +69,11 @@ export default function Training() {
       const trainerMatch = filters.trainer
         ? course.provider?.name === filters.trainer
         : true;
-      const dateMatch = filters.date ? course.mainCohort?.start_date === filters.date : true;
+      // `start_date` arrives as an ISO timestamp; compare the calendar day.
+      const startDay = course.mainCohort?.start_date
+        ? String(course.mainCohort.start_date).slice(0, 10)
+        : "";
+      const dateMatch = filters.date ? startDay === filters.date : true;
 
       return nameMatch && categoryMatch && trainerMatch && dateMatch;
     });

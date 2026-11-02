@@ -6,6 +6,10 @@ function formatDuration(duration) {
   return String(duration);
 }
 
+// The API marks a finished lesson with `completed`; older payloads used
+// `is_completed`. Accept either.
+const isDone = (lesson) => Boolean(lesson?.is_completed ?? lesson?.completed);
+
 export default function CourseContentSidebar({
   modules,
   onLessonSelect,
@@ -13,7 +17,7 @@ export default function CourseContentSidebar({
   activeLessonId,
 }) {
   const lessons = Array.isArray(modules) ? modules : [];
-  const completed = lessons.filter((lesson) => lesson.is_completed).length;
+  const completed = lessons.filter(isDone).length;
   const percent = lessons.length ? Math.round((completed / lessons.length) * 100) : 0;
 
   return (
@@ -68,7 +72,7 @@ export default function CourseContentSidebar({
             const hasVideo = Boolean(lesson.video_url);
             const className = [
               "th-curriculum__item",
-              lesson.is_completed ? "is-done" : "",
+              isDone(lesson) ? "is-done" : "",
               isActive ? "is-active" : "",
             ]
               .filter(Boolean)
@@ -83,7 +87,7 @@ export default function CourseContentSidebar({
                   className={className}
                 >
                   <span className="th-curriculum__marker" aria-hidden="true">
-                    {lesson.is_completed ? (
+                    {isDone(lesson) ? (
                       <i className="bi bi-check-lg"></i>
                     ) : isActive ? (
                       <i className="bi bi-play-fill"></i>

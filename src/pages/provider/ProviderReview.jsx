@@ -11,7 +11,21 @@ export default function ProviderReview() {
         const fetchReviews = async () => {
             try {
                 const response = await api.get('/provider/reviews');
-                setData(response.data);
+                const payload = response.data || {};
+
+                // API shape: { summary, stats: [{ course_id, course_title,
+                // total_reviews, average_rating }], reviews: [{ rating, review,
+                // user, course }] }
+                setData({
+                    summary: payload.summary || {},
+                    stats: (payload.stats || []).map((stat) => ({
+                        id: stat.course_id,
+                        title: stat.course_title || 'Untitled course',
+                        avg_rating: Number(stat.average_rating || 0),
+                        total_reviews: Number(stat.total_reviews || 0),
+                    })),
+                    reviews: payload.reviews || [],
+                });
             } catch (error) {
                 console.error("Error:", error);
             } finally {
@@ -85,7 +99,7 @@ export default function ProviderReview() {
                                             </div>
                                         </div>
                                         <p style={{ marginTop: '15px', color: 'var(--th-text)', lineHeight: '1.6' }}>
-                                            "{review.comment || "The student didn't leave a written comment."}"
+                                            "{review.review || review.comment || "The student didn't leave a written comment."}"
                                         </p>
                                     </div>
                                 ))}

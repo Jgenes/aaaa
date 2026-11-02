@@ -17,14 +17,12 @@ export default function EditCohort() {
     startDate: "",
     endDate: "",
     schedule: "",
-    mode: "Online",
     venue: "",
     onlineLink: "",
     capacity: 0,
     price: 0,
     registrationDeadline: "",
-    status: "Open",
-    description: "",
+    status: "OPEN",
   });
 
   // Fetch cohort data on mount
@@ -46,14 +44,13 @@ export default function EditCohort() {
           startDate: formatDate(data.start_date),
           endDate: formatDate(data.end_date),
           schedule: data.schedule_text || "",
-          mode: data.mode || "Online",
           venue: data.venue || "",
           onlineLink: data.online_link || "",
           capacity: data.capacity || 0,
           price: data.price || 0,
           registrationDeadline: formatDate(data.registration_deadline),
-          status: data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1).toLowerCase() : "Open",
-          description: data.description || "",
+          // The API stores OPEN / FULL / CLOSED.
+          status: String(data.status || "OPEN").toUpperCase(),
         });
       } catch (err) {
         toast.error("Failed to load cohort data");
@@ -76,19 +73,19 @@ export default function EditCohort() {
     setSubmitting(true);
 
     try {
+      // Only the columns CohortController@update validates. Extra keys are
+      // silently dropped by the API, so sending them just hid the mistake.
       const payload = {
-        intake_name: cohort.intakeName,
+        intake_name: cohort.intakeName.trim(),
         start_date: cohort.startDate,
         end_date: cohort.endDate,
         schedule_text: cohort.schedule,
-        mode: cohort.mode,
         venue: cohort.venue,
         online_link: cohort.onlineLink,
-        capacity: parseInt(cohort.capacity) || 0,
-        price: parseFloat(cohort.price) || 0,
+        capacity: Math.max(1, parseInt(cohort.capacity, 10) || 0),
+        price: Math.max(0, Math.round(Number(cohort.price) || 0)),
         registration_deadline: cohort.registrationDeadline,
-        status: cohort.status.toUpperCase(),
-        description: cohort.description,
+        status: String(cohort.status || "OPEN").toUpperCase(),
       };
 
       await api.put(`/courses/${courseId}/cohorts/${cohortId}`, payload);
@@ -158,32 +155,20 @@ export default function EditCohort() {
             </div>
             <div className="row g-3 mb-3">
               <div className="col-md-6">
-                <label className="form-label" htmlFor="mode">Mode of Study</label>
-                <select id="mode" className="form-select" name="mode" value={cohort.mode} onChange={handleChange}>
-                  <option value="Online">Online</option>
-                  <option value="Physical">Physical</option>
-                  <option value="Hybrid">Hybrid</option>
-                </select>
-              </div>
-              <div className="col-md-6">
                 <label className="form-label" htmlFor="schedule">Schedule</label>
                 <input id="schedule" type="text" className="form-control" name="schedule" value={cohort.schedule} onChange={handleChange} required />
               </div>
             </div>
 
-            {cohort.mode !== "Online" && (
-              <div className="mb-3">
-                <label className="form-label" htmlFor="venue">Physical Venue</label>
-                <input id="venue" type="text" className="form-control" name="venue" value={cohort.venue} onChange={handleChange} placeholder="Room number or Building" />
-              </div>
-            )}
+            <div className="mb-3">
+              <label className="form-label" htmlFor="venue">Physical venue (optional)</label>
+              <input id="venue" type="text" className="form-control" name="venue" value={cohort.venue} onChange={handleChange} placeholder="Room number or Building" />
+            </div>
 
-            {cohort.mode !== "Physical" && (
-              <div className="mb-3">
-                <label className="form-label" htmlFor="onlineLink">Class Link (Zoom/Meet)</label>
-                <input id="onlineLink" type="url" className="form-control" name="onlineLink" value={cohort.onlineLink} onChange={handleChange} placeholder="https://..." />
-              </div>
-            )}
+            <div className="mb-3">
+              <label className="form-label" htmlFor="onlineLink">Class link (optional)</label>
+              <input id="onlineLink" type="url" className="form-control" name="onlineLink" value={cohort.onlineLink} onChange={handleChange} placeholder="https://..." />
+            </div>
           </div>
 
           {/* Section 3: Capacity & Pricing */}
@@ -206,9 +191,9 @@ export default function EditCohort() {
               <div className="col-md-4">
                 <label className="form-label" htmlFor="status">Current Status</label>
                 <select id="status" className="form-select" name="status" value={cohort.status} onChange={handleChange}>
-                  <option value="Open">Open</option>
-                  <option value="Full">Full</option>
-                  <option value="Closed">Closed</option>
+                  <option value="OPEN">Open</option>
+                  <option value="FULL">Full</option>
+                  <option value="CLOSED">Closed</option>
                 </select>
               </div>
             </div>
@@ -218,10 +203,6 @@ export default function EditCohort() {
                 <span className="input-group-text"><FaCalendarAlt /></span>
                 <input id="registrationDeadline" type="date" className="form-control" name="registrationDeadline" value={cohort.registrationDeadline} onChange={handleChange} required />
               </div>
-            </div>
-            <div className="mb-0">
-              <label className="form-label" htmlFor="description">Additional Description</label>
-              <textarea id="description" className="form-control" name="description" rows={3} value={cohort.description} onChange={handleChange}></textarea>
             </div>
           </div>
 

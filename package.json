@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:ui": "node scripts/dom-smoke.mjs"
+    "test:ui": "node scripts/dom-smoke.mjs",
+    "test:data": "node scripts/data-check.mjs"
   },
   "dependencies": {
     "axios": "^1.13.2",

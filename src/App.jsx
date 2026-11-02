@@ -29,6 +29,7 @@ import ProviderProfile from "./pages/provider/Profile.jsx";
 import ProviderSettings from "./pages/provider/Settings.jsx";
 import ProviderReports from "./pages/provider/Reports.jsx";
 import PesaPalGateway from "./pages/PesaPalGateway.jsx";
+import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import ActivateAccount from "./pages/ActivateAccount.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 
@@ -74,6 +75,8 @@ function App() {
         <Route path="/course/:courseId" element={<Course />} />
         <Route path="/course/:courseId/cohort/:cohortId" element={<Course />} />
         <Route path="/pesapal-gateway" element={<PesaPalGateway />} />
+        {/* PesaPal return URL — PaymentController::callback redirects here. */}
+        <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/contact" element={<About />} />
 
         {/* Student/User Routes — any signed-in account */}

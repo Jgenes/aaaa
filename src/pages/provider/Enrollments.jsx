@@ -36,11 +36,11 @@ export default function Penrollments() {
         },
         {
             name: 'Cohort',
-            selector: row => row.cohort?.name,
+            selector: row => row.cohort?.intake_name || row.cohort?.name,
             sortable: true,
             cell: row => (
                 <span className="badge bg-light text-secondary border">
-                    {row.cohort?.name || "Not Assigned"}
+                    {row.cohort?.intake_name || row.cohort?.name || "Not assigned"}
                 </span>
             )
         },
@@ -75,15 +75,24 @@ export default function Penrollments() {
     ];
 
     useEffect(() => {
-        if (!courseId) return;
+        // With a course id: GET /provider/courses/:id/enrollments
+        //                    → { course, enrollments: [...] }
+        // Without one: GET /provider/enrollments-view
+        //                    → { status, enrollments: [...] }
         const fetchEnrollments = async () => {
             try {
-                const response = await api.get(`/provider/courses/${courseId}/enrollments`);
-                const data = response.data.enrollments || [];
+                setLoading(true);
+                const endpoint = courseId
+                    ? `/provider/courses/${courseId}/enrollments`
+                    : "/provider/enrollments-view";
+                const response = await api.get(endpoint);
+                const data = response.data?.enrollments || [];
                 setEnrollments(data);
                 setFilteredData(data);
             } catch (error) {
                 console.error("Error fetching enrollments:", error);
+                setEnrollments([]);
+                setFilteredData([]);
             } finally {
                 setLoading(false);
             }
@@ -209,7 +218,7 @@ export default function Penrollments() {
                                         </div>
                                         <div className="col-md-4">
                                             <div className="detail-label">Assigned Cohort</div>
-                                            <div className="detail-value">{selectedStudent.cohort?.name || "Pending"}</div>
+                                            <div className="detail-value">{selectedStudent.cohort?.intake_name || selectedStudent.cohort?.name || "Pending"}</div>
                                         </div>
                                     </div>
                                 </div>

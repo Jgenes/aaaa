@@ -5,7 +5,7 @@ import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import CourseContentSidebar from "../components/CourseContentSideBar";
 import ReviewModal from "../components/ReviewModal";
-import api from "../api/axio";
+import { completeLesson, fetchLearningContent } from "../api/learning";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -73,10 +73,12 @@ export default function CourseLearning() {
 
     try {
       if (showLoading) setLoading(true);
-      const res = await api.get(`/courses/${courseId}/learning`);
-      setCourse(res.data);
+      // { id, title, modules: [...], progress_percentage } — modules carry
+      // `completed`, normalised to `is_completed` by src/api/learning.js.
+      const data = await fetchLearningContent(courseId);
+      setCourse(data);
 
-      const modules = Array.isArray(res.data?.modules) ? res.data.modules : [];
+      const modules = data.modules;
       setActiveLesson((current) => {
         if (current) {
           const refreshed = modules.find((module) => module.id === current.id);
@@ -105,18 +107,17 @@ export default function CourseLearning() {
     try {
       setIsUpdating(true);
 
-      await api.post(`/courses/${courseId}/complete-lesson`, { lesson_id: lessonId });
+      await completeLesson(courseId, lessonId);
 
       toast.success("Session completed. Well done!");
 
-      const res = await api.get(`/courses/${courseId}/learning`);
-      setCourse(res.data);
+      const data = await fetchLearningContent(courseId);
+      setCourse(data);
 
-      const modules = Array.isArray(res.data?.modules) ? res.data.modules : [];
-      const refreshed = modules.find((module) => module.id === lessonId);
+      const refreshed = data.modules.find((module) => module.id === String(lessonId));
       if (refreshed) setActiveLesson(refreshed);
 
-      if (Number(res.data?.progress_percentage) >= 100) {
+      if (Number(data.progress_percentage) >= 100) {
         setShowReviewModal(true);
       }
     } catch (error) {
