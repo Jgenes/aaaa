@@ -192,10 +192,21 @@ export default function Course() {
   // Everyone else still sees the session titles.
   const canViewContent = loggedIn && enrolled;
 
-  const enrolButton = (className) => {
-    // Already paid? Open the classroom, never the checkout.
-    if (enrolled) {
-      return (
+  const enrolButton = (className) => (
+    <>
+      {/* Enrol always goes straight to checkout, never to "my learning". */}
+      {canEnrol ? (
+        <Link to={`/checkout/${course.id}/${cohort.id}`} className={className}>
+          Enrol now
+          <i className="bi bi-arrow-right" aria-hidden="true"></i>
+        </Link>
+      ) : (
+        <button type="button" className={className} disabled>
+          {cohort ? availability.label : "Cohort dates coming soon"}
+        </button>
+      )}
+      {/* Already paid? Open the classroom as a separate action. */}
+      {enrolled && (
         <Link
           to={`/learning/${course.id}`}
           className={
@@ -207,23 +218,9 @@ export default function Course() {
           Continue learning
           <i className="bi bi-arrow-right" aria-hidden="true"></i>
         </Link>
-      );
-    }
-    // Not enrolled yet: enrol goes straight to checkout, not to "my learning".
-    if (canEnrol) {
-      return (
-        <Link to={`/checkout/${course.id}/${cohort.id}`} className={className}>
-          Enrol now
-          <i className="bi bi-arrow-right" aria-hidden="true"></i>
-        </Link>
-      );
-    }
-    return (
-      <button type="button" className={className} disabled>
-        {cohort ? availability.label : "Cohort dates coming soon"}
-      </button>
-    );
-  };
+      )}
+    </>
+  );
 
   return (
     <>
