@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import api from "../api/axio";
 import { normaliseCohort } from "../api/catalogue";
+import { loginPathFor } from "../lib/session";
 
 const TZ_DATA = {
   Arusha: ["Arusha City", "Arumeru", "Karatu", "Monduli", "Ngorongoro"],
@@ -25,6 +26,7 @@ const formatTzPhone = (number) => {
 export default function TrainingHubCheckout() {
   const { courseId, cohortId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [course, setCourse] = useState(null);
   const [cohort, setCohort] = useState(null);
@@ -54,8 +56,9 @@ export default function TrainingHubCheckout() {
         setLoading(true);
         const token = localStorage.getItem("token");
         if (!token) {
-          navigate("/login");
-          return;
+          // Remember the checkout page so the visitor returns here (not my
+          // learning) after signing in.
+          return navigate(loginPathFor(location.pathname), { replace: true });
         }
 
         const cohortRes = await api.get(`/courses/${courseId}/cohorts/${cohortId}`, {
@@ -85,7 +88,7 @@ export default function TrainingHubCheckout() {
       }
     };
     fetchData();
-  }, [courseId, cohortId, navigate]);
+  }, [courseId, cohortId, navigate, location.pathname]);
 
   const handleRequestOtp = async () => {
     try {
