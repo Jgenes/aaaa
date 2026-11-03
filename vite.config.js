@@ -10,7 +10,9 @@ export default defineConfig({
   define: {
     __BUILD_TIME__: JSON.stringify(buildTime),
   },
-  base: "./",
+  // The app is hosted at the domain root; absolute asset URLs keep bundles
+  // loading correctly when a nested React Router URL is refreshed directly.
+  base: "/",
   server: {
     host: "0.0.0.0",
     port: 5173,
