@@ -38,6 +38,7 @@ export default function Course() {
   const [selectedCohort, setSelectedCohort] = useState(null);
   const [previewVideo, setPreviewVideo] = useState(null);
   const [openSessions, setOpenSessions] = useState([]);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -537,7 +538,33 @@ export default function Course() {
                     <i className="bi bi-file-text" aria-hidden="true"></i>
                     Detailed course description
                   </h2>
-                  <div className="th-prose">{course.long_description}</div>
+                  <div className="th-prose">
+                    {descriptionExpanded ? (
+                      <>
+                        {course.long_description}
+                        <button
+                          type="button"
+                          className="btn btn-link btn-sm p-0 mt-2 text-decoration-none"
+                          onClick={() => setDescriptionExpanded(false)}
+                        >
+                          Show less <i className="bi bi-chevron-up ms-1"></i>
+                        </button>
+                      </>
+                    ) : course.long_description.length > 200 ? (
+                      <>
+                        {course.long_description.slice(0, 200)}…
+                        <button
+                          type="button"
+                          className="btn btn-link btn-sm p-0 mt-2 text-decoration-none"
+                          onClick={() => setDescriptionExpanded(true)}
+                        >
+                          Read more <i className="bi bi-chevron-down ms-1"></i>
+                        </button>
+                      </>
+                    ) : (
+                      course.long_description
+                    )}
+                  </div>
                 </section>
               )}
             </div>
