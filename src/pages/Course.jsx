@@ -10,6 +10,7 @@ import {
 } from "../api/catalogue";
 import CatalogueDiagnostics from "../components/CatalogueDiagnostics";
 import { mediaUrl } from "../lib/media";
+import { isAuthenticated } from "../lib/session";
 import MediaImage from "../components/MediaImage";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
@@ -184,20 +185,16 @@ export default function Course() {
         : "Fee on request";
 
   const enrolled = Boolean(course.is_enrolled);
+  const loggedIn = isAuthenticated();
+  // Session content (description, notes, videos, downloads) is only revealed
+  // to learners who are signed in and have actually paid for the course.
+  // Everyone else still sees the session titles.
+  const canViewContent = loggedIn && enrolled;
 
-  const enrolButton = (className) => (
-    <>
-      {canEnrol ? (
-        <Link to={`/checkout/${course.id}/${cohort.id}`} className={className}>
-          Enrol now
-          <i className="bi bi-arrow-right" aria-hidden="true"></i>
-        </Link>
-      ) : (
-        <button type="button" className={className} disabled>
-          {cohort ? availability.label : "Cohort dates coming soon"}
-        </button>
-      )}
-      {enrolled && (
+  const enrolButton = (className) => {
+    // Already paid? Open the classroom, never the checkout.
+    if (enrolled) {
+      return (
         <Link
           to={`/learning/${course.id}`}
           className={
@@ -209,9 +206,23 @@ export default function Course() {
           Continue learning
           <i className="bi bi-arrow-right" aria-hidden="true"></i>
         </Link>
-      )}
-    </>
-  );
+      );
+    }
+    // Not enrolled yet: enrol goes straight to checkout, not to "my learning".
+    if (canEnrol) {
+      return (
+        <Link to={`/checkout/${course.id}/${cohort.id}`} className={className}>
+          Enrol now
+          <i className="bi bi-arrow-right" aria-hidden="true"></i>
+        </Link>
+      );
+    }
+    return (
+      <button type="button" className={className} disabled>
+        {cohort ? availability.label : "Cohort dates coming soon"}
+      </button>
+    );
+  };
 
   return (
     <>
@@ -362,80 +373,102 @@ export default function Course() {
                               aria-labelledby={headingId}
                             >
                               <div className="accordion-body">
-                                {session.description && (
-                                  <p className="mb-2 small text-secondary">
-                                    {session.description}
-                                  </p>
-                                )}
+                                {canViewContent ? (
+                                  <>
+                                    {session.description && (
+                                      <p className="mb-2 small text-secondary">
+                                        {session.description}
+                                      </p>
+                                    )}
 
-                                {session.notes && (
-                                  <div className="th-prose small mb-3">
-                                    {session.notes}
+                                    {session.notes && (
+                                      <div className="th-prose small mb-3">
+                                        {session.notes}
+                                      </div>
+                                    )}
+
+                                    {session.video && (
+                                      <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-dark mb-3"
+                                        onClick={() => setPreviewVideo(session.video)}
+                                      >
+                                        <i className="bi bi-play-circle me-2" aria-hidden="true"></i>
+                                        Preview this session
+                                      </button>
+                                    )}
+
+                                    {links.length > 0 && (
+                                      <ul className="list-unstyled d-flex flex-column gap-2 mb-3">
+                                        {links.map((link, linkIndex) => (
+                                          <li key={`${link}-${linkIndex}`}>
+                                            <a
+                                              href={link}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="small d-inline-flex align-items-center gap-2"
+                                            >
+                                              <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                              Session resource {linkIndex + 1}
+                                            </a>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+
+                                    {handouts.length > 0 && (
+                                      <ul className="th-file-list">
+                                        {handouts.map((handout, fileIndex) => (
+                                          <li key={`${handout}-${fileIndex}`}>
+                                            <a
+                                              href={mediaUrl(handout)}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="th-file"
+                                              download
+                                            >
+                                              <span className="th-file__icon" aria-hidden="true">
+                                                <i className="bi bi-file-earmark-arrow-down"></i>
+                                              </span>
+                                              <span className="th-file__text">
+                                                {fileNameOf(handout, `Handout ${fileIndex + 1}`)}
+                                              </span>
+                                            </a>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+
+                                    {!session.description &&
+                                      !session.notes &&
+                                      !session.video &&
+                                      !links.length &&
+                                      !handouts.length && (
+                                        <p className="text-muted small mb-0">
+                                          Materials for this session are shared once your enrolment
+                                          is confirmed.
+                                        </p>
+                                      )}
+                                  </>
+                                ) : (
+                                  <div className="d-flex align-items-start gap-2">
+                                    <i className="bi bi-lock text-muted small mt-1"></i>
+                                    <p className="text-muted small mb-0">
+                                      Log in and enrol to view this session&apos;s content.
+                                      {cohort && (
+                                        <>
+                                          {" "}
+                                          <Link
+                                            to={`/login?next=/checkout/${course.id}/${cohort.id}`}
+                                            className="link-primary link-underline link-underline-opacity-75-hover"
+                                          >
+                                            Log in to enrol
+                                          </Link>
+                                        </>
+                                      )}
+                                    </p>
                                   </div>
                                 )}
-
-                                {session.video && (
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline-dark mb-3"
-                                    onClick={() => setPreviewVideo(session.video)}
-                                  >
-                                    <i className="bi bi-play-circle me-2" aria-hidden="true"></i>
-                                    Preview this session
-                                  </button>
-                                )}
-
-                                {links.length > 0 && (
-                                  <ul className="list-unstyled d-flex flex-column gap-2 mb-3">
-                                    {links.map((link, linkIndex) => (
-                                      <li key={`${link}-${linkIndex}`}>
-                                        <a
-                                          href={link}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="small d-inline-flex align-items-center gap-2"
-                                        >
-                                          <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                                          Session resource {linkIndex + 1}
-                                        </a>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-
-                                {handouts.length > 0 && (
-                                  <ul className="th-file-list">
-                                    {handouts.map((handout, fileIndex) => (
-                                      <li key={`${handout}-${fileIndex}`}>
-                                        <a
-                                          href={mediaUrl(handout)}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="th-file"
-                                          download
-                                        >
-                                          <span className="th-file__icon" aria-hidden="true">
-                                            <i className="bi bi-file-earmark-arrow-down"></i>
-                                          </span>
-                                          <span className="th-file__text">
-                                            {fileNameOf(handout, `Handout ${fileIndex + 1}`)}
-                                          </span>
-                                        </a>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-
-                                {!session.description &&
-                                  !session.notes &&
-                                  !session.video &&
-                                  !links.length &&
-                                  !handouts.length && (
-                                    <p className="text-muted small mb-0">
-                                      Materials for this session are shared once your enrolment
-                                      is confirmed.
-                                    </p>
-                                  )}
                               </div>
                             </div>
                           </div>

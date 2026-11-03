@@ -92,6 +92,13 @@ export default function CourseLearning() {
         navigate("/login");
         return;
       }
+      // Signed in but hasn't paid for this course: send them to the course
+      // page where they can enrol and go straight to checkout.
+      if (error.response?.status === 403) {
+        toast.error("You need to enrol in this course to view its content.");
+        navigate(`/course/${courseId}`);
+        return;
+      }
       setLoadError(true);
     } finally {
       setLoading(false);
