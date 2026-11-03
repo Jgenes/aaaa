@@ -185,27 +185,33 @@ export default function Course() {
 
   const enrolled = Boolean(course.is_enrolled);
 
-  const enrolButton = (className) => {
-    if (enrolled) {
-      return (
-        <Link to={`/learning/${course.id}`} className={className}>
+  const enrolButton = (className) => (
+    <>
+      {canEnrol ? (
+        <Link to={`/checkout/${course.id}/${cohort.id}`} className={className}>
+          Enrol now
+          <i className="bi bi-arrow-right" aria-hidden="true"></i>
+        </Link>
+      ) : (
+        <button type="button" className={className} disabled>
+          {cohort ? availability.label : "Cohort dates coming soon"}
+        </button>
+      )}
+      {enrolled && (
+        <Link
+          to={`/learning/${course.id}`}
+          className={
+            className.includes("w-100")
+              ? "btn btn-outline-dark w-100 mt-2"
+              : "btn btn-outline-dark btn-lg"
+          }
+        >
           Continue learning
           <i className="bi bi-arrow-right" aria-hidden="true"></i>
         </Link>
-      );
-    }
-
-    return canEnrol ? (
-      <Link to={`/checkout/${course.id}/${cohort.id}`} className={className}>
-        Enrol now
-        <i className="bi bi-arrow-right" aria-hidden="true"></i>
-      </Link>
-    ) : (
-      <button type="button" className={className} disabled>
-        {cohort ? availability.label : "Cohort dates coming soon"}
-      </button>
-    );
-  };
+      )}
+    </>
+  );
 
   return (
     <>
